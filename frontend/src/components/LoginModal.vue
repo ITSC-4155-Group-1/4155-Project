@@ -6,17 +6,7 @@
         <div class="popup">
             <div class="close-btn">&times;</div>
             <div class="form">
-                <h2>Sign up</h2>
-                <div class="form-row">
-                    <div class="form-element">
-                        <label for="firstName">First name</label>
-                        <input type="text" id="firstName" placeholder="First Name">
-                    </div>
-                    <div class="form-element">
-                        <label for="lastName">Last name</label>
-                        <input type="text" id="lastName" placeholder="Last Name">
-                    </div>
-                </div>
+                <h2>Login</h2>
                 <div class="form-element">
                     <label for="email">Email</label>
                     <input type="text" id="email" placeholder="Enter email">
@@ -25,11 +15,7 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" placeholder="Password">
                 </div>
-                <div class="form-element">
-                    <label for="password">Re-type Password</label>
-                    <input type="password" id="password" placeholder="Re-type password">
-                </div>
-                <button>Sign up</button>
+                <button>Login</button>
             </div>
             <div class="labelled-separator">
 				<span>or</span>
@@ -39,69 +25,60 @@
                     <input type="submit" class="btn btn-google btn-center" value="Continue with Google">
                 </form>
             </div>
-        </div>     
+        </div>
     </main>
 </template>
 
 <style scoped>
-    *{
-        margin: 0px;
-        padding: 0px;
+* {
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
     }
-    body{
+    body {
         background-color: linear-gradient(to right, #F0F0F0);
         font-family: 'Courier New', Courier, monospace;
         height: 100vh;
     }
-    .popup{
-        position:absolute;
+    .popup {
+        position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         width: 380px;
         padding: 20px 30px;
         background: #F0F0F0;
-        box-shadow: 2px 2px 5px 5px rgba(0,0,0,0,15);
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
         border-radius: 10px;
         z-index: 1;
     }
-    .popup .close-btn{
-        position:absolute;
+    .popup .close-btn {
+        position: absolute;
         top: 10px;
-        right:10px; 
-        width:15px;
-        height:15px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
         background: #f0f0f0;
         color: black;
         text-align: center;
         line-height: 15px;
         border-radius: 15px;
-        cursor:pointer;
+        cursor: pointer;
     }
-    .popup .form h2{
+    .popup .form h2 {
         text-align: center;
         color: black;
-        margin: 10px 0px 20px;
+        margin-bottom: 20px;
         font-size: 25px;
     }
-    .form-row {
-        display: flex;
-        gap: 10px;
-    }
-    .form-row .form-element {
-        flex: 1; 
-        min-width: 0; 
-    }
     .popup .form .form-element {
-        margin: 7px 0px;
+        margin: 10px 0;
     }
-    .popup .form .form-element label{
+    .popup .form .form-element label {
         font-size: 14px;
         color: black;
     }
-    .popup .form .form-element input[type="text"],
-    .popup .form .form-element input[type="password"]{
+    .popup .form .form-element input {
         margin-top: 5px;
         display: block;
         width: 100%;
@@ -110,23 +87,16 @@
         border: 1px solid black;
         border-radius: 5px;
     }
-    .popup .form button{
+    .popup .form button {
         width: 100%;
-        height: 30px;
+        height: 35px;
         border: none;
-        outline: none;
         font-size: 16px;
-        background:#FFC107;
+        background: #FFC107;
         color: #F0F0F0;
         border-radius: 10px;
         cursor: pointer;
-        margin-top: 5px;
-    }
-    .popup .form .form-element a{
-        display:block;
-        text-align: right;
-        font-size: 15px;
-        color: black;
+        margin-top: 10px;
     }
     .labelled-separator {
         display: flex;
@@ -134,7 +104,7 @@
         text-align: center;
         font-size: 14px;
         color: #666;
-        margin: 10px 0;
+        margin: 15px 0;
     }
     .labelled-separator::before,
     .labelled-separator::after {
@@ -143,7 +113,7 @@
         border-bottom: 1px solid #ccc;
         margin: 0 10px;
     }
-    .external-login{
+    .external-login {
         background-color: #fff;
         display: flex;
         align-items: center;
@@ -158,7 +128,7 @@
         height: 36px;
         border-radius: 5px;
     }
-    .popup .external-login .btn-google{
+    .popup .external-login .btn-google {
         background-image: url(/google.png);
         background-size: 30px 30px;
         background-repeat: no-repeat;
