@@ -1,6 +1,6 @@
 
 //Venues:
-[
+export const venues = [
     {
         "venue_name": "Beach Resort",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
@@ -45,7 +45,6 @@
         "price": 2200,
         "availability_start_date": new Date("2025, 6, 1"),
         "availability_end_date": new Date("2025, 12, 31"),
-        "capacity": 10,
         "image": ["/images/Urban_Loft.jpeg","/images/Urban_Loft_1.jpeg"],
         "capacity": 80,
         "rating": 4.5
@@ -67,7 +66,7 @@
 
 //Bookings:
 //Not including price/venue name as I think its redundant
-[
+export const bookings = [
     {
         "booking_start_date": new Date("2025, 1, 10"),
         "booking_end_date": new Date("2025, 1, 12"),
@@ -96,7 +95,7 @@
 ]
 
 //User:
-[
+export const users = [
     {
         "first_name": "Lorem",
         "last_name": "Ipsum",
@@ -130,7 +129,7 @@
 ]
 
 //Messages:
-[
+export const messages = [
     {
         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         "timestamp": new Date("October 13, 2024 11:13:00")
@@ -154,7 +153,7 @@
 ]
 
 //Notifications
-[
+export const notifications = [
     {
         "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },
