@@ -1,6 +1,13 @@
 <script setup>
     import NavBar from "./NavBar.vue"
     import FooterComponent from "./FooterComponent.vue"
+    import VenueCard from "./VenueCard.vue"
+    import { venues } from "../../../mockdata";
+    import { ref } from "vue"
+
+    const venueList = ref(venues);
+
+    console.log(venueList.value);
 </script>
 
 <template>
@@ -33,9 +40,20 @@
                         <button type="submit" class="custom-submit">Search</button>
                     </form>
                 </div>
-
             </div>
         </div>
+        
+        <main class="w-80 mx-auto my-3">
+            <div class="row">
+                <div 
+                    v-for="(venue, index) in venueList" 
+                    :key="index + '_' + venue.venue_name" 
+                    class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+                >
+                    <VenueCard :venue="venue" />
+                </div>
+            </div>
+        </main>
         <FooterComponent />
     </div>
 </template>
