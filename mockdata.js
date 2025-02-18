@@ -10,7 +10,7 @@
         "availability_start_date": new Date("2025, 3, 1"),
         "availability_end_date": new Date("2025, 10, 15"),
         "capacity": 300,
-        "image": "",
+        "image": ["/images/resort.jpeg", "/images/resort_1.jpeg"],
         "rating": 4.8
     },
     {
@@ -22,7 +22,7 @@
         "availability_start_date": new Date("2025, 4, 5"),
         "availability_end_date": new Date("2025, 11, 20"),
         "capacity": 150,
-        "image": "",
+        "image": ["/images/Mountain_Lodge.jpeg", "/images/Mountain_Lodge_1.jpeg"],
         "rating": 4.6
     },
     {
@@ -34,7 +34,7 @@
         "availability_start_date": new Date("2025, 2, 15"),
         "availability_end_date": new Date("2025, 8, 30"),
         "capacity": 500,
-        "image": "",
+        "image": ["/images/Conference_Center.jpeg", "/images/Conference_Center_1.jpeg"],
         "rating": 4.7
     },
     {
@@ -45,8 +45,9 @@
         "price": 2200,
         "availability_start_date": new Date("2025, 6, 1"),
         "availability_end_date": new Date("2025, 12, 31"),
+        "capacity": 10,
+        "image": ["/images/Urban_Loft.jpeg","/images/Urban_Loft_1.jpeg"],
         "capacity": 80,
-        "image": "",
         "rating": 4.5
     },
     {
@@ -58,7 +59,7 @@
         "availability_start_date": new Date("2025, 5, 10"),
         "availability_end_date": new Date("2025, 9, 30"),
         "capacity": 200,
-        "image": "",
+        "image": ["/images/Vineyard.jpeg", "/images/Vineyard_1.jpeg"],
         "rating": 4.9
     }
 ]
