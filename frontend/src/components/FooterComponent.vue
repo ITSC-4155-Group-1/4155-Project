@@ -3,13 +3,20 @@
 </script>
 
 <template>
-    <footer class="bg-body-tertiary text-center text-lg-start mt-auto">
-        <!-- Copyright -->
-        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-            © 2020 Copyright:
-            <a class="text-body" href="https://mdbootstrap.com/">MDBootstrap.com</a>
+    <footer class="custom-footer py-3 border-top mt-auto">
+        <div class="d-flex justify-content-between align-items-center text-light mx-3">
+            <span>© 2025 Gatherly</span>
+            <ul class="nav">
+                <li class="nav-item"><a href="#" class="nav-link px-2 text-light">Terms</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-2 text-light">Privacy</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-2 text-light">Contact Us</a></li>
+            </ul>
         </div>
-        <!-- Copyright -->
     </footer>
 </template>
 
+<style scoped>
+    .custom-footer {
+        background-color: var(--primary);
+    }
+</style>
