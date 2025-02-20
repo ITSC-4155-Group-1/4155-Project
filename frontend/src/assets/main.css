@@ -2,9 +2,11 @@
   --background: #F0F0F0;
   --primary: #3F51B5;
   --accent: #FF4081;
+  --accent-dark-50: #ff0d5f;
   --secondary: #757575;
   --secondary-opacity-50: #75757570;
   --highlight: #FFC107;
+  --highlight-dark-50: #d39e00;
   --white: #FFFFFF;
   --black: #000000;
 }
