@@ -1,13 +1,11 @@
 <script setup>
+    import { venues } from "../../../mockdata";
+    import { ref } from "vue"
     import NavBar from "./NavBar.vue"
     import FooterComponent from "./FooterComponent.vue"
     import VenueCard from "./VenueCard.vue"
-    import { venues } from "../../../mockdata";
-    import { ref } from "vue"
 
     const venueList = ref(venues);
-
-    console.log(venueList.value);
 </script>
 
 <template>
@@ -43,12 +41,12 @@
             </div>
         </div>
         
-        <main class="w-80 mx-auto my-3">
+        <main class="main-container">
             <div class="row">
                 <div 
                     v-for="(venue, index) in venueList" 
                     :key="index + '_' + venue.venue_name" 
-                    class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
                 >
                     <VenueCard :venue="venue" />
                 </div>
@@ -60,7 +58,7 @@
 
 <style scoped>
     .landing {
-        background-image: url('/landing_bg.png');
+        background-image: url('/images/auditorium-landing.jpg');
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
@@ -73,7 +71,7 @@
     }
 
     .main-text {
-        font-size: 64px;
+        font-size: 72px;
     }
 
     .custom-form-border-color {
@@ -82,6 +80,10 @@
 
     .font-size-18 {
         font-size: 18px;
+    }
+
+    .custom-input {
+        border: 2px solid transparent;
     }
 
     .custom-input input {
@@ -143,12 +145,23 @@
     .custom-submit {
         border-radius: 0 0 0 33.5px;
         background-color: var(--highlight);
-    }
-
-    button[type="submit"] {
         padding: 0.75rem 2rem;
         border: none;
         color: white;
         font-size: 20px;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .custom-submit:hover {
+        background-color: var(--highlight-dark-50);
+    }
+
+    .main-container {
+        width: 85%;
+        margin: 3rem auto;
+    }
+
+    .row {
+        margin-right: 0 !important;
     }
 </style>
