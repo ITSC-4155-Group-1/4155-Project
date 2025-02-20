@@ -55,7 +55,14 @@ pnpm dev
 
 ## Running Tests
 
-Navigate to the `backend` directory within the project. Your path will look like this `<path_to_project>/backend`. Install the dependencies here as well:
+Navigate to the `backend` directory within the project. 
+
+```bash
+cd ..
+cd frontend/
+```
+
+Your path will look like this `<path_to_project>/backend`. Install the dependencies here as well:
 
 ```bash
 npm install
