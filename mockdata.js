@@ -47,7 +47,6 @@
         "availability_end_date": new Date("2025, 12, 31"),
         "capacity": 10,
         "image": ["/images/Urban_Loft.jpeg","/images/Urban_Loft_1.jpeg"],
-        "capacity": 80,
         "rating": 4.5
     },
     {
