@@ -25,7 +25,7 @@
                 </span>
                 {{ venue.rating }} / 5.0 
             </span>
-            <img :src="venue.image[0]" class="card-img-top" alt="Image of venue">
+            <img :src="venue.image[1]" class="card-img-top" alt="Image of venue">
             <span class="badge position-absolute bottom-0 end-0 m-2 capacity">{{ venue.capacity }} people </span> <!-- capacity badge -->
         </div>
         <div class="mt-3 d-flex flex-column">
