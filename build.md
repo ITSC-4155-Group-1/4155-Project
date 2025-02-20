@@ -41,18 +41,6 @@ yarn install
 pnpm install
 ```
 
-## Building the Project
-
-Run one of the following commands to build the project:
-
-```bash
-npm run build
-# OR
-yarn build
-# OR
-pnpm build
-```
-
 ## Running in Development Mode
 
 Run one of the following commands to build the project:
@@ -67,12 +55,22 @@ pnpm dev
 
 ## Running Tests
 
+Navigate to the `backend` directory within the project. Your path will look like this `<path_to_project>/backend`. Install the dependencies here as well:
+
+```bash
+npm install
+# OR
+yarn install
+# OR
+pnpm install
+```
+
 Run one of the following commands to run the tests:
 
 ```bash
-npm run test:unit
+npm run test
 # OR
-yarn test:unit
+yarn test
 # OR
-pnpm run test:unit
+pnpm run test
 ```
