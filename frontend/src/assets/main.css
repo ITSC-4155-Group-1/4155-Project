@@ -3,7 +3,19 @@
   --primary: #3F51B5;
   --accent: #FF4081;
   --secondary: #757575;
+  --secondary-opacity-50: #75757570;
   --highlight: #FFC107;
   --white: #FFFFFF;
   --black: #000000;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+#app {
+  background-color: var(--background);
 }
