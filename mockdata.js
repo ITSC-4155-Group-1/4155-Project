@@ -1,6 +1,6 @@
 
 //Venues:
-[
+export const venues = [
     {
         "venue_name": "Beach Resort",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
@@ -10,7 +10,7 @@
         "availability_start_date": new Date("2025, 3, 1"),
         "availability_end_date": new Date("2025, 10, 15"),
         "capacity": 300,
-        "image": ["/images/resort.jpeg", "/images/resort_1.jpeg"],
+        "image": ["/images/fancy-venue.jpg", "/images/resort.jpeg", "/images/resort_1.jpeg"],
         "rating": 4.8
     },
     {
@@ -22,7 +22,7 @@
         "availability_start_date": new Date("2025, 4, 5"),
         "availability_end_date": new Date("2025, 11, 20"),
         "capacity": 150,
-        "image": ["/images/Mountain_Lodge.jpeg", "/images/Mountain_Lodge_1.jpeg"],
+        "image": ["/images/mountain-lodge.jpg", "/images/Mountain_Lodge.jpeg", "/images/Mountain_Lodge_1.jpeg"],
         "rating": 4.6
     },
     {
@@ -34,7 +34,7 @@
         "availability_start_date": new Date("2025, 2, 15"),
         "availability_end_date": new Date("2025, 8, 30"),
         "capacity": 500,
-        "image": ["/images/Conference_Center.jpeg", "/images/Conference_Center_1.jpeg"],
+        "image": ["/images/conference-room.jpg", "/images/Conference_Center.jpeg", "/images/Conference_Center_1.jpeg"],
         "rating": 4.7
     },
     {
@@ -45,8 +45,8 @@
         "price": 2200,
         "availability_start_date": new Date("2025, 6, 1"),
         "availability_end_date": new Date("2025, 12, 31"),
-        "capacity": 10,
-        "image": ["/images/Urban_Loft.jpeg","/images/Urban_Loft_1.jpeg"],
+        "image": ["/images/dinner.jpg", "/images/Urban_Loft.jpeg","/images/Urban_Loft_1.jpeg"],
+        "capacity": 80,
         "rating": 4.5
     },
     {
@@ -58,7 +58,7 @@
         "availability_start_date": new Date("2025, 5, 10"),
         "availability_end_date": new Date("2025, 9, 30"),
         "capacity": 200,
-        "image": ["/images/Vineyard.jpeg", "/images/Vineyard_1.jpeg"],
+        "image": ["/images/farm-room.jpg", "/images/Vineyard.jpeg", "/images/Vineyard_1.jpeg"],
         "rating": 4.9
     }
 ]
@@ -66,7 +66,7 @@
 
 //Bookings:
 //Not including price/venue name as I think its redundant
-[
+export const bookings = [
     {
         "booking_start_date": new Date("2025, 1, 10"),
         "booking_end_date": new Date("2025, 1, 12"),
@@ -95,7 +95,7 @@
 ]
 
 //User:
-[
+export const users = [
     {
         "first_name": "Lorem",
         "last_name": "Ipsum",
@@ -134,7 +134,7 @@
 ]
 
 //Messages:
-[
+export const messages = [
     {
         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         "timestamp": new Date("October 13, 2024 11:13:00")
@@ -158,7 +158,7 @@
 ]
 
 //Notifications
-[
+export const notifications = [
     {
         "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },
