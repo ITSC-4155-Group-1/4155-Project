@@ -11,7 +11,7 @@ const venueSchema = new Schema({
     availability_start_date: {type: Date, required: [true, 'Venue availability start date is required']},
     availability_end_date: {type: Date, required: [true, 'Venue availability end date is required']},
     capacity: {type: Number, required: [true, 'Venue Capacity is required']},
-    image: [{type: String, required: 'Image is required'}],
+    images: [{type: String, required: 'Image is required'}],
     ratingAvg: {type: Number},
     numRatings: {type: Number, default: 0}
 })

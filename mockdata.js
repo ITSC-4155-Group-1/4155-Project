@@ -100,31 +100,36 @@
         "first_name": "Lorem",
         "last_name": "Ipsum",
         "email": "test@example.com",
-        "password": "1234"
+        "password": "1234",
+        "image": "/images/profile_1.jpeg"
     },
     {
         "first_name": "Dolor",
         "last_name": "Sit",
         "email": "test2@example.com",
-        "password": "abcd"
+        "password": "abcd",
+        "image": "/images/profile_2.jpeg"
     },
     {
         "first_name": "Amet",
         "last_name": "Consectetur",
         "email": "test3@example.com",
-        "password": "efgh"
+        "password": "efgh",
+        "image": "/images/profile_3.jpeg"
     },
     {
         "first_name": "Adipiscing",
         "last_name": "Elit",
         "email": "test4@example.com",
-        "password": "ijkl"
+        "password": "ijkl",
+        "image": "/images/profile_4.jpeg"
     },
     {
         "first_name": "Vivamus",
         "last_name": "Nibh",
         "email": "test5@example.com",
-        "password": "mnop"
+        "password": "mnop",
+        "image": "/images/profile_5.jpeg"
     }
 ]
 

@@ -7,5 +7,5 @@ const bookingSchema = new Schema({
     venue_id: {type: Schema.Types.ObjectID, ref: 'Venue'},
     bookingStartDate: {type: Date, required: [true, 'Venue availability start date is required']},
     bookingEndDate: {type: Date, required: [true, 'Venue availability end date is required']},
-    numAttendees: {type: Number, required: [true, 'Number of attendees is required']},
+    numAttendees: {type: Number, required: [true, 'Number of attendees is required']}
 })
