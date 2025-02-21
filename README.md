@@ -7,13 +7,13 @@ An event hosting application to make it easy to rent out and rent space for even
 - **Neil Huntley**
 
 ### Scrum Master
-- **Evan Huntley**
+- **Tracey Dingman**
 
 ### Developers
 1. **David McCollum**
-2. **Tracey Dingman**
-3. **Santiago Orozco Buri**
-4. **Denny Zhang**
+2. **Santiago Orozco Buri**
+3. **Denny Zhang**
+4. **Evan Huntley**
 
 ---
 
