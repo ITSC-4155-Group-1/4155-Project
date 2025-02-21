@@ -14,3 +14,7 @@ An event hosting application to make it easy to rent out and rent space for even
 2. **Tracey Dingman**
 3. **Santiago Orozco Buri**
 4. **Denny Zhang**
+
+---
+
+To run the project, see `build.md` in the project's root directory.
