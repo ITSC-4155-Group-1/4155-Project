@@ -9,3 +9,5 @@ const bookingSchema = new Schema({
     bookingEndDate: {type: Date, required: [true, 'Venue availability end date is required']},
     numAttendees: {type: Number, required: [true, 'Number of attendees is required']}
 })
+
+module.exports = mongoose.model("Booking", bookingSchema)
