@@ -4,6 +4,7 @@
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
 
+    const isLoggedIn = false; // will be set to true when the user is logged in
     const showWhichModal = ref(null);
 
     const showModal = (modal) => {
@@ -31,25 +32,27 @@
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg d-flex justify-content-between align-items-center my-3 mx-4">
-        <div>
-            <a class="navbar-brand" href="#">
+    <nav class="navbar navbar-expand-lg fixed-top m-2">
+        <div class="container-fluid d-flex align-items-center">
+            <RouterLink class="navbar-brand" to="/">
                 <img src="/images/gatherly_logo.png" alt="logo" height="70">
-            </a>
-        </div>
-        <div>
+            </RouterLink>
             <div id="navbarNav">
                 <ul class="navbar-nav gap-3">
-                    <li class="nav-item px-2 rounded-pill custom-link">
+                    <li v-if="!isLoggedIn" class="px-2 rounded-pill custom-link">
                         <a class="nav-link" @click="showModal('login')">Login</a>
                     </li>
-                    <li class="nav-item px-2 rounded-pill custom-link">
+                    <li v-if="!isLoggedIn" class="px-2 rounded-pill custom-link">
                         <a class="nav-link" @click="showModal('signup')">Sign Up</a>
                     </li>
+                    <RouterLink v-if="isLoggedIn" class="px-2 rounded-pill custom-link nav-link" to="/settings">
+                        Settings
+                    </RouterLink>
                 </ul>
             </div>
         </div>
-    </nav>
+</nav>
+
 
     <div class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay" v-if="showWhichModal">
         <LoginModal v-if="showWhichModal === 'login'" @closeModal="closeModal()" />
@@ -66,6 +69,10 @@
     .custom-link a {
         color: var(--background);
         font-size: 16px;
+    }
+
+    .nav-link {
+        color: var(--background);
     }
 
     .custom-link:hover {
