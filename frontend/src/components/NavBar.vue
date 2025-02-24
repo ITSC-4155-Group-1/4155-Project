@@ -1,11 +1,14 @@
 <script setup>
     import '../assets/main.css';
-    import { ref, watch, onBeforeUnmount } from 'vue';
+    import { ref, watch, onBeforeUnmount, onMounted } from 'vue';
+    import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
 
-    const isLoggedIn = false; // will be set to true when the user is logged in
+    const route = useRoute();
+    const isLoggedIn = true; // will be set to true when the user is logged in
     const showWhichModal = ref(null);
+    const isScrolled = ref(false);
 
     const showModal = (modal) => {
         showWhichModal.value = modal;
@@ -25,14 +28,29 @@
         }
     });
 
+    const handleScroll = () => {
+        if (window.scrollY > 640) {
+            isScrolled.value = true;
+        } else {
+            isScrolled.value = false;
+        }
+    }
+
+    onMounted(() => {
+        if (route.path === '/') {
+            window.addEventListener('scroll', handleScroll);
+        }
+    });
+
     onBeforeUnmount(() => {
         document.body.style.overflow = 'auto'; 
+        window.removeEventListener('scroll', handleScroll);
     });
 
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg fixed-top m-2">
+    <nav class="navbar navbar-expand-lg fixed-top px-3 py-1" :class="{ 'scrolled': isScrolled && route.path === '/' }">
         <div class="container-fluid d-flex align-items-center">
             <RouterLink class="navbar-brand" to="/">
                 <img src="/images/gatherly_logo.png" alt="logo" height="70">
@@ -61,6 +79,11 @@
 </template>
 
 <style scoped>
+    .scrolled {
+        background-color: rgba(0, 0, 0, 0.2);
+        transition: background-color 0.2s ease-in-out;
+    }
+
     .custom-link {
         border: 2px solid var(--background);
         background-color: var(--accent);
