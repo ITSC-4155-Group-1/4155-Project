@@ -1,56 +1,117 @@
 <script setup>
     import '../assets/main.css';
-    import { ref, watch, onBeforeUnmount } from 'vue';
+    import { ref, watch, onBeforeUnmount, onMounted, computed } from 'vue';
+    import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
 
+    const route = useRoute();
+    const isLoggedIn = ref(true);
     const showWhichModal = ref(null);
+    const isScrolled = ref(false);
+    const isNavCollapsed = ref(true);
+
+    const toggleNavbar = () => {
+        isNavCollapsed.value = !isNavCollapsed.value;
+    };
+
+    const closeNavbar = () => {
+        isNavCollapsed.value = true;
+    };
+
+    const expandedHeight = '100vh';
+
+    const navStyle = computed(() => ({
+        height: isNavCollapsed.value ? '0' : expandedHeight,
+        overflow: 'hidden',
+        transition: 'height 0.3s ease-in-out'
+    }));
 
     const showModal = (modal) => {
         showWhichModal.value = modal;
         document.body.style.overflow = 'hidden';
-    }
+    };
 
     const closeModal = () => {
         showWhichModal.value = null;
         document.body.style.overflow = 'auto'; 
-    }
+    };
+
+    const handleScroll = () => {
+        if ((window.scrollY > 640 && route.path === '/') || (window.scrollY > 0 && route.path !== '/')) {
+            isScrolled.value = true;
+        } else {
+            isScrolled.value = false;
+        }
+    };
 
     watch(showWhichModal, (newVal) => {
-        if (newVal) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
+        document.body.style.overflow = newVal ? 'hidden' : 'auto';
     });
 
+    watch(route, () => {
+        closeNavbar();
+    });
+    
     onBeforeUnmount(() => {
-        document.body.style.overflow = 'auto'; 
+        document.body.style.overflow = 'auto';
+        window.removeEventListener('scroll', handleScroll);
     });
 
+    onMounted(() => {
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+    });
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg d-flex justify-content-between align-items-center my-3 mx-4">
-        <div>
-            <a class="navbar-brand" href="#">
-                <img src="/images/gatherly_logo.png" alt="logo" height="70">
-            </a>
-        </div>
-        <div>
-            <div id="navbarNav">
-                <ul class="navbar-nav gap-3">
-                    <li class="nav-item px-2 rounded-pill custom-link">
+    <nav class="navbar navbar-expand-md fixed-top px-3 py-2" :class="{ 'scrolled': isScrolled }">
+        <div class="container-fluid">
+            <RouterLink class="navbar-brand" to="/">
+                <img src="/images/gatherly_logo.png" alt="logo" height="60">
+            </RouterLink>
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                @click="toggleNavbar"
+            >
+                <span
+                    class="navbar-toggler-icon"
+                    :class="{
+                        'white': !isScrolled && route.path === '/',
+                        'black': isScrolled || route.path !== '/'
+                    }"
+                ></span>
+            </button>
+
+            <!-- Expanded Navbar -->
+            <div 
+                class="navbar-collapse"
+                :class="{ 'show': !isNavCollapsed }"
+                :style="navStyle"
+            >
+                <button class="close-btn" @click="toggleNavbar">×</button>
+                <ul class="navbar-nav">
+                    <li v-if="!isLoggedIn">
                         <a class="nav-link" @click="showModal('login')">Login</a>
                     </li>
-                    <li class="nav-item px-2 rounded-pill custom-link">
+                    <li v-if="!isLoggedIn">
                         <a class="nav-link" @click="showModal('signup')">Sign Up</a>
                     </li>
+                    <RouterLink 
+                        v-if="isLoggedIn"
+                        to="/settings"
+                        class="nav-link"
+                    >
+                        Settings
+                    </RouterLink>
                 </ul>
             </div>
         </div>
     </nav>
 
+    <!-- Modals -->
     <div class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay" v-if="showWhichModal">
         <LoginModal v-if="showWhichModal === 'login'" @closeModal="closeModal()" />
         <SignupModal v-if="showWhichModal === 'signup'" @closeModal="closeModal()" />
@@ -58,25 +119,121 @@
 </template>
 
 <style scoped>
-    .custom-link {
-        border: 2px solid var(--background);
-        background-color: var(--accent);
+    nav {
         transition: background-color 0.2s ease-in-out;
     }
-    .custom-link a {
-        color: var(--background);
-        font-size: 16px;
+
+    .scrolled {
+        background-color: var(--background);
     }
 
-    .custom-link:hover {
-        background-color: var(--accent-dark-50);
+    .navbar-toggler {
+        border: none;
+        background: transparent;
+    }
+
+    .navbar-toggler:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .navbar-toggler-icon {
+        content: "";
+        display: block;
+        width: 30px;
+        height: 30px;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        transition: background-image 0.2s ease-in-out;
+    }
+
+    .navbar-toggler-icon.white {
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    .navbar-toggler-icon.black {
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    .navbar-collapse {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--background);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: height 0.3s ease-in-out;
+    }
+
+    .navbar-nav {
+        list-style: none;
+        padding: 0;
+        text-align: center;
+    }
+
+    .nav-item {
+        margin: 10px 0;
+    }
+
+    .nav-link {
+        font-size: 1.3rem;
+        color: var(--accent);
         text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .nav-link:hover {
+        color: var(--accent-dark-50);
         cursor: pointer;
     }
 
-    .background-modal-overlay {
-        background-color: rgba(0, 0, 0, 0.5);
-        width: 100%;
-        height: 100%;
+    .nav-link:active,
+    .nav-link:focus {
+        color: var(--accent) !important;
     }
+
+    .nav-link:visited {
+        color: var(--accent) !important;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 2rem;
+        background: none;
+        border: none;
+        color: black;
+        cursor: pointer;
+    }
+
+    @media screen and (min-width: 768px) {
+        .navbar-collapse {
+            position: static;
+            height: auto !important;
+            background: transparent;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            transition: none;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .close-btn {
+            display: none;
+        }
+    }
+
+    
 </style>

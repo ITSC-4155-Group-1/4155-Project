@@ -1,22 +1,18 @@
 <script setup>
     import { venues } from "../../../mockdata";
     import { ref } from "vue"
-    import NavBar from "./NavBar.vue"
-    import FooterComponent from "./FooterComponent.vue"
     import VenueCard from "./VenueCard.vue"
 
     const venueList = ref(venues);
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100">
         <div class="landing">
-            <NavBar /> <!-- user is not logged in, will need a prop or something to the navbar change -->
             <div class="d-flex flex-column justify-content-center align-items-center custom-searchbar-container-height">
                 <h1 class="text-light fw-bold text-center main-text mb-5">Find The Best Place</h1>
 
                 <!-- search bar -->
-                <div class="w-75 mx-auto pb-5">
+                <div class="w-75 pb-5">
                     <form action="#" class="overflow-hidden border border-2 rounded-pill d-flex justify-content-center custom-form-border-color bg-light">
                         <div class="d-flex align-items-center w-100 p-2 custom-input">
                             <input type="text" class="form-control ps-3 font-size-18 bg-light" placeholder="Where">
@@ -41,7 +37,7 @@
             </div>
         </div>
         
-        <main class="main-container">
+        <div class="main-container">
             <div class="row">
                 <div 
                     v-for="(venue, index) in venueList" 
@@ -51,9 +47,7 @@
                     <VenueCard :venue="venue" />
                 </div>
             </div>
-        </main>
-        <FooterComponent />
-    </div>
+        </div>
 </template>
 
 <style scoped>
@@ -62,12 +56,11 @@
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
-        max-height: 75vh;
-        min-height: 75vh;
+        height: 75vh;
     }
 
     .custom-searchbar-container-height {
-        height: 45vh;
+        height: 100%;
     }
 
     .main-text {
@@ -163,5 +156,11 @@
 
     .row {
         margin-right: 0 !important;
+    }
+
+    @media (max-width: 768px) {
+        .custom-searchbar-container-height {
+            width: 100% !important;
+        }
     }
 </style>
