@@ -7,7 +7,7 @@ import VenueDetailsPage from "./components/VenueDetailsPage.vue";
 const routes = [
     { path: '/', component: LandingPage },
     { path: '/settings', component: SettingsPage },
-    { path: '/venue/:id', component: VenueDetailsPage },
+    { path: '/venues/:id', component: VenueDetailsPage },
 ];
 
 const router = createRouter({

@@ -15,7 +15,7 @@
 <template>
     <!-- The entire card except for the heart icon will be clickable -->
     <div class="card border-0 background hover-effect p-2">
-        <router-link :to="`/venue/${venue.host_id}`" class="text-decoration-none">
+        <router-link :to="`/venues/${venue.host_id}`" class="text-decoration-none">
             <div class="image-container position-relative">
                 <span class="position-absolute top-0 start-0 rating p-2"> <!-- rating badge -->
                     <span> <!-- star icon -->
