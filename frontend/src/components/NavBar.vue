@@ -85,7 +85,6 @@
                 ></span>
             </button>
 
-            <!-- Expanded Navbar -->
             <div 
                 class="navbar-collapse"
                 :class="{ 'show': !isNavCollapsed }"
@@ -101,6 +100,13 @@
                     </li>
                     <RouterLink 
                         v-if="isLoggedIn"
+                        to="/venues/new"
+                        class="nav-link"
+                    >
+                        Provide a Space
+                    </RouterLink>
+                    <RouterLink 
+                        v-if="isLoggedIn"
                         to="/settings"
                         class="nav-link"
                     >
@@ -111,7 +117,6 @@
         </div>
     </nav>
 
-    <!-- Modals -->
     <div class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay" v-if="showWhichModal">
         <LoginModal v-if="showWhichModal === 'login'" @closeModal="closeModal()" />
         <SignupModal v-if="showWhichModal === 'signup'" @closeModal="closeModal()" />
@@ -120,6 +125,7 @@
 
 <style scoped>
     nav {
+        min-height: 86px;
         transition: background-color 0.2s ease-in-out;
     }
 
