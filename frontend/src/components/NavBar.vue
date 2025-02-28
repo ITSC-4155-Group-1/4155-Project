@@ -6,7 +6,7 @@
     import SignupModal from './SignupModal.vue';
 
     const route = useRoute();
-    const isLoggedIn = ref(true);
+    const isLoggedIn = ref(false); // make dynamic
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
     const isNavCollapsed = ref(true);

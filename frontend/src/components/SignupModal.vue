@@ -1,4 +1,28 @@
 <script setup>
+    import { ref } from 'vue';
+    import axios from "axios";
+
+    const newUser = ref({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: ""
+    });
+
+    const signup = async () => {
+        try {
+            const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                
+            });
+            
+            console.log(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 </script>
 
 <template>
@@ -13,36 +37,67 @@
                 </span>
             </div>
             <div class="form">
-                <h2>Sign up</h2>
-                <div class="form-row">
-                    <div class="form-element">
-                        <label for="firstName">First name</label>
-                        <input type="text" id="firstName" placeholder="First Name">
+                <form @submit.prevent="signup">
+                    <h2>Signup</h2>
+                    <div class="form-row">
+                        <div class="form-element">
+                            <label for="firstName">First name</label>
+                            <input
+                                type="text"
+                                id="firstName"
+                                name="firstName"
+                                placeholder="First Name"
+                                v-model="newUser.firstName"
+                            >
+                        </div>
+                        <div class="form-element">
+                            <label for="lastName">Last name</label>
+                            <input
+                                type="text"
+                                id="lastName"
+                                name="lastName"
+                                placeholder="Last Name"
+                                v-model="newUser.lastName"
+                            >
+                        </div>
                     </div>
                     <div class="form-element">
-                        <label for="lastName">Last name</label>
-                        <input type="text" id="lastName" placeholder="Last Name">
+                        <label for="email">Email</label>
+                        <input
+                            type="text"
+                            id="email"
+                            name="email"
+                            placeholder="Enter email"
+                            v-model="newUser.email"
+                        >
                     </div>
-                </div>
-                <div class="form-element">
-                    <label for="email">Email</label>
-                    <input type="text" id="email" placeholder="Enter email">
-                </div>
-                <div class="form-element">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Password">
-                </div>
-                <div class="form-element">
-                    <label for="password">Re-type Password</label>
-                    <input type="password" id="password" placeholder="Re-type password">
-                </div>
-                <button>Sign up</button>
+                    <div class="form-element">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Password"
+                            v-model="newUser.password"
+                        >
+                    </div>
+                    <div class="form-element">
+                        <label for="password">Re-type Password</label>
+                        <input
+                            type="password"
+                            id="re-password"
+                            name="re-password"
+                            placeholder="Re-type password"
+                        >
+                    </div>
+                    <button type="submit">Sign up</button>
+                </form>
             </div>
             <div class="labelled-separator">
-				<span>or</span>
-			</div>
+                <span>or</span>      
+            </div>
             <div class="submit-container">
-                <button type="submit" class="submit-btn">
+                <button type="submit" formaction="#" class="submit-btn">
                     <span>
                         <img src="/images/google.png" alt="Google Icon" height="30">
                     </span>
@@ -60,10 +115,12 @@
         gap: 0.5rem;
         width: 35vw;
         margin: auto;
-        background: #F0F0F0;
+        background: rgb(235, 235, 235);
         border-radius: 10px;
         padding: 4rem 1rem;
         position: relative;
+        border: 1px solid black;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     }
     .popup .close-btn {
         position: absolute;
@@ -114,7 +171,7 @@
         outline: none;
         font-size: 16px;
         background-color: var(--highlight);
-        color: var(--background);
+        color: white;
         border-radius: 10px;
         cursor: pointer;
         margin-top: 1rem;
