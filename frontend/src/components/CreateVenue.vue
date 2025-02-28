@@ -1,9 +1,17 @@
 <script setup>
     import { ref } from 'vue';
 
-    const date = ref([]); // date[0] -> start date, date[1] -> end date
+    const form = ref({
+        state: "",
+        city: "",
+        address: "",
+        venueName: "",
+        description: "",
+        price: 0,
+        availability: [],
+        capacity: 0,
+    });
 
-    const selectedState = ref("");
     const usStatesCities = {
         "Alabama": ["Birmingham", "Montgomery", "Mobile", "Huntsville"],
         "Alaska": ["Anchorage", "Fairbanks", "Juneau"],
@@ -56,126 +64,163 @@
         "Wisconsin": ["Milwaukee", "Madison", "Green Bay"],
         "Wyoming": ["Cheyenne", "Casper", "Laramie"]
     };
-
-    console.log(date.value)
 </script>
 
 <template>
-    <!-- 
-        idea: the user must fill the previous input before moving on in the form
-                the following input will disabled until the following input is filled
-    -->
-    <form action="#" method="POST" class="form-width mx-auto mb-3">
-        <div class="mb-3">
-            <label for="state" class="form-label">State</label>
-            <select
-                class="form-select"
-                aria-label="state"
-                id="state"
-                name="state"
-                v-model="selectedState"
-                required
-            >
-                <option value="" selected disabled>State</option>
-                <option
-                    v-for="(city, state) in usStatesCities"
-                    :value="state"
-                    :key="state"
-                >
-                    {{ state }}
-                </option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="city" class="form-label">
-                City {{ selectedState ? 'in ' + selectedState : '' }}
-            </label>
-            <select class="form-select" aria-label="city" id="city" name="city" required>
-                <option value="" selected disabled>City</option>
-                <option
-                    v-for="city in usStatesCities[selectedState]"
-                    :value="city"
-                    :key="city"
-                >
-                    {{ city }}
-                </option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="address" class="form-label">Address</label>
-            <input
-                type="text"
-                class="form-control"
-                id="address"
-                name="address"
-                aria-describedby="address"
-                placeholder="123 Country Road"
-                required
-            >
-        </div>
-        <div class="mb-3">
-            <label for="venue_name" class="form-label">Venue Name</label>
-            <input
-                type="text"
-                class="form-control"
-                id="venue_name"
-                name="venue_name"
-                aria-describedby="venue_name"
-                placeholder="Enter venue name"
-                required
-            >
-        </div>
-        <div class="mb-3">
-            <label for="details" class="form-label">Venue Description</label>
-            <textarea
-                class="form-control"
-                placeholder="Provide a short description of the venue"
-                id="details"
-                name="details"
-                required
-            ></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="price" class="form-label">Price per day (USD)</label>
-            <input
-                type="number"
-                step="1"
-                class="form-control"
-                placeholder="80"
-                id="price"
-                name="price"
-                required
-            >
-        </div>
-        <div class="mb-3">
-            <label for="date" class="form-label">Availability</label>
-            <VueDatePicker
-                v-model="date"
-                type="date"
-                range
-                placeholder="mm/dd/yyyy - mm/dd/yyyy"
-                :min-date="new Date()"
-                :enable-time-picker="false"
-            />
-        </div>
-        <div class="mb-3">
-            <label for="capacity" class="form-label">Max Capacity</label>
-            <input
-                type="number"
-                step="1"
-                class="form-control"
-                placeholder="15"
-                id="capacity"
-                name="capacity"
-                required
-            >
-        </div>
-        <button type="submit" class="btn w-100">Submit</button>
-    </form>
-
+    <div class="form-width mx-auto">
+        <h1 class="text-center mt-2 mb-5 provide-space-color">Provide a Space</h1>
+        <form action="#" method="POST" class="mb-3">
+            <div class="mb-5">
+                <h2 class="form-description">Location</h2>
+                <div class="d-flex gap-2">
+                    <div class="mb-3 w-50">
+                        <label for="state" class="form-label">State</label>
+                        <select
+                            class="form-select"
+                            aria-label="state"
+                            id="state"
+                            name="state"
+                            v-model="form.state"
+                            required
+                        >
+                            <option value="" selected disabled>State</option>
+                            <option
+                                v-for="(city, state) in usStatesCities"
+                                :value="state"
+                                :key="state"
+                            >
+                                {{ state }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3 w-50">
+                        <label for="city" class="form-label">
+                            City {{ selectedState ? 'in ' + selectedState : '' }}
+                        </label>
+                        <select
+                            v-model="form.city"
+                            :disabled="!form.state"
+                            class="form-select"
+                            aria-label="city"
+                            id="city"
+                            name="city"
+                            required
+                        >
+                            <option value="" selected disabled>City</option>
+                            <option
+                                v-for="city in usStatesCities[form.state]"
+                                :value="city"
+                                :key="city"
+                            >
+                                {{ city }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <input
+                        v-model="form.address"
+                        :disabled="!form.city"
+                        type="text"
+                        class="form-control"
+                        id="address"
+                        name="address"
+                        aria-describedby="address"
+                        placeholder="123 Country Road"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="">
+                <h2 class="form-description">Venue Details</h2>
+                <div class="mb-3">
+                    <label for="venue_name" class="form-label">Venue Name</label>
+                    <input
+                        v-model="form.venueName"
+                        :disabled="!form.address"
+                        type="text"
+                        class="form-control"
+                        id="venue_name"
+                        name="venue_name"
+                        aria-describedby="venue_name"
+                        placeholder="Enter venue name"
+                        required
+                    >
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Venue Description</label>
+                    <textarea
+                        v-model="form.description"
+                        :disabled="!form.venueName"
+                        class="form-control"
+                        placeholder="Provide a short description of the venue"
+                        id="description"
+                        name="description"
+                        required
+                    ></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <div class="mb-3 w-50">
+                        <label for="price" class="form-label">Price per day (USD)</label>
+                        <input
+                            v-model="form.price"
+                            :disabled="!form.description"
+                            type="number"
+                            step="1"
+                            class="form-control"
+                            placeholder="80"
+                            id="price"
+                            name="price"
+                            required
+                            min="0"
+                            max="10000000"
+                        >
+                    </div>
+                    <div class="mb-3 w-50">
+                        <label for="capacity" class="form-label">Max Capacity</label>
+                        <input
+                            v-model="form.capacity"
+                            :disabled="!form.price"
+                            type="number"
+                            step="1"
+                            class="form-control"
+                            placeholder="15"
+                            id="capacity"
+                            name="capacity"
+                            required
+                            min="1"
+                            max="150000"
+                        >
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="date" class="form-label">Availability</label>
+                    <VueDatePicker
+                        v-model="form.availability"
+                        :disabled="!form.capacity"
+                        type="date"
+                        range
+                        placeholder="mm/dd/yyyy - mm/dd/yyyy"
+                        :min-date="new Date()"
+                        :enable-time-picker="false"
+                    />
+                </div>
+            </div>
+            <button type="submit" class="btn w-100">Submit</button>
+        </form>
+    </div>
 </template>
 
 <style scoped>
+    .provide-space-color {
+        color: var(--primary);
+    }
+
+    .form-description {
+        color: var(--accent);
+    }
+
     .form-width {
         width: 65%;
     }
