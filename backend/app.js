@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const session = require('express-session')
 const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/userRoutes')
+const cors = require('cors')
 
 
 const port = 3000
@@ -23,6 +24,7 @@ mongoose.connect(url)
 })
 
 // Session creation and routing
+app.use(cors({origin: "http://localhost:5173", credentials: true}))
 app.use(morgan('tiny'))
 app.use(express.urlencoded({extended:true}));
 
