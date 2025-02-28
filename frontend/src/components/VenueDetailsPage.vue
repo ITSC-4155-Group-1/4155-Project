@@ -1,7 +1,7 @@
 <template>
     <div class="venue-details-wrapper">
         <div class="venue-details">
-            <h1><strong>{{ venue.venue_name }}</strong></h1>
+            <h1>{{ venue.venue_name }}</h1>
             <h2>{{ venue.location }}</h2>
             
             <img v-if="venue.image && venue.image.length" :src="venue.image[0]" alt="Venue image" class="venue-image">
@@ -18,14 +18,71 @@
                     {{ venue.rating }} / 5.0 
                 </span>
             </div>
+            
+            <p><strong>About the space</strong></p>
+            <p class="venue-description">{{ venue.venue_description }}</p>
 
-            <p>{{ venue.venue_description }}</p>
+            <p>
+                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseParking" role="button" aria-expanded="false" aria-controls="collapseParking">
+                    Parking
+                </a>
+            </p>
+            <div class="collapse" id="collapseParking">
+                <div class="card card-body">
+                    Some placeholder content for parking information.
+                </div>
+            </div>
+
+            <p>
+                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseRules" role="button" aria-expanded="false" aria-controls="collapseRules">
+                    Host Rules
+                </a>
+            </p>
+            <div class="collapse" id="collapseRules">
+                <div class="card card-body">
+                    Some placeholder content for host rules.
+                </div>
+            </div>
+
+            <p>
+                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseCancel" role="button" aria-expanded="false" aria-controls="collapseCancel">
+                    Cancellation Policy
+                </a>
+            </p>
+            <div class="collapse" id="collapseCancel">
+                <div class="card card-body">
+                    Some placeholder content for the cancellation policy.
+                </div>
+            </div>
+
+            <p>
+                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseHours" role="button" aria-expanded="false" aria-controls="collapseHours">
+                    Operational Hours
+                </a>
+            </p>
+            <div class="collapse" id="collapseHours">
+                <div class="card card-body">
+                    Some placeholder content for operational hours.
+                </div>
+            </div>
+
+            <p>
+                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseLocation" role="button" aria-expanded="false" aria-controls="collapseLocation">
+                    Location
+                </a>
+            </p>
+            <div class="collapse" id="collapseLocation">
+                <div class="card card-body">
+                    Some placeholder content for location details.
+                </div>
+            </div>
+
             <p><strong>Price:</strong> ${{ venue.price }} per day</p>
             <p><strong>Capacity:</strong> {{ venue.capacity }} people</p>
             <p><strong>Availability:</strong> From {{ formattedStartDate }} to {{ formattedEndDate }}</p>
-            
+
             <!-- Booking Form Container -->
-            <div class="container p-4 shadow-sm rounded bg-light">
+            <div class="booking-form-container">
                 <form class="row g-3 needs-validation" novalidate @submit.prevent="submitBooking">
                     <!-- Start Date -->
                     <div class="col-md-6">
@@ -63,7 +120,7 @@
 
                     <!-- Attendees -->
                     <div class="col-md-6">
-                        <label for="attendees" class="form-label">Number of Attendees:</label>
+                        <label for="attendees" class="form-label">Attendees</label>
                         <select class="form-select" id="attendees" v-model="attendees" required>
                             <option selected disabled value="">Choose...</option>
                             <option value="5+">5+</option>
@@ -148,7 +205,19 @@ h2 {
 }
 
 p {
-    color: var(--secondary);
+    color: black;
+    font-size: 20px;
+    font-weight: semi-bold;
+
+}
+
+.venue-description {
+    color: black;
+    font-size: 16px;
+    font-weight: regular;
+    max-width: 620px;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .rating {
@@ -157,11 +226,26 @@ p {
     font-size: 16px;
     font-weight: bolder;
     border-radius: 0 0 0.5rem 0;
-    padding: 5px;
+    padding: 10px;
 }
 
-.container {
-    max-width: 450px;
+.booking-form-container {
+    position: fixed;
+    top: 50%;
+    right: 80px;
+    transform: translateY(-50%);
+    width: 450px;
+    height: 550px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 1000; /* Ensures it stays on top */
+}
+
+.form-label {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .btn-warning {
@@ -171,5 +255,10 @@ p {
 
 .btn-warning:hover {
     background-color: #e0a800;
+}
+
+.card-body {
+    width: 600px;
+    background-color: #dcdcdc;
 }
 </style>
