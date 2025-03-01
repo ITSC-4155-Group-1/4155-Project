@@ -2,6 +2,9 @@
     import NavBar from "./components/NavBar.vue";
     import FooterComponent from "./components/FooterComponent.vue";
     import { ref, onMounted } from 'vue';
+    import { useRouter } from 'vue-router';
+
+    const router = useRouter();
 
     const navHeight = ref(86);
 
@@ -9,6 +12,13 @@
         const navbar = document.querySelector('.navbar');
         if (navbar) {
             navHeight.value = navbar.offsetHeight;
+        }
+
+        const lastRoute = sessionStorage.getItem('lastRoute');
+        if (lastRoute) {
+            router.push(lastRoute);
+        } else {
+          router.push('/');
         }
     });
 </script>

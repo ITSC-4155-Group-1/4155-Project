@@ -2,6 +2,8 @@
     import { ref } from 'vue';
     import axios from "axios";
 
+    const emit = defineEmits(['closeModal']);
+
     const user = ref({
         email: "",
         password: ""
@@ -15,9 +17,19 @@
                 }
             });
 
-            console.log(response.data);
+            if (response.data.success) {
+                emit('setSuccess', response.data.success)
+                emit('setLoggedIn', response.data.token);
+                emit("closeModal");
+            }
         } catch (error) {
-            console.error(error);
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data.invalid) {
+                    emit('setError', error.response.data.invalid)
+                }
+            } else {
+                emit('setError', "An unexpected error occurred. Please try again.");
+            }
         }
     }
 
@@ -75,11 +87,10 @@
 
 <style scoped>
     .popup {
-        width: 35vw;
         margin: auto;
         background: rgb(235, 235, 235);
         border-radius: 10px;
-        padding: 4rem 1rem;
+        padding: 4rem 0;
         position: relative;
         border: 1px solid black;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
@@ -96,7 +107,7 @@
         cursor: pointer;
     }
     .popup .form {
-        width: 90%;
+        padding: 0.5rem 2rem;
         margin: auto;
         display: flex;
         flex-direction: column;

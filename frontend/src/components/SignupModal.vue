@@ -2,6 +2,8 @@
     import { ref } from 'vue';
     import axios from "axios";
 
+    const emit = defineEmits(["closeModal", "switchToLogin"]);
+
     const newUser = ref({
         firstName: "",
         lastName: "",
@@ -12,21 +14,30 @@
     const signup = async () => {
         try {
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                
+                headers: { "Content-Type": "application/json" },
             });
-            
-            console.log(response.data);
+
+            if (response.data.success) {
+                emit('setSuccess', response.data.success);
+                setTimeout(() => {
+                    emit("closeModal");
+                    emit("switchToLogin")
+                }, 2500);
+            }
         } catch (error) {
-            console.error(error);
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data.invalid) {
+                    emit('setError', error.response.data.invalid)
+                }
+            } else {
+                emit('setError', "An unexpected error occurred. Please try again.");
+            }
         }
     }
 </script>
 
 <template>
-    <main class="d-flex flex-column min-vh-100">
+    <main>
         <div class="popup position-relative">
             <div class="close-btn" @click="$emit('closeModal')">
                 <span>
@@ -37,7 +48,7 @@
                 </span>
             </div>
             <div class="form">
-                <form @submit.prevent="signup">
+                <form @submit.prevent="signup" method="POST">
                     <h2>Signup</h2>
                     <div class="form-row">
                         <div class="form-element">
@@ -113,7 +124,6 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        width: 35vw;
         margin: auto;
         background: rgb(235, 235, 235);
         border-radius: 10px;
@@ -121,7 +131,9 @@
         position: relative;
         border: 1px solid black;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        z-index: 1000; /* Ensure it stays below the banner */
     }
+
     .popup .close-btn {
         position: absolute;
         top: 15px;
