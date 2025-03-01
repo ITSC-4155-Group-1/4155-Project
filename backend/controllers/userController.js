@@ -25,21 +25,17 @@ exports.login = (req, res, next) => {
 
 exports.signup = (req, res, next) => {
     let { firstName, lastName, email, password } = req.body;
-    console.log('email', email)
 
-  // Check if email already exists
     userModel.findOne({ email })
     .then((existingUser) => {
         if (existingUser) {
             return res.status(400).json({ invalid: "Email is already in use" });
         }
 
-      // Ensure password is provided
         if (!password) {
             return res.status(400).json({ invalid: "Password is required" });
         }
 
-      // Hash password
         bcrypt.hash(password, 10)
         .then((hashedPass) => {
             let newUser = new userModel({
@@ -49,7 +45,6 @@ exports.signup = (req, res, next) => {
                 password: hashedPass,
             });
 
-          // Save user to database
             newUser.save()
             .then(() => {
                 console.log("Success: Account created");
