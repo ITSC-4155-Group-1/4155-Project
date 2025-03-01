@@ -4,8 +4,6 @@
 
     const emit = defineEmits(["closeModal", "switchToLogin"]);
 
-    const showSuccessBanner = ref(false);
-
     const newUser = ref({
         firstName: "",
         lastName: "",
@@ -20,24 +18,26 @@
             });
 
             if (response.data.success) {
-                showSuccessBanner.value = true;
+                emit('setSuccess', response.data.success);
                 setTimeout(() => {
-                    showSuccessBanner.value = false;
                     emit("closeModal");
                     emit("switchToLogin")
                 }, 2500);
             }
         } catch (error) {
-            console.error("Error", error);
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data.invalid) {
+                    emit('setError', error.response.data.invalid)
+                }
+            } else {
+                emit('setError', "An unexpected error occurred. Please try again.");
+            }
         }
     }
 </script>
 
 <template>
     <main>
-        <div v-if="showSuccessBanner" class="success-banner">
-            Signup successful. Please log in to use your account.
-        </div>
         <div class="popup position-relative">
             <div class="close-btn" @click="$emit('closeModal')">
                 <span>
@@ -120,20 +120,6 @@
 </template>
 
 <style scoped>
-    .success-banner {
-        position: fixed; /* Make it fixed at the top */
-        top: -19.5%;
-        left: -50%;
-        width: 100vw; /* Ensure full width of the viewport */
-        background-color: green;
-        color: white;
-        text-align: center;
-        z-index: 9999; /* Make sure it's on top of other elements */
-        font-size: 16px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 0.5rem;
-    }
-
     .popup {
         display: flex;
         flex-direction: column;

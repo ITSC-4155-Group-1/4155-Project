@@ -10,6 +10,10 @@
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
     const isNavCollapsed = ref(true);
+    const errorMessage = ref('');
+    const successMessage = ref('');
+    const showErrorBanner = ref(false);
+    const showSuccessBanner = ref(false);
 
     const toggleNavbar = () => {
         isNavCollapsed.value = !isNavCollapsed.value;
@@ -67,6 +71,22 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
     });
+
+    const displayErrorBanner = (message) => {
+        errorMessage.value = message;
+        showErrorBanner.value = true;
+        setTimeout(() => {
+            showErrorBanner.value = false;
+        }, 5000);
+    };
+
+    const displaySuccessBanner = (message) => {
+        successMessage.value = message;
+        showSuccessBanner.value = true;
+        setTimeout(() => {
+            showSuccessBanner.value = false;
+        }, 5000);
+    }
 </script>
 
 <template>
@@ -122,6 +142,16 @@
         </div>
     </nav>
 
+    <!-- success banner -->
+    <div v-if="showSuccessBanner" class="success-banner">
+        {{ successMessage }}
+    </div>
+    
+    <!-- error banner -->
+    <div v-if="showErrorBanner" class="error-banner">
+        {{ errorMessage }}
+    </div>
+
     <div
         class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay"
         v-if = "showWhichModal"
@@ -134,6 +164,8 @@
             v-if = "showWhichModal === 'signup'"
             @closeModal= "closeModal"
             @switchToLogin= "showLoginModal()"
+            @setError="displayErrorBanner"
+            @setSuccess="displaySuccessBanner"
         />
     </div>
 </template>
@@ -142,6 +174,33 @@
     nav {
         min-height: 86px;
         transition: background-color 0.2s ease-in-out;
+    }
+
+    .success-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #4CAF50;
+        color: white;
+        padding: 1.25rem;
+        text-align: center;
+        z-index: 9999;
+        font-weight: bold;
+    }
+
+    .error-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #f44336;
+        color: white;
+        padding: 1.25rem;
+        text-align: center;
+        z-index: 9999;
+        font-weight: bold;
+        width: 100vw;
     }
 
     .scrolled {
