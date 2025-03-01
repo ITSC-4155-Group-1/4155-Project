@@ -72,14 +72,14 @@ exports.signup = (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  //Implement logout functionality
-  req.session.destroy((err) => {
-    if (err) {
-      return next(err);
-    } else {
-      res.json({ success: "Successfully logged out of session" });
+    if (!req.session) {
+        return res.status(400).json({ invalid: "No active session" });
     }
-  });
+    req.session.destroy((err) => {
+        if (err) {
+            return next(err);
+        } else {
+            res.json({ success: "Successfully logged out of session" });
+        }
+    });
 };
-
-//Middleware
