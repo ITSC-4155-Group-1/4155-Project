@@ -6,6 +6,7 @@
     import SignupModal from './SignupModal.vue';
 
     const route = useRoute();
+    const user = ref(null);
     const isLoggedIn = ref(false); // make dynamic
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
@@ -77,7 +78,7 @@
         showErrorBanner.value = true;
         setTimeout(() => {
             showErrorBanner.value = false;
-        }, 5000);
+        }, 2000);
     };
 
     const displaySuccessBanner = (message) => {
@@ -85,7 +86,16 @@
         showSuccessBanner.value = true;
         setTimeout(() => {
             showSuccessBanner.value = false;
-        }, 5000);
+        }, 2000);
+    };
+
+    const toggleLoggedIn = (token) => {
+        isLoggedIn.value = !isLoggedIn.value;
+        if (isLoggedIn.value === true) {
+            user.value = token.user;
+        } else {
+            user.value = null;
+        }
     }
 </script>
 
@@ -142,15 +152,17 @@
         </div>
     </nav>
 
-    <!-- success banner -->
-    <div v-if="showSuccessBanner" class="success-banner">
-        {{ successMessage }}
-    </div>
-    
-    <!-- error banner -->
-    <div v-if="showErrorBanner" class="error-banner">
-        {{ errorMessage }}
-    </div>
+    <transition name="fade">
+        <div v-if="showSuccessBanner" class="success-banner">
+            {{ successMessage }}
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="showErrorBanner" class="error-banner">
+            {{ errorMessage }}
+        </div>
+    </transition>
 
     <div
         class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay"
@@ -161,6 +173,7 @@
             @closeModal= "closeModal"
             @setError="displayErrorBanner"
             @setSuccess="displaySuccessBanner"
+            @setLoggedIn="toggleLoggedIn"
         />
         <SignupModal
             v-if = "showWhichModal === 'signup'"
@@ -178,31 +191,35 @@
         transition: background-color 0.2s ease-in-out;
     }
 
-    .success-banner {
+    .success-banner, .error-banner {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        background-color: #4CAF50;
-        color: white;
         padding: 1.25rem;
         text-align: center;
         z-index: 9999;
         font-weight: bold;
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out; /* Smooth fade effect */
+    }
+    
+    .success-banner {
+        background-color: #4CAF50;
+        color: white;
     }
 
     .error-banner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
         background-color: #f44336;
         color: white;
-        padding: 1.25rem;
-        text-align: center;
-        z-index: 9999;
-        font-weight: bold;
         width: 100vw;
+    }
+
+    .fade-enter-active, .fade-leave-active {
+        transition: opacity 0.5s ease-in-out;
+    }
+    .fade-enter, .fade-leave-to {
+        opacity: 0;
     }
 
     .scrolled {

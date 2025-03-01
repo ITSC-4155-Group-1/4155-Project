@@ -19,7 +19,7 @@
 
             if (response.data.success) {
                 emit('setSuccess', response.data.success)
-                // emit('loggedIn', response.data.token);
+                emit('setLoggedIn', response.data.token);
                 emit("closeModal");
             }
         } catch (error) {
