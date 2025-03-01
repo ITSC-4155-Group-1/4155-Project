@@ -159,11 +159,13 @@
         <LoginModal
             v-if = "showWhichModal === 'login'"
             @closeModal= "closeModal"
+            @setError="displayErrorBanner"
+            @setSuccess="displaySuccessBanner"
         />
         <SignupModal
             v-if = "showWhichModal === 'signup'"
             @closeModal= "closeModal"
-            @switchToLogin= "showLoginModal()"
+            @switchToLogin= "showLoginModal"
             @setError="displayErrorBanner"
             @setSuccess="displaySuccessBanner"
         />
