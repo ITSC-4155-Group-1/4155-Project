@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from "vue-router";
+import { createWebHistory, createRouter } from "vue-router";
 
 import LandingPage from "./components/LandingPage.vue";
 import SettingsPage from "./components/SettingsPage.vue";
@@ -11,8 +11,23 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createMemoryHistory(),
+    history: createWebHistory(),
     routes,
+});
+
+router.beforeEach((to, from, next) => {
+    sessionStorage.setItem('lastRoute', to.fullPath);
+    next();
+});
+
+// After the router is created, check sessionStorage to retrieve the last route after a page refresh
+router.isReady().then(() => {
+    const lastRoute = sessionStorage.getItem('lastRoute');
+    if (lastRoute) {
+        router.push(lastRoute);
+    } else {
+        router.push('/');
+    }
 });
 
 export default router;
