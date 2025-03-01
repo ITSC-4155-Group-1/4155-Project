@@ -8,7 +8,7 @@
 
     const route = useRoute();
     const user = ref(null);
-    const isLoggedIn = ref(false); // make dynamic
+    const isLoggedIn = ref(false);
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
     const isNavCollapsed = ref(true);
@@ -72,6 +72,11 @@
     onMounted(() => {
         window.addEventListener('scroll', handleScroll);
         handleScroll();
+
+        const savedToken = localStorage.getItem("authToken");
+        if (savedToken) {
+            toggleLoggedIn(JSON.parse(savedToken));
+        }
     });
 
     const displayErrorBanner = (message) => {
@@ -91,11 +96,14 @@
     };
 
     const toggleLoggedIn = (token) => {
-        isLoggedIn.value = !isLoggedIn.value;
-        if (isLoggedIn.value === true) {
-            user.value = token.user;
+        if (token) {
+            isLoggedIn.value = !isLoggedIn.value;
+            user.value = token.value;
+            localStorage.setItem("authToken", JSON.stringify(token));
         } else {
+            isLoggedIn.value = false;
             user.value = null;
+            localStorage.removeItem("authToken");
         }
     }
 
@@ -111,7 +119,7 @@
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-md fixed-top px-3 py-2" :class="{ 'scrolled': isScrolled }">
+    <nav class="navbar navbar-expand-lg fixed-top px-3 py-2" :class="{ 'scrolled': isScrolled }">
         <div class="container-fluid">
             <RouterLink class="navbar-brand" to="/">
                 <img src="/images/gatherly_logo.png" alt="logo" height="60">
@@ -232,6 +240,7 @@
     .fade-enter-active, .fade-leave-active {
         transition: opacity 0.5s ease-in-out;
     }
+    
     .fade-enter, .fade-leave-to {
         opacity: 0;
     }
@@ -300,6 +309,7 @@
         text-decoration: none;
         font-weight: bold;
         transition: color 0.3s ease-in-out;
+        margin: 1rem 0;
     }
 
     .nav-link:hover {
