@@ -5,6 +5,7 @@
     import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
+import router from '@/router';
 
     const route = useRoute();
     const user = ref(null);
@@ -35,17 +36,20 @@
 
     const showModal = (modal) => {
         showWhichModal.value = modal;
+        closeNavbar();
         document.body.style.overflow = 'hidden';
     };
 
     const showLoginModal = () => {
         showWhichModal.value = 'login';
+        closeNavbar();
         document.body.style.overflow = 'hidden';
-    }
+    };
 
     const closeModal = () => {
         showWhichModal.value = null;
-        document.body.style.overflow = 'auto'; 
+        closeNavbar();
+        document.body.style.overflow = 'auto';
     };
 
     const handleScroll = () => {
@@ -63,7 +67,7 @@
     watch(route, () => {
         closeNavbar();
     });
-    
+
     onBeforeUnmount(() => {
         document.body.style.overflow = 'auto';
         window.removeEventListener('scroll', handleScroll);
@@ -105,13 +109,15 @@
             user.value = null;
             localStorage.removeItem("authToken");
         }
-    }
+    };
 
     const logout = async () => {
         try {
             await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
             toggleLoggedIn(null);
             displaySuccessBanner("Successfully logged out");
+            closeNavbar();
+            router.push('/')
         } catch (error) {
             displayErrorBanner(error.response?.data?.message || "Logout failed");
         }
@@ -225,7 +231,7 @@
         opacity: 1;
         transition: opacity 0.5s ease-in-out; /* Smooth fade effect */
     }
-    
+
     .success-banner {
         background-color: #4CAF50;
         color: white;
@@ -240,7 +246,7 @@
     .fade-enter-active, .fade-leave-active {
         transition: opacity 0.5s ease-in-out;
     }
-    
+
     .fade-enter, .fade-leave-to {
         opacity: 0;
     }
@@ -337,7 +343,7 @@
         cursor: pointer;
     }
 
-    @media screen and (min-width: 768px) {
+    @media screen and (min-width: 1000px) {
         .navbar-collapse {
             position: static;
             height: auto !important;
@@ -357,6 +363,5 @@
             display: none;
         }
     }
-
-    
 </style>
+
