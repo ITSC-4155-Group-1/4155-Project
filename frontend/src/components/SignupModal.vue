@@ -12,15 +12,10 @@
     const signup = async () => {
         try {
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                
+                headers: { "Content-Type": "application/json" },
             });
-            
-            console.log(response.data);
         } catch (error) {
-            console.error(error);
+            console.error("Error", error);
         }
     }
 </script>
@@ -37,7 +32,7 @@
                 </span>
             </div>
             <div class="form">
-                <form @submit.prevent="signup">
+                <form @submit.prevent="signup" method="POST">
                     <h2>Signup</h2>
                     <div class="form-row">
                         <div class="form-element">
