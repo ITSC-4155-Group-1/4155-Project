@@ -13,7 +13,7 @@ exports.login = (req, res, next) => {
             bcrypt.compare(password, user.password).then((result) => {
             if (result) {
                 req.session.user = user._id;
-                res.json({ success: `Login successful` });
+                res.json({ success: `Login successful`, token: req.session });
             } else {
                 return res.status(400)
                 .json({ invalid: "Incorrect password. Please try again." });
