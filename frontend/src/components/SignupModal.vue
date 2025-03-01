@@ -2,6 +2,10 @@
     import { ref } from 'vue';
     import axios from "axios";
 
+    const emit = defineEmits(["closeModal", "switchToLogin"]);
+
+    const showSuccessBanner = ref(false);
+
     const newUser = ref({
         firstName: "",
         lastName: "",
@@ -14,6 +18,15 @@
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
                 headers: { "Content-Type": "application/json" },
             });
+
+            if (response.data.success) {
+                showSuccessBanner.value = true;
+                setTimeout(() => {
+                    showSuccessBanner.value = false;
+                    emit("closeModal");
+                    emit("switchToLogin")
+                }, 2500);
+            }
         } catch (error) {
             console.error("Error", error);
         }
@@ -21,7 +34,10 @@
 </script>
 
 <template>
-    <main class="d-flex flex-column min-vh-100">
+    <main>
+        <div v-if="showSuccessBanner" class="success-banner">
+            Signup successful. Please log in to use your account.
+        </div>
         <div class="popup position-relative">
             <div class="close-btn" @click="$emit('closeModal')">
                 <span>
@@ -104,11 +120,24 @@
 </template>
 
 <style scoped>
+    .success-banner {
+        position: fixed; /* Make it fixed at the top */
+        top: -19.5%;
+        left: -50%;
+        width: 100vw; /* Ensure full width of the viewport */
+        background-color: green;
+        color: white;
+        text-align: center;
+        z-index: 9999; /* Make sure it's on top of other elements */
+        font-size: 16px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+    }
+
     .popup {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        width: 35vw;
         margin: auto;
         background: rgb(235, 235, 235);
         border-radius: 10px;
@@ -116,7 +145,9 @@
         position: relative;
         border: 1px solid black;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        z-index: 1000; /* Ensure it stays below the banner */
     }
+
     .popup .close-btn {
         position: absolute;
         top: 15px;

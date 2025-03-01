@@ -32,6 +32,11 @@
         document.body.style.overflow = 'hidden';
     };
 
+    const showLoginModal = () => {
+        showWhichModal.value = 'login';
+        document.body.style.overflow = 'hidden';
+    }
+
     const closeModal = () => {
         showWhichModal.value = null;
         document.body.style.overflow = 'auto'; 
@@ -117,9 +122,19 @@
         </div>
     </nav>
 
-    <div class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay" v-if="showWhichModal">
-        <LoginModal v-if="showWhichModal === 'login'" @closeModal="closeModal()" />
-        <SignupModal v-if="showWhichModal === 'signup'" @closeModal="closeModal()" />
+    <div
+        class="position-fixed top-50 start-50 translate-middle z-1 background-modal-overlay"
+        v-if = "showWhichModal"
+    >
+        <LoginModal
+            v-if = "showWhichModal === 'login'"
+            @closeModal= "closeModal"
+        />
+        <SignupModal
+            v-if = "showWhichModal === 'signup'"
+            @closeModal= "closeModal"
+            @switchToLogin= "showLoginModal()"
+        />
     </div>
 </template>
 
