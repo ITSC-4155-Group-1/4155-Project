@@ -1,6 +1,7 @@
 <script setup>
     import '../assets/main.css';
     import { ref, watch, onBeforeUnmount, onMounted, computed } from 'vue';
+    import axios from 'axios';
     import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
@@ -86,7 +87,7 @@
         showSuccessBanner.value = true;
         setTimeout(() => {
             showSuccessBanner.value = false;
-        }, 2000);
+        }, 1000);
     };
 
     const toggleLoggedIn = (token) => {
@@ -97,6 +98,16 @@
             user.value = null;
         }
     }
+
+    const logout = async () => {
+        try {
+            await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
+            toggleLoggedIn(null);
+            displaySuccessBanner("Successfully logged out");
+        } catch (error) {
+            displayErrorBanner(error.response?.data?.message || "Logout failed");
+        }
+    };
 </script>
 
 <template>
@@ -147,6 +158,9 @@
                     >
                         Settings
                     </RouterLink>
+                    <li v-if="isLoggedIn">
+                        <a class="nav-link" @click="logout">Logout</a>
+                    </li>
                 </ul>
             </div>
         </div>
