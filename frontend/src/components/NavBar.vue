@@ -5,7 +5,7 @@
     import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
-import router from '@/router';
+    import router from '@/router';
 
     const route = useRoute();
     const user = ref(null);
@@ -318,8 +318,9 @@ import router from '@/router';
         margin: 1rem 0;
     }
 
-    .nav-link:hover {
-        color: var(--accent-dark-50);
+    .navbar .navbar-nav .nav-link:hover,
+    .navbar a.nav-link:hover {
+        color: var(--accent-dark-50) !important;
         cursor: pointer;
     }
 
