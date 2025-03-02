@@ -10,7 +10,17 @@
         price: 0,
         availability: [],
         capacity: 0,
+        images: null,
     });
+
+    const handleFileUpload = (e) => {
+        console.log(e.target.files)
+        const files = e.target.files;
+        if (files.length) {
+            form.images = Array.from(files);
+        }
+        console.log(form.images)
+    }
 
     const usStatesCities = {
         "Alabama": ["Birmingham", "Montgomery", "Mobile", "Huntsville"],
@@ -132,7 +142,7 @@
                     >
                 </div>
             </div>
-            <div class="">
+            <div>
                 <h2 class="form-description">Venue Details</h2>
                 <div class="mb-3">
                     <label for="venue_name" class="form-label">Venue Name</label>
@@ -206,6 +216,20 @@
                         :enable-time-picker="false"
                     />
                 </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Venue Image(s)</label>
+                    <input
+                        type="file"
+                        class="form-control"
+                        id="image"
+                        name="image"
+                        accept="image/*"
+                        multiple
+                        required
+                        @change="handleFileUpload"
+                        :disabled="!form.availability !== 2"
+                    >
+                </div>
             </div>
             <button type="submit" class="btn w-100">Submit</button>
         </form>
@@ -227,6 +251,13 @@
 
     textarea {
         height: 200px;
+    }
+
+    .preview-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
     }
 
     button[type="submit"] {
