@@ -233,7 +233,8 @@ p {
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 25px;
+    border: 2px solid #000000;
     z-index: 1000;
 }
 
@@ -258,12 +259,15 @@ p {
 }
 
 .btn-warning {
-    background-color: #ffc107;
-    border: none;
+    background-color: white;
+    border: 2px solid #ff4081;
+    color: #FF4081;
+    width: 420px;
+    align-items: center;
 }
 
 .btn-warning:hover {
-    background-color: #e0a800;
+    background-color: #ff4081;
 }
 
 .card-body {
@@ -279,14 +283,10 @@ p {
     width: 600px;
     border: none;
     text-align: left;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: medium;
     transition: background-color 0.3s;
     margin-bottom: 5px;
-}
-
-.active, .collapsible:hover {
-    background-color: #555;
 }
 
 .collapsible:hover {
@@ -294,7 +294,7 @@ p {
 }
 
 .content {
-    padding: 0 18px;
+    padding: 0 15px;
     display: none;
     overflow: hidden;
     background-color: #f1f1f1;
