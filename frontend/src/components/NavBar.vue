@@ -318,8 +318,9 @@
         margin: 1rem 0;
     }
 
-    .nav-link:hover {
-        color: var(--accent-dark-50);
+    .navbar .navbar-nav .nav-link:hover,
+    .navbar a.nav-link:hover {
+        color: var(--accent-dark-50) !important;
         cursor: pointer;
     }
 
