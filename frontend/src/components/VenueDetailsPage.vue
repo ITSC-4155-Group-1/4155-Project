@@ -30,47 +30,21 @@
                     <p>{{ section.content }}</p>
                 </div>
             </div>
-
-            <p><strong>Price:</strong> ${{ venue.price }} per day</p>
-            <p><strong>Capacity:</strong> {{ venue.capacity }} people</p>
-            <p><strong>Availability:</strong> From {{ formattedStartDate }} to {{ formattedEndDate }}</p>
-
             <!-- Booking Form Container -->
             <div class="booking-form-container">
                 <form class="row g-3 needs-validation" novalidate @submit.prevent="submitBooking">
                     
                     <!-- Start Date -->
-                    <div class="col-md-6">
-                        <label for="startDate" class="form-label">Start Date:</label>
-                        <input 
-                            type="date" 
-                            class="form-control" 
-                            id="startDate" 
-                            v-model="startDate" 
-                            :min="minDate" 
-                            :max="maxDate" 
-                            required
-                        >
-                        <div class="invalid-feedback" v-if="!startDate">
-                            Please select a valid start date.
-                        </div>
-                    </div>
-
-                    <!-- End Date -->
-                    <div class="col-md-6">
-                        <label for="endDate" class="form-label">End Date:</label>
-                        <input 
-                            type="date" 
-                            class="form-control" 
-                            id="endDate" 
-                            v-model="endDate" 
-                            :min="startDate" 
-                            :max="maxDate" 
-                            required
-                        >
-                        <div class="invalid-feedback" v-if="!endDate">
-                            Please select a valid end date.
-                        </div>
+                    <div class="col-12">
+                        <label for="dateRange" class="form-label">Select Dates:</label>
+                        <VueDatePicker
+                            v-model="dateRange"
+                            range
+                            placeholder="mm/dd/yyyy - mm/dd/yyyy"
+                            :min-date="minDate"
+                            :max-date="maxDate"
+                            :enable-time-picker="false"
+                        />
                     </div>
 
                     <!-- Attendees -->
@@ -105,7 +79,7 @@
 
                     <!-- Submit Button -->
                     <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn-warning px-4" type="submit">Book Now</button>
+                        <button class="btn btn px-4" type="submit">Book Now</button>
                     </div>
                 </form>
             </div>
@@ -119,11 +93,12 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { venues } from '../../../mockdata.js';
 import { useRoute } from 'vue-router';
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 const route = useRoute();
 const venue = ref({});
-const startDate = ref('');
-const endDate = ref('');
+const dateRange = ref(null);
 const attendees = ref('');
 const cleaningFee = 50;
 const successMessage = ref('');
@@ -152,15 +127,9 @@ onMounted(() => {
     });
 });
 
-// Date Formatting
-const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-const formattedStartDate = computed(() => venue.value.availability_start_date ? formatDate(venue.value.availability_start_date) : '');
-const formattedEndDate = computed(() => venue.value.availability_end_date ? formatDate(venue.value.availability_end_date) : '');
-
 // Booking Date Range
-const minDate = computed(() => venue.value.availability_start_date ? venue.value.availability_start_date : '');
-const maxDate = computed(() => venue.value.availability_end_date ? venue.value.availability_end_date : '');
+const minDate = computed(() => venue.value.availability_start_date ? new Date(venue.value.availability_start_date) : new Date());
+const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
 const submitBooking = () => {
     if (!startDate.value || !endDate.value || !attendees.value) {
@@ -179,7 +148,6 @@ const toggleCollapse = (index) => {
 <style scoped>
 .venue-details {
     padding: 40px;
-    margin-top: 60px;
 }
 
 .venue-image {
@@ -258,7 +226,7 @@ p {
     font-weight: bold;
 }
 
-.btn-warning {
+.btn {
     background-color: white;
     border: 2px solid #ff4081;
     color: #FF4081;
@@ -266,7 +234,7 @@ p {
     align-items: center;
 }
 
-.btn-warning:hover {
+.btn:hover {
     background-color: #ff4081;
 }
 
