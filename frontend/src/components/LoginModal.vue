@@ -1,4 +1,38 @@
 <script setup>
+    import { ref } from 'vue';
+    import axios from "axios";
+
+    const emit = defineEmits(['closeModal']);
+
+    const user = ref({
+        email: "",
+        password: ""
+    });
+
+    const login = async () => {
+        try {
+            const response = await axios.post("http://localhost:3000/user/login", user.value, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.data.success) {
+                emit('setSuccess', response.data.success)
+                emit('setLoggedIn', response.data.token);
+                emit("closeModal");
+            }
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data.invalid) {
+                    emit('setError', error.response.data.invalid)
+                }
+            } else {
+                emit('setError', "An unexpected error occurred. Please try again.");
+            }
+        }
+    }
+
 </script>
 
 <template>
@@ -14,21 +48,33 @@
             </div>
             <div class="form">
                 <h2>Login</h2>
-                <div class="form-element">
-                    <label for="email">Email</label>
-                    <input type="text" id="email" placeholder="Enter email">
-                </div>
-                <div class="form-element">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Password">
-                </div>
-                <button>Login</button>
+                <form @submit.prevent="login">
+                    <div class="form-element">
+                        <label for="email">Email</label>
+                        <input
+                            type="text"
+                            id="email"
+                            placeholder="Enter email"
+                            v-model="user.email"
+                        >
+                    </div>
+                    <div class="form-element">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Password"
+                            v-model="user.password"
+                        >
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
             </div>
             <div class="labelled-separator">
 				<span>or</span>
 			</div>
             <div class="submit-container">
-                <button type="submit" class="submit-btn">
+                <button type="submit" formaction="#" class="submit-btn">
                     <span>
                         <img src="/images/google.png" alt="Google Icon" height="30">
                     </span>
@@ -41,12 +87,13 @@
 
 <style scoped>
     .popup {
-        width: 35vw;
         margin: auto;
-        background: #F0F0F0;
+        background: rgb(235, 235, 235);
         border-radius: 10px;
-        padding: 4rem 1rem;
+        padding: 4rem 0;
         position: relative;
+        border: 1px solid black;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     }
     .popup .close-btn {
         position: absolute;
@@ -60,7 +107,7 @@
         cursor: pointer;
     }
     .popup .form {
-        width: 90%;
+        padding: 0.5rem 2rem;
         margin: auto;
         display: flex;
         flex-direction: column;
@@ -93,7 +140,7 @@
         border: none;
         font-size: 16px;
         background: #FFC107;
-        color: #F0F0F0;
+        color: white;
         border-radius: 10px;
         cursor: pointer;
         margin-top: 10px;
