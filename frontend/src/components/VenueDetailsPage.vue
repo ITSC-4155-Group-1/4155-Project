@@ -18,62 +18,16 @@
                     {{ venue.rating }} / 5.0 
                 </span>
             </div>
-            
             <p><strong>About the space</strong></p>
             <p class="venue-description">{{ venue.venue_description }}</p>
-
-            <p>
-                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseParking" role="button" aria-expanded="false" aria-controls="collapseParking">
-                    Parking
-                </a>
-            </p>
-            <div class="collapse" id="collapseParking">
-                <div class="card card-body">
-                    Some placeholder content for parking information.
-                </div>
-            </div>
-
-            <p>
-                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseRules" role="button" aria-expanded="false" aria-controls="collapseRules">
-                    Host Rules
-                </a>
-            </p>
-            <div class="collapse" id="collapseRules">
-                <div class="card card-body">
-                    Some placeholder content for host rules.
-                </div>
-            </div>
-
-            <p>
-                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseCancel" role="button" aria-expanded="false" aria-controls="collapseCancel">
-                    Cancellation Policy
-                </a>
-            </p>
-            <div class="collapse" id="collapseCancel">
-                <div class="card card-body">
-                    Some placeholder content for the cancellation policy.
-                </div>
-            </div>
-
-            <p>
-                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseHours" role="button" aria-expanded="false" aria-controls="collapseHours">
-                    Operational Hours
-                </a>
-            </p>
-            <div class="collapse" id="collapseHours">
-                <div class="card card-body">
-                    Some placeholder content for operational hours.
-                </div>
-            </div>
-
-            <p>
-                <a class="btn btn-link" data-bs-toggle="collapse" href="#collapseLocation" role="button" aria-expanded="false" aria-controls="collapseLocation">
-                    Location
-                </a>
-            </p>
-            <div class="collapse" id="collapseLocation">
-                <div class="card card-body">
-                    Some placeholder content for location details.
+            
+            <!-- Collapsible Sections -->
+            <div v-for="(section, index) in collapsibleSections" :key="index">
+                <button type="button" class="collapsible">
+                    {{ section.title }}
+                </button>
+                <div class="content">
+                    <p>{{ section.content }}</p>
                 </div>
             </div>
 
@@ -84,6 +38,7 @@
             <!-- Booking Form Container -->
             <div class="booking-form-container">
                 <form class="row g-3 needs-validation" novalidate @submit.prevent="submitBooking">
+                    
                     <!-- Start Date -->
                     <div class="col-md-6">
                         <label for="startDate" class="form-label">Start Date:</label>
@@ -134,6 +89,20 @@
                         </div>
                     </div>
 
+                        <!-- Price Calculation -->
+                    <div class="booking-item">
+                        <strong>Price:</strong> 
+                        <span v-if="startDate && endDate">${{ venue.price }}</span>
+                        <span v-else>Select a date</span>
+                    </div>
+
+                    <!-- Total (Including Cleaning Fee) -->
+                    <div class="booking-item total">
+                        <strong>Total:</strong> 
+                        <span v-if="startDate && endDate">${{ venue.price }}</span>
+                        <span v-else>Select a date</span>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="col-12 d-flex justify-content-end">
                         <button class="btn btn-warning px-4" type="submit">Book Now</button>
@@ -147,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { venues } from '../../../mockdata.js';
 import { useRoute } from 'vue-router';
 
@@ -156,11 +125,31 @@ const venue = ref({});
 const startDate = ref('');
 const endDate = ref('');
 const attendees = ref('');
+const cleaningFee = 50;
 const successMessage = ref('');
+
+const collapsibleSections = ref([
+    { title: "Parking", content: "Parking details here." },
+    { title: "Host Rules", content: "Rules for the venue." },
+    { title: "Cancellation Policy", content: "Details about cancellations." },
+    { title: "Operational Hours", content: "Opening and closing times." },
+    { title: "Location", content: "Exact venue location." }
+]);
 
 onMounted(() => {
     const venueId = route.params.id;
     venue.value = venues.find(v => v.host_id === venueId);
+
+    nextTick(() => {
+        const coll = document.getElementsByClassName("collapsible");
+        for (let i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                let content = this.nextElementSibling;
+                content.style.display = content.style.display === "block" ? "none" : "block";
+            });
+        }
+    });
 });
 
 // Date Formatting
@@ -180,6 +169,11 @@ const submitBooking = () => {
     }
     successMessage.value = "Your booking has been successfully submitted!";
 };
+
+const toggleCollapse = (index) => {
+    collapsibleSections[index].isOpen = !collapsibleSections[index].isOpen;
+};
+
 </script>
 
 <style scoped>
@@ -235,12 +229,27 @@ p {
     right: 80px;
     transform: translateY(-50%);
     width: 450px;
-    height: 550px;
+    height: auto;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
-    z-index: 1000; /* Ensures it stays on top */
+    z-index: 1000;
+}
+
+.booking-item {
+    font-size: 18px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.booking-item.total {
+    font-weight: bold;
+    font-size: 20px;
+    border-top: 2px solid #ccc;
+    padding-top: 10px;
 }
 
 .form-label {
@@ -261,4 +270,34 @@ p {
     width: 600px;
     background-color: #dcdcdc;
 }
+
+.collapsible {
+    background-color: #f1f1f1;
+    color: #444;
+    cursor: pointer;
+    padding: 10px;
+    width: 600px;
+    border: none;
+    text-align: left;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+}
+
+.active, .collapsible:hover {
+    background-color: #555;
+}
+
+.collapsible:hover {
+    background-color: #ddd;
+}
+
+.content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
 </style>
