@@ -17,10 +17,10 @@
     const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
     const collapsibleSections = ref([
-        { title: "Parking", content: "Parking details here." },
-        { title: "Host Rules", content: "Rules for the venue." },
-        { title: "Cancellation Policy", content: "Details about cancellations." },
-        { title: "Operational Hours", content: "Opening and closing times." },
+        { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
+        { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
+        { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
+        { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
         { title: "Location", content: "Exact venue location." }
     ]);
 
@@ -106,14 +106,34 @@
             <p class="venue-description">{{ venue.venue_description }}</p>
             
             <!-- Collapsible Sections -->
-            <div v-for="(section, index) in collapsibleSections" :key="index">
-                <button type="button" class="collapsible">
-                    {{ section.title }}
-                </button>
-                <div class="content">
-                    <p>{{ section.content }}</p>
+            <div class="accordionContainer" v-for="(section, index) in collapsibleSections" :key="index">
+                <div class="accordion" :id="'accordionExample' + index">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" :id="'heading' + index">
+                            <button 
+                                class="accordion-button custom-accordion-button collapsed"
+                                type="button" 
+                                :data-bs-toggle="'collapse'" 
+                                :data-bs-target="'#collapse' + index" 
+                                :aria-expanded="false"
+                                :aria-controls="'collapse' + index">
+                                {{ section.title }}
+                            </button>
+                        </h2>
+                        <div 
+                            :id="'collapse' + index" 
+                            class="accordion-collapse collapse"
+                            :class="{'show': index === 0}"
+                            :data-bs-parent="'#accordionExample' + index">
+                            <div class="accordion-body">
+                                {{ section.content }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+
 
             <!-- Booking Form Container -->
             <div class="booking-form-container">
@@ -317,31 +337,34 @@
         background-color: #dcdcdc;
     }
 
-    .collapsible {
-        background-color: #f1f1f1;
-        cursor: pointer;
-        padding: 10px;
-        width: 600px;
-        border: none;
-        text-align: left;
-        font-size: 20px;
-        font-weight: medium;
-        transition: background-color 0.3s;
-        margin-bottom: 5px;
-    }
-
-    .collapsible:hover {
-        background-color: #ddd;
-    }
-
     .content {
         padding: 0 15px;
         display: none;
         overflow: hidden;
         background-color: #f1f1f1;
+        font-size: 16px;
     }
 
     .form-select {
         width: 405px;
+    }
+
+    .accordionContainer {
+        width: 600px;
+    }
+
+    .custom-accordion-button {
+        background-color: #f1f1f1;
+        border: none !important;
+        box-shadow: none !important;
+        color: black !important;
+}
+
+    .custom-accordion-button:not(.collapsed) {
+        background-color: #f1f1f1;
+    }
+
+    .accordion-item {
+        border: none !important;
     }
 </style>
