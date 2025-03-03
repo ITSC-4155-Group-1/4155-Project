@@ -1,15 +1,15 @@
 <script setup>
-    import { ref } from 'vue';
+import { ref } from 'vue';
 
-    defineProps({
-        venue: Object,
-    });
+defineProps({
+    venue: Object,
+});
 
-    let isFilled = ref(false);
+let isFilled = ref(false);
 
-    const toggleIsFilled = () => {
-        isFilled.value = !isFilled.value;
-    };
+const toggleIsFilled = () => {
+    isFilled.value = !isFilled.value;
+};
 </script>
 
 <template>
@@ -105,6 +105,6 @@
     }
 
     .heart-icon {
-    transform: translateY(7px);
+        transform: translateY(7px);
     }
 </style>
