@@ -73,7 +73,7 @@
                             Respect the schedule. Please do not overstay or I may need to notify authorities
                         </li>
                         <li>
-                            Be considerate of the space. Restrict your event to the space listen on Gatherly
+                            Be considerate of the space. Restrict your event to the space listed on Gatherly
                         </li>
                         <li>Last but not least, enjoy!</li>
                     </ol>
