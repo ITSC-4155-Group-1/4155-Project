@@ -6,18 +6,32 @@
             
             <img v-if="venue.image && venue.image.length" :src="venue.image[0]" alt="Venue image" class="venue-image">
             <p v-else>No image available</p>
-
-            <div v-if="venue.rating" class="rating">
-                <span class="rating p-2">
-                    <span> 
-                        <svg width="23" height="23" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
-                            <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
-                                fill="none" stroke="#FFC107" stroke-width="1"/>
-                        </svg>
+            <div class="rating-capacity-container">
+                <div v-if="venue.rating" class="rating">
+                    <span class="rating p-2">
+                        <span> 
+                            <svg width="23" height="23" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+                                <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
+                                    fill="none" stroke="#FFC107" stroke-width="1"/>
+                            </svg>
+                        </span>
+                        {{ venue.rating }} / 5.0 
                     </span>
-                    {{ venue.rating }} / 5.0 
-                </span>
+                </div>
+
+                <div class="capacity">
+                    <svg width="23" height="23" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="7" r="4"/>  <!-- Head -->
+                        <path d="M4 21v-2c0-3.3 2.7-6 6-6h4c3.3 0 6 2.7 6 6v2" />  <!-- Body -->
+                    </svg>
+                    {{ venue.capacity }}
+                </div>
+            </div>  
+
+            <div class = "host">
+                <p>Hosted by {{ host_id }}</p>
             </div>
+
             <p><strong>About the space</strong></p>
             <p class="venue-description">{{ venue.venue_description }}</p>
             
@@ -52,34 +66,54 @@
                         <label for="attendees" class="form-label">Attendees</label>
                         <select class="form-select" id="attendees" v-model="attendees" required>
                             <option selected disabled value="">Choose...</option>
-                            <option value="5+">5+</option>
-                            <option value="10+">10+</option>
-                            <option value="25+">25+</option>
-                            <option value="50+">50+</option>
-                            <option value="100+">100+</option>
+                            <option value="1-40">1-40</option>
+                            <option value="41-100">41-100</option>
+                            <option value="101-200">101-200</option>
+                            <option value="200+">200+</option>
+
                         </select>
                         <div class="invalid-feedback" v-if="!attendees">
                             Please select the number of attendees.
                         </div>
                     </div>
 
-                        <!-- Price Calculation -->
+                    <!-- Price Calculation -->
+                    <label for="price" class="form-label">Price</label>
+
                     <div class="booking-item">
-                        <strong>Price:</strong> 
-                        <span v-if="startDate && endDate">${{ venue.price }}</span>
-                        <span v-else>Select a date</span>
+                        <span v-if="dateRange && dateRange.length === 2">${{ venue.price }} x {{ calculateDays }} days</span>
+                        <span v-else>--</span>
+                        <span v-if="dateRange && dateRange.length === 2">${{ venue.price * calculateDays }}</span>
+                        <span v-else>--</span>
+                    </div>
+
+                    <div class="booking-item">
+                        <span>Cleaning Fee</span>
+                        <span>${{ cleaningFee }}</span>
+                    </div>
+
+                    <div class="booking-item">
+                        <span>Processing</span>
+                        <span>${{ processing }}</span>
                     </div>
 
                     <!-- Total (Including Cleaning Fee) -->
                     <div class="booking-item total">
                         <strong>Total:</strong> 
-                        <span v-if="startDate && endDate">${{ venue.price }}</span>
-                        <span v-else>Select a date</span>
+                        <strong v-if="dateRange && dateRange.length === 2">${{ (venue.price * calculateDays) + cleaningFee + processing}}</strong>
+                        <strong v-else>--</strong>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn px-4" type="submit">Book Now</button>
+                        <button 
+                            class="btn btn px-4"
+                            type="submit"
+                            :class="{ 'btn-active': isFormValid }"
+                            :disabled="!isFormValid"
+                        >
+                            Book Now
+                        </button>
                     </div>
                 </form>
             </div>
@@ -100,7 +134,8 @@ const route = useRoute();
 const venue = ref({});
 const dateRange = ref(null);
 const attendees = ref('');
-const cleaningFee = 50;
+const cleaningFee = 200;
+const processing = 50;
 const successMessage = ref('');
 
 const collapsibleSections = ref([
@@ -138,6 +173,21 @@ const submitBooking = () => {
     }
     successMessage.value = "Your booking has been successfully submitted!";
 };
+
+const calculateDays = computed(() => {
+    if (dateRange.value && dateRange.value.length === 2) {
+        const start = new Date(dateRange.value[0]);
+        const end = new Date(dateRange.value[1]);
+        const diffTime = end - start;
+        return Math.max(1, diffTime / (1000 * 60 * 60 * 24));
+    }
+    return 0;
+});
+
+const isFormValid = computed(() => {
+    return dateRange.value && dateRange.value.length === 2 && attendees.value;
+});
+
 
 const toggleCollapse = (index) => {
     collapsibleSections[index].isOpen = !collapsibleSections[index].isOpen;
@@ -182,13 +232,30 @@ p {
     white-space: normal;
 }
 
+.rating-capacity-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    gap: 25px;
+}
 .rating {
-    font-size: 14px;
     color: var(--highlight);
     font-size: 16px;
-    font-weight: bolder;
-    border-radius: 0 0 0.5rem 0;
-    padding: 10px;
+    font-weight: bold;
+}
+
+.capacity {
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+}
+
+.host {
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 50px; 
 }
 
 .booking-form-container {
@@ -207,7 +274,8 @@ p {
 }
 
 .booking-item {
-    font-size: 18px;
+    font-size: 16px;
+    font-weight: regular;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
@@ -228,14 +296,24 @@ p {
 
 .btn {
     background-color: white;
-    border: 2px solid #ff4081;
+    border: 2px solid #FF4081;
     color: #FF4081;
     width: 420px;
     align-items: center;
+    cursor: not-allowed;
+    opacity: 0.5;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
-.btn:hover {
-    background-color: #ff4081;
+.btn-active {
+    background-color: #FF4081 !important;
+    color: white !important;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.btn-active:hover {
+    background-color: #e03070 !important;
 }
 
 .card-body {
@@ -266,6 +344,10 @@ p {
     display: none;
     overflow: hidden;
     background-color: #f1f1f1;
+}
+
+.form-select {
+    width: 405px;
 }
 
 </style>
