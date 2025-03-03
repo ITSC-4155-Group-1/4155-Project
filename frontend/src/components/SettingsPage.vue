@@ -138,15 +138,12 @@
 <style scoped>
 .settings-container {
     display: flex;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 15px rgba(52, 40, 104, 0.08);
+    padding: 10px;
 }
 
 .sidebar {
     width: 20%;
     padding: 20px;
-    /* border-right: 1px solid lightgray; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
