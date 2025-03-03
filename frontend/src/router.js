@@ -3,11 +3,13 @@ import { createWebHistory, createRouter } from "vue-router";
 import LandingPage from "./components/LandingPage.vue";
 import SettingsPage from "./components/SettingsPage.vue";
 import CreateVenue from "./components/CreateVenue.vue";
+import ShoppingCart from "./components/ShoppingCart.vue";
 
 const routes = [
     { path: '/', component: LandingPage },
     { path: '/settings', component: SettingsPage },
-    { path: '/venues/new', component: CreateVenue}
+    { path: '/venues/new', component: CreateVenue},
+    { path: '/cart', component: ShoppingCart }
 ];
 
 const router = createRouter({
