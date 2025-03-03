@@ -27,17 +27,6 @@
     onMounted(() => {
         const venueId = route.params.id;
         venue.value = venues.find(v => v.host_id === venueId);
-
-        nextTick(() => {
-            const coll = document.getElementsByClassName("collapsible");
-            for (let i = 0; i < coll.length; i++) {
-                coll[i].addEventListener("click", function () {
-                    this.classList.toggle("active");
-                    let content = this.nextElementSibling;
-                    content.style.display = content.style.display === "block" ? "none" : "block";
-                });
-            }
-        });
     });
 
     const submitBooking = () => {
@@ -62,10 +51,7 @@
         return dateRange.value && dateRange.value.length === 2 && attendees.value;
     });
 
-
-    const toggleCollapse = (index) => {
-        collapsibleSections[index].isOpen = !collapsibleSections[index].isOpen;
-    };
+    
 </script>
 
 <template>
