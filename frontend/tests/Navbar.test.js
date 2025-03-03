@@ -3,13 +3,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import NavBar from '../src/components/NavBar.vue';
 import LoginModal from '../src/components/LoginModal.vue';
 import SignupModal from '../src/components/SignupModal.vue';
-import { nextTick } from 'vue';
+import LandingPage from '../src/components/LandingPage.vue';
 
 // mock router
 const router = createRouter({
   history: createWebHistory(),
-  routes: []
-});
+  routes: [
+    {
+      path: '/',
+      component: LandingPage,
+    },
+  ],
+})
 
 // DESCRIBE \._./
 describe('NavBar.vue', () => {
