@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import NavBar from '../src/components/NavBar.vue';
 import LoginModal from '../src/components/LoginModal.vue';
 import SignupModal from '../src/components/SignupModal.vue';
+import { nextTick } from 'vue';
 
 // mock router
 const router = createRouter({
@@ -43,7 +44,7 @@ describe('NavBar.vue', () => {
     // click event (signup button is in location 1)
     const signupLink = wrapper.findAll('a.nav-link').at(1);
     await signupLink.trigger('click');
-
+    
     // ensures the sign up modal actually shows up
     expect(wrapper.findComponent(SignupModal).exists()).toBe(true);
 
@@ -66,7 +67,7 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(LoginModal).exists()).toBe(true);
 
     // trigger event to close login modal
-    const closeBtn = wrapper.find('.close-btn');
+    const closeBtn = wrapper.find('.popup .close-btn');
     await closeBtn.trigger('click');
 
     // ensure the login modal is no longer visible
@@ -91,7 +92,8 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(SignupModal).exists()).toBe(true);
 
     // trigger event to close sign up modal
-    const closeBtn = wrapper.find('.close-btn');
+    const closeBtn = wrapper.find('.popup .close-btn');
+    console.log("found button");
     await closeBtn.trigger('click');
 
     // ensure the sign up modal is no longer visible
