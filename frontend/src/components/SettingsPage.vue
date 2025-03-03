@@ -1,24 +1,358 @@
 <script setup>
     import { ref, onMounted } from 'vue';
+    import { venues } from "../../../mockdata";
+    import VenueCard from "./VenueCard.vue"
 
-    const navHeight = ref(0);
+    const venueList = ref(venues);
+    const showModal = ref(false);
+    const activeSection = ref('personal-info');
 
-    onMounted(() => {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            navHeight.value = navbar.offsetHeight;
-        }
-    });
+    const openModal = () => {
+        console.log('Before setting showModal:', showModal.value);
+        showModal.value = true;
+        console.log('After setting showModal:', showModal.value);
+    };
+
+    const closeModal = () => {
+        showModal.value = false;
+    };
+
+    const confirmDelete = () => {
+        alert("Account Deleted!"); 
+        closeModal();
+    };
+
+    const setActiveSection = (section) => {
+        activeSection.value = section;
+    };
 </script>
 
 <template>
-    <div :style="{ marginTop: navHeight + 'px' }">
-        <h1>Settings Page</h1>
+    <div>
+        <div class="settings-container">
+            <div class="sidebar">
+                <h2 class="sidebar-title">Settings</h2>
+                <ul class="sidebar-menu">
+                    <li :class="{ active: activeSection === 'personal-info' }" @click="setActiveSection('personal-info')">
+                        <i class="icon">👤</i> Personal Info
+                    </li>
+                    <li :class="{ active: activeSection === 'history' }" @click="setActiveSection('history')">
+                        <i class="icon">📜</i> History
+                    </li>
+                    <li :class="{ active: activeSection === 'favorites' }" @click="setActiveSection('favorites')">
+                        <i class="icon">⭐</i> Favorites
+                    </li>
+                </ul>
+                <a class="logout" href="#">Logout</a>
+            </div>
+
+            <div class="main-content">
+                <div v-if="activeSection === 'personal-info'">
+                    <div class="profile-card">
+                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar">
+                        <div class="profile-info">
+                            <h3 class="username">SantiaJoe \._./</h3>
+                        </div>
+                    </div>
+
+                    <div class="email-password">
+                        <p><strong>Email:</strong> example@gmail.com</p>
+                        <p><strong>Password:</strong> ************ <i class="edit-icon">✏️</i></p>
+                    </div>
+                    
+                    <div class="venues" v-if="activeSection === 'personal-info'">
+                        <h3>Current Venues</h3>
+                        <div class="venue-list">
+                            <div class="row">
+                                <div 
+                                    v-for="(venue, index) in venueList" 
+                                    :key="index + '_' + venue.venue_name" 
+                                    class="col-12 col-sm-4 col-md-4 col-lg-3 mb-4"
+                                >
+                                    <VenueCard :venue="venue" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="showModal" class="modal-overlay">
+                        <div class="modal-popup">
+                            <div class="modal-header">
+                                <h3>Delete Account</h3>
+                                <button class="close-btn" @click="closeModal">×</button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to <strong>delete</strong> your account?<br>This process cannot be undone.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" @click="closeModal">Close</button>
+                                <button class="btn btn-danger" @click="confirmDelete">Delete Account</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="delete-section">
+                        <h3>Delete Account</h3>
+                        <button class="delete-btn" @click="openModal">Delete your account</button>
+                    </div>
+                </div>
+
+                <div v-if="activeSection === 'history'">
+                    <h2>History</h2>
+                    <div class="venues" v-if="activeSection === 'history'">
+                        <div class="venue-list">
+                            <div class="row">
+                                <div 
+                                    v-for="(venue, index) in venueList" 
+                                    :key="index + '_' + venue.venue_name" 
+                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
+                                >
+                                    <VenueCard :venue="venue" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="activeSection === 'favorites'">
+                    <h2>Favorites</h2>
+                    <div class="venues" v-if="activeSection === 'favorites'">
+                        <div class="venue-list">
+                            <div class="row">
+                                <div 
+                                    v-for="(venue, index) in venueList" 
+                                    :key="index + '_' + venue.venue_name" 
+                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
+                                >
+                                    <VenueCard :venue="venue" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
-    div {
-        height: 200vh;
-    }
+.settings-container {
+    display: flex;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 15px rgba(52, 40, 104, 0.08);
+}
+
+.sidebar {
+    width: 20%;
+    padding: 20px;
+    /* border-right: 1px solid lightgray; */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.main-content {
+    flex-grow: 1; 
+    padding: 20px;
+    padding-left: 30px;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column; 
+    height: auto; 
+}
+
+.sidebar-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.sidebar-menu li.active {
+    background: #dbeafe;
+    font-weight: bold;
+}
+
+.sidebar-menu li:hover {
+    background: #e7f0ff;
+}
+
+.icon {
+    margin-right: 10px;
+}
+
+.logout {
+    display: block;
+    text-align: center; 
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: auto; 
+    padding: 10px;
+    font-size: 1.3rem;
+    text-decoration: underline;
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    border-radius: 8px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-info h3 {
+    margin: 0;
+    color: #003366;
+}
+
+.edit-icon {
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.venues {
+    margin-top: 20px;
+}
+
+.venue-list {
+    display: flex;
+    gap: 10px;
+}
+
+.venue {
+    width: 100%;
+    max-width: 200px;
+    height: 250px;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.venue img {
+    width: 100%;
+    border-radius: 5px;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e0e0e0;
+    font-weight: bold;
+}
+
+/* Delete button popup*/
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Increase the z-index */
+    overflow: visible
+}
+
+.modal-popup {
+    background: white;
+    width: 350px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 15px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Delete Button*/
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-danger {
+    background: red;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+
+.delete-section {
+    margin-top: 30px;
+}
+
+.delete-btn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: darkred;
+}
+
 </style>
