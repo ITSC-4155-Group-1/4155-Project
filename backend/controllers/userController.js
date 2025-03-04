@@ -13,6 +13,8 @@ exports.login = (req, res, next) => {
             bcrypt.compare(password, user.password).then((result) => {
             if (result) {
                 req.session.user = user._id;
+                req.session.firstName = user.firstName;
+                req.session.lastName = user.lastName;
                 res.json({ success: `Login successful`, token: req.session });
             } else {
                 return res.status(400)
