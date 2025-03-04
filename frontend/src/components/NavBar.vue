@@ -5,7 +5,7 @@
     import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
-    import router from '@/router';
+    import router from '../router';
 
     const route = useRoute();
     const user = ref(null);

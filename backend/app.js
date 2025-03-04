@@ -2,10 +2,10 @@ const express = require('express')
 const mongoose = require('mongoose')
 const morgan = require('morgan')
 const session = require('express-session')
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo')
 const userRoutes = require('./routes/userRoutes')
-const cors = require('cors')
-
+const venueRoutes = require('./routes/venueRoutes')
+const cors = require ('cors')
 
 const port = 3000
 const app = express()
@@ -18,7 +18,6 @@ mongoose.connect(url)
         console.log("Server is running!")
     })
 })
-
 .catch((err) => {
     console.log(err.message)
 })
@@ -54,6 +53,7 @@ app.use('/test', (req, res) => {
 })
 
 app.use('/user', userRoutes)
+app.use('/venue', venueRoutes)
 
 // Basic error handling
 app.use((req, res, next) => {
