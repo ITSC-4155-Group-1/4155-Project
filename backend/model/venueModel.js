@@ -5,7 +5,7 @@ const venueSchema = new Schema({
     buyerId: {type: Schema.Types.ObjectID, ref: 'User'},
     venueName: {type: String, required: [true, 'Venue name is required']},
     description: {type: String, required: [true, 'Venue description is required']},
-    host: {type: 'ObjectId', ref: 'User'},
+    host: {type: Schema.Types.ObjectID, ref: 'User'},
     state: {type: String, required: [true, 'Venue location is required']},
     city: {type: String, required: [true, 'Venue location is required']},
     address: {type: String, required: [true, 'Venue location is required']},
