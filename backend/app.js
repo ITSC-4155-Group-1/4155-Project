@@ -4,7 +4,6 @@ const morgan = require('morgan')
 const session = require('express-session')
 const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/userRoutes')
-const cors = require('cors')
 
 
 const port = 3000
