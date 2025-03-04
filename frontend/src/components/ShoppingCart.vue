@@ -1,13 +1,71 @@
 <script setup>
-    import { useRouter } from 'vue-router';
+    import { ref, computed } from 'vue';
+    import { useRouter, useRoute } from 'vue-router';
     import { venues } from "../../../mockdata";
 
     const router = useRouter();
+    const route = useRoute();
     const mockVenue = venues[0];
-    console.log(mockVenue)
 
     const goBack = () => {
         router.back();
+    }
+
+    const host = route.query.host;
+    const venueName = route.query.venueName;
+    const venuePrice = route.query.venuePrice;
+    const startDate = route.query.startDate;
+    const endDate = route.query.endDate;
+    const attendees = route.query.attendees;
+    const cleaningFee = route.query.cleaningFee;
+    const taxes = route.query.processing;;
+    const images = route.query.image ? route.query.image.split(',') : [];
+    const total = ref(0);
+
+    
+    const abbreviatedDates = computed(() => {
+        const months = {
+            1: "Jan",
+            2: "Feb",
+            3: "Mar",
+            4: "Apr",
+            5: "May",
+            6: "Jun",
+            7: "Jul",
+            8: "Aug",
+            9: "Sep",
+            10: "Oct",
+            11: "Nov",
+            12: "Dec"
+        };
+        const start = [months[new Date(startDate).getMonth()], new Date(startDate).getDate()];
+        const end = [months[new Date(endDate).getMonth()], new Date(endDate).getDate()];
+
+        return `${start[0]}. ${start[1]} - ${end[0]}. ${end[1]}`;
+    })
+
+    const calculateDays = computed(() => {
+        if (startDate && endDate) {
+            const start = new Date(startDate).getDate();
+            const end = new Date(endDate).getDate();
+            const diffTime = end - start;
+            return Math.max(1, diffTime);
+        }
+        return 0;
+    });
+
+    const totalPrice = computed(() => {
+        if (!venuePrice || calculateDays.value === 0) {
+            return 0;
+        }
+
+        total.value = (venuePrice * calculateDays.value) + Number(cleaningFee) + Number(taxes);
+        return parseFloat(total.value).toFixed(2);
+    });
+
+    const book = () => {
+        // send a request to the backend to book the venue
+        console.log("Booking venue...");
     }
 </script>
 
@@ -29,12 +87,12 @@
             >
                 <path d="M15 18l-6-6 6-6"/>
             </svg>
-            Venue Name <!-- this will change to be the actual venue name -->
+            {{ venueName }}
         </button>
         <div class="d-flex gap-5 justify-content-between mb-3">
             <div class="d-flex flex-column w-75 gap-4">
                 <div class="img-container">
-                    <img :src="mockVenue.image[0]" alt="venue image">
+                    <img :src="images[0]" alt="venue image">
                 </div>
                 <div class="d-flex flex-column">
                     <figure class="mb-0">
@@ -60,7 +118,7 @@
                                 <circle cx="12" cy="8" r="3" />
                                 <path d="M8 18v-2a4 4 0 0 1 8 0v2" />
                             </svg>
-                            Venue Owner
+                            {{ host ? host : "Host" }}
                         </figcaption>
                     </figure>
                     <hr class="short-border">
@@ -83,7 +141,7 @@
                     <p>
                         By selecting the button below, I agree to the Host's Venue Rules and Ground rules for attendees, and that Gatherly can charge my payment method if I'm responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request
                     </p>
-                    <button type="submit" class="btn">Book</button>
+                    <button type="submit" class="btn" @click="book">Book</button>
                 </div>
             </div>
             <div class="d-flex flex-column border border-1 border-black rounded-3 p-4 w-25 your-trip">
@@ -92,14 +150,14 @@
                     <div class="d-flex justify-content-between details">
                         <span>
                             <span class="fw-medium">Dates:</span>
-                            Mar. 15 - 17
+                            {{ abbreviatedDates }}
                         </span>
                         <a class="color-black" href="#">Edit</a>
                     </div>
                     <div class="d-flex justify-content-between details">
                         <span>
                             <span class="fw-medium">Attendees:</span> 
-                            1 - 40
+                            {{ attendees }}
                         </span>
                         <a class="color-black" href="#">Edit</a>
                     </div>
@@ -107,22 +165,22 @@
                 <div class="info border-bottom border-black pb-4 pt-4">
                     <h3>Price Details</h3>
                     <div class="d-flex justify-content-between details">
-                        <span>${{ mockVenue.price }} x 2 days</span>
-                        <span>${{ mockVenue.price * 2 }}.00</span>
+                        <span>${{ venuePrice }} x {{ calculateDays }} days</span>
+                        <span>${{ parseFloat(venuePrice * calculateDays).toFixed(2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between details">
                         <span>Cleaning Fee</span>
-                        <span>$300.00</span>
+                        <span>${{ parseFloat(cleaningFee).toFixed(2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between details">
                         <span>Taxes</span>
-                        <span>$25.00</span>
+                        <span>${{ parseFloat(taxes).toFixed(2) }}</span>
                     </div>
                 </div>
                 <div class="info pt-4">
                     <div class="d-flex justify-content-between">
                         <span class="primary-color fw-medium">Total</span>
-                        <span class="primary-color fw-medium">$5325.00</span>
+                        <span class="primary-color fw-medium">${{ totalPrice }}</span>
                     </div>
                 </div>
             </div>
