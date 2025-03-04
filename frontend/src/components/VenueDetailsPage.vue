@@ -1,9 +1,8 @@
 <script setup>
-    import { ref, computed, onMounted, nextTick } from 'vue';
+    import { ref, computed, onMounted } from 'vue';
     import { venues } from '../../../mockdata.js';
-    import { useRoute } from 'vue-router';
-    import Datepicker from '@vuepic/vue-datepicker';
-    import '@vuepic/vue-datepicker/dist/main.css';
+    import { useRouter, useRoute } from 'vue-router';
+    const router = useRouter();
 
     const route = useRoute();
     const venue = ref({});
@@ -12,6 +11,7 @@
     const cleaningFee = 200;
     const processing = 50;
     const successMessage = ref('');
+    const total = ref(0);
 
     const minDate = computed(() => venue.value.availability_start_date ? new Date(venue.value.availability_start_date) : new Date());
     const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
@@ -30,11 +30,26 @@
     });
 
     const submitBooking = () => {
-        if (!startDate.value || !endDate.value || !attendees.value) {
+        if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
             alert("Please fill out all required fields.");
             return;
         }
         successMessage.value = "Your booking has been successfully submitted!";
+
+        router.push({
+            path: '/cart',
+            query: {
+                host: venue.value.host_id,
+                venueName: venue.value.venue_name,
+                venuePrice: venue.value.price,
+                startDate: dateRange.value[0],
+                endDate: dateRange.value[1],
+                attendees: attendees.value,
+                cleaningFee: cleaningFee,
+                processing: processing,
+                image: venue.value.image.join(','),
+            }
+        })
     };
 
     const calculateDays = computed(() => {
@@ -42,16 +57,23 @@
             const start = new Date(dateRange.value[0]);
             const end = new Date(dateRange.value[1]);
             const diffTime = end - start;
-            return Math.max(1, diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
         }
         return 0;
+    });
+
+    const totalPrice = computed(() => {
+        if (!venue.value || !venue.value.price || calculateDays.value === 0) {
+            return 0;
+        }
+
+        total.value = (venue.value.price * calculateDays.value) + cleaningFee + processing;
+        return parseFloat(total.value).toFixed(2);
     });
 
     const isFormValid = computed(() => {
         return dateRange.value && dateRange.value.length === 2 && attendees.value;
     });
-
-    
 </script>
 
 <template>
@@ -158,7 +180,7 @@
                     <div class="booking-item">
                         <span v-if="dateRange && dateRange.length === 2">${{ venue.price }} x {{ calculateDays }} days</span>
                         <span v-else>--</span>
-                        <span v-if="dateRange && dateRange.length === 2">${{ venue.price * calculateDays }}</span>
+                        <span v-if="dateRange && dateRange.length === 2">${{ parseFloat(venue.price * calculateDays).toFixed(2) }}</span>
                         <span v-else>--</span>
                     </div>
 
@@ -175,7 +197,7 @@
                     <!-- Total -->
                     <div class="booking-item total">
                         <strong>Total:</strong> 
-                        <strong v-if="dateRange && dateRange.length === 2">${{ (venue.price * calculateDays) + cleaningFee + processing}}</strong>
+                        <strong v-if="dateRange && dateRange.length === 2">${{ totalPrice }}</strong>
                         <strong v-else>--</strong>
                     </div>
 
