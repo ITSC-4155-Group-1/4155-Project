@@ -1,25 +1,24 @@
 <script setup>
     import { ref, computed } from 'vue';
-    import { useRouter, useRoute } from 'vue-router';
-    import { venues } from "../../../mockdata";
+    import { useRouter } from 'vue-router';
+    import { useCartStore } from '../store/cartStore'
 
     const router = useRouter();
-    const route = useRoute();
-    const mockVenue = venues[0];
+    const cartStore = useCartStore();
 
     const goBack = () => {
         router.back();
     }
 
-    const host = route.query.host;
-    const venueName = route.query.venueName;
-    const venuePrice = route.query.venuePrice;
-    const startDate = route.query.startDate;
-    const endDate = route.query.endDate;
-    const attendees = route.query.attendees;
-    const cleaningFee = route.query.cleaningFee;
-    const taxes = route.query.processing;;
-    const images = route.query.image ? route.query.image.split(',') : [];
+    const host = cartStore.cartDetails.host;
+    const venueName = cartStore.cartDetails.venueName;
+    const venuePrice = cartStore.cartDetails.venuePrice;
+    const startDate = cartStore.cartDetails.startDate;
+    const endDate = cartStore.cartDetails.endDate;
+    const attendees = cartStore.cartDetails.attendees;
+    const cleaningFee = cartStore.cartDetails.cleaningFee;
+    const taxes = cartStore.cartDetails.processing;;
+    const images = cartStore.cartDetails.image ? cartStore.cartDetails.image.split(',') : [];
     const total = ref(0);
 
     

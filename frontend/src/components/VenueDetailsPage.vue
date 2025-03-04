@@ -2,7 +2,10 @@
     import { ref, computed, onMounted } from 'vue';
     import { venues } from '../../../mockdata.js';
     import { useRouter, useRoute } from 'vue-router';
+    import { useCartStore } from '../store/cartStore';
+
     const router = useRouter();
+    const cartStore = useCartStore();
 
     const route = useRoute();
     const venue = ref({});
@@ -36,20 +39,19 @@
         }
         successMessage.value = "Your booking has been successfully submitted!";
 
-        router.push({
-            path: '/cart',
-            query: {
-                host: venue.value.host_id,
-                venueName: venue.value.venue_name,
-                venuePrice: venue.value.price,
-                startDate: dateRange.value[0],
-                endDate: dateRange.value[1],
-                attendees: attendees.value,
-                cleaningFee: cleaningFee,
-                processing: processing,
-                image: venue.value.image.join(','),
-            }
+        cartStore.setCartDetails({
+            host: venue.value.host_id,
+            venueName: venue.value.venue_name,
+            venuePrice: venue.value.price,
+            startDate: dateRange.value[0],
+            endDate: dateRange.value[1],
+            attendees: attendees.value,
+            cleaningFee: cleaningFee,
+            processing: processing,
+            image: venue.value.image.join(','),
         })
+
+        router.push('/cart')
     };
 
     const calculateDays = computed(() => {
