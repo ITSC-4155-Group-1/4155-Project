@@ -4,12 +4,14 @@ import LandingPage from "./components/LandingPage.vue";
 import SettingsPage from "./components/SettingsPage.vue";
 import VenueDetailsPage from "./components/VenueDetailsPage.vue";
 import CreateVenue from "./components/CreateVenue.vue";
+import ShoppingCart from "./components/ShoppingCart.vue";
 
 const routes = [
     { path: '/', component: LandingPage },
     { path: '/settings', component: SettingsPage },
     { path: '/venues/:id', component: VenueDetailsPage },
-    { path: '/venues/new', component: CreateVenue}
+    { path: '/venues/new', component: CreateVenue},
+    { path: '/cart', component: ShoppingCart }
 ];
 
 const router = createRouter({

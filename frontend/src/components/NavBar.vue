@@ -167,6 +167,13 @@
                     </RouterLink>
                     <RouterLink 
                         v-if="isLoggedIn"
+                        to="/cart"
+                        class="nav-link"
+                    >
+                        Your Cart
+                    </RouterLink>
+                    <RouterLink 
+                        v-if="isLoggedIn"
                         to="/settings"
                         class="nav-link"
                     >
