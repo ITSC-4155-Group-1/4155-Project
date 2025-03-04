@@ -7,7 +7,7 @@ exports.getVenues = (req, res, next) =>{
 
 exports.createVenue = (req, res, next) => {
     let venue = new venueModel(req.body)
-    venue.buyerId = req.session.user
+    venue.host = req.session.user
     venue.images = req.files.map(file => `/images/${file.originalname}`)
     venue.save()
     .then((venue) =>{
