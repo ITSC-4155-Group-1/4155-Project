@@ -164,7 +164,7 @@
                 <div class="info border-bottom border-black pb-4 pt-4">
                     <h3>Price Details</h3>
                     <div class="d-flex justify-content-between details">
-                        <span>${{ venuePrice }} x {{ calculateDays }} days</span>
+                        <span>${{ parseFloat(venuePrice).toFixed(2) }} x {{ calculateDays }} days</span>
                         <span>${{ parseFloat(venuePrice * calculateDays).toFixed(2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between details">
