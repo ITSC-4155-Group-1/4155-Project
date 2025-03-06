@@ -2,7 +2,6 @@
     import { ref, onMounted } from 'vue';
     import { venues } from "../../../mockdata";
     import VenueCard from "./VenueCard.vue";
-    import { useUserStore } from '../store/userDetails'; // Import the user store
 
     const venueList = ref(venues);
     const showModal = ref(false);
@@ -14,19 +13,16 @@
         lastName: ''
     });
 
-    const userStore = useUserStore(); // Use the user store
 
     const parseUser = () => {
         const userData = localStorage.getItem('user');
-        console.log(userData)
         if (userData) {
             try {
                 const parsedUser = JSON.parse(userData);
-                console.log('parsed user:', parsedUser.value)
                 storedUser.value = {
-                    email: parsedUser.email,
-                    firstName: parsedUser.token?.firstName || '',
-                    lastName: parsedUser.token?.lastName || ''
+                    email: parsedUser._value.email,
+                    firstName: parsedUser._value.token.firstName || 'Guest',
+                    lastName: parsedUser._value.token.lastName || 'User'
                 };
             } catch (e) {
                 console.error(e);
@@ -122,7 +118,10 @@
                                         required
                                     >
                                 </div>
-                                <button type="submit" class="rounded confirm-password-change" @click="updatePassword">Confirm</button>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="rounded password-change-btn confirm" @click="updatePassword">Confirm</button>
+                                    <button type="submit" class="rounded password-change-btn cancel" @click="toggleUpdatePasswordDiv">Cancel</button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -296,16 +295,27 @@
     width: 35vw;
 }
 
-.confirm-password-change {
+.password-change-btn {
     border: none;
-    background-color: var(--highlight);
     color: white;
     padding: 0.75rem 1.25rem;
     transition: background-color 0.25s ease-in-out;
 }
 
-.confirm-password-change:hover {
+.confirm {
+    background-color: var(--highlight);
+}
+
+.confirm:hover {
     background-color: var(--highlight-dark-50);
+}
+
+.cancel {
+    background-color: red;
+}
+
+.cancel:hover {
+    background-color: rgb(209, 0, 0);
 }
 
 .venues {
