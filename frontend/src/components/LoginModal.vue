@@ -1,12 +1,15 @@
 <script setup>
     import { ref } from 'vue';
     import axios from "axios";
+    import { useUserStore } from '../store/userDetails';
+
+    const userStore = useUserStore();
 
     const emit = defineEmits(['closeModal']);
 
     const user = ref({
-        email: "",
-        password: ""
+        email: '',
+        password: ''
     });
 
     const login = async () => {
@@ -18,6 +21,12 @@
             });
 
             if (response.data.success) {
+                userStore.setUser({
+                    email: user.value.email,
+                    passwordLength: user.value.password.length,
+                    token: response.data.token,
+                });
+
                 emit('setSuccess', response.data.success)
                 emit('setLoggedIn', response.data.token);
                 emit("closeModal");
