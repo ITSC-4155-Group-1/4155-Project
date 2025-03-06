@@ -1,15 +1,21 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useCartStore = defineStore('user', () => {
-    const userDetails = ref({
+export const useUserStore = defineStore('user', () => {
+    const user = ref({
         email: '',
-        token: '',
+        token: null,
     });
 
-    const setUserDetails = (user) => {
-        userDetails.value = user;
+    const setUser = (userData) => {
+        user.value = userData;
+        localStorage.setItem('user', JSON.stringify(user));
     }
 
-    return { userDetails, setUserDetails };
+    const clearUser = () => {
+        user.value = { email: '', token: '' }
+        localStorage.removeItem('user');
+    }
+
+    return { user, setUser, clearUser }
 })
