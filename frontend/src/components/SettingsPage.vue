@@ -1,16 +1,45 @@
 <script setup>
     import { ref, onMounted } from 'vue';
     import { venues } from "../../../mockdata";
-    import VenueCard from "./VenueCard.vue"
+    import VenueCard from "./VenueCard.vue";
+    import { useUserStore } from '../store/userDetails'; // Import the user store
 
     const venueList = ref(venues);
     const showModal = ref(false);
     const activeSection = ref('personal-info');
+    const updatePasswordDiv = ref(false);
+    const storedUser = ref({
+        email: '',
+        firstName: '',
+        lastName: ''
+    });
+
+    const userStore = useUserStore(); // Use the user store
+
+    const parseUser = () => {
+        const userData = localStorage.getItem('user');
+        console.log(userData)
+        if (userData) {
+            try {
+                const parsedUser = JSON.parse(userData);
+                console.log('parsed user:', parsedUser.value)
+                storedUser.value = {
+                    email: parsedUser.email,
+                    firstName: parsedUser.token?.firstName || '',
+                    lastName: parsedUser.token?.lastName || ''
+                };
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
+    onMounted(() => {
+        parseUser();
+    });
 
     const openModal = () => {
-        console.log('Before setting showModal:', showModal.value);
         showModal.value = true;
-        console.log('After setting showModal:', showModal.value);
     };
 
     const closeModal = () => {
@@ -25,6 +54,15 @@
     const setActiveSection = (section) => {
         activeSection.value = section;
     };
+
+    const toggleUpdatePasswordDiv = () => {
+        updatePasswordDiv.value = !updatePasswordDiv.value;
+    }
+
+    const updatePassword = async () => {
+        // backend call to update password
+        updatePassword.value = false;
+    }
 </script>
 
 <template>
@@ -51,13 +89,42 @@
                     <div class="profile-card">
                         <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar">
                         <div class="profile-info">
-                            <h3 class="username">SantiaJoe \._./</h3>
+                            <h3 class="username">
+                                {{ storedUser.firstName }} {{ storedUser.lastName }}
+                            </h3>
                         </div>
                     </div>
 
                     <div class="email-password">
-                        <p><strong>Email:</strong> example@gmail.com</p>
-                        <p><strong>Password:</strong> ************ <i class="edit-icon">✏️</i></p>
+                        <p><strong>Email:</strong> {{ storedUser.email }}</p>
+                        <p>
+                            <strong>Password:</strong> ************ 
+                            <i class="edit-icon" @click="toggleUpdatePasswordDiv">✏️</i>
+                        </p>
+                        <div v-if="updatePasswordDiv" class="w-35">
+                            <form @submit.prevent="updatePassword">
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="newPassword"
+                                        aria-describedby="newPassword"
+                                        required
+                                    >
+                                </div>
+                                <div class="mb-3">
+                                    <label for="repeatPassword" class="form-label">Re-type Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="repeatPassword"
+                                        required
+                                    >
+                                </div>
+                                <button type="submit" class="rounded confirm-password-change" @click="updatePassword">Confirm</button>
+                            </form>
+                        </div>
                     </div>
                     
                     <div class="venues" v-if="activeSection === 'personal-info'">
@@ -223,6 +290,22 @@
 .edit-icon {
     cursor: pointer;
     margin-left: 5px;
+}
+
+.w-35 {
+    width: 35vw;
+}
+
+.confirm-password-change {
+    border: none;
+    background-color: var(--highlight);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    transition: background-color 0.25s ease-in-out;
+}
+
+.confirm-password-change:hover {
+    background-color: var(--highlight-dark-50);
 }
 
 .venues {
