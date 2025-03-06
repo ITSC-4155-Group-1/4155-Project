@@ -4,7 +4,6 @@ import { ref } from 'vue';
 export const useCartStore = defineStore('user', () => {
     const userDetails = ref({
         email: '',
-        passwordLength: 0,
         token: '',
     });
 
