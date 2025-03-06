@@ -1,38 +1,14 @@
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref } from 'vue';
     import { venues } from "../../../mockdata";
     import VenueCard from "./VenueCard.vue";
+    import { parseUser } from "../utils/userUtils"
 
     const venueList = ref(venues);
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
-    const storedUser = ref({
-        email: '',
-        firstName: '',
-        lastName: ''
-    });
-
-
-    const parseUser = () => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            try {
-                const parsedUser = JSON.parse(userData);
-                storedUser.value = {
-                    email: parsedUser._value.email,
-                    firstName: parsedUser._value.token.firstName || 'Guest',
-                    lastName: parsedUser._value.token.lastName || 'User'
-                };
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-
-    onMounted(() => {
-        parseUser();
-    });
+    const user = parseUser();
 
     const openModal = () => {
         showModal.value = true;
@@ -86,13 +62,13 @@
                         <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar">
                         <div class="profile-info">
                             <h3 class="username">
-                                {{ storedUser.firstName }} {{ storedUser.lastName }}
+                                {{ user?.firstName }} {{ user?.lastName }}
                             </h3>
                         </div>
                     </div>
 
                     <div class="email-password">
-                        <p><strong>Email:</strong> {{ storedUser.email }}</p>
+                        <p><strong>Email:</strong> {{ user?.email }}</p>
                         <p>
                             <strong>Password:</strong> ************ 
                             <i class="edit-icon" @click="toggleUpdatePasswordDiv">✏️</i>
