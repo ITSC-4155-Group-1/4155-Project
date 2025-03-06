@@ -15,20 +15,17 @@
     const login = async () => {
         try {
             const response = await axios.post("http://localhost:3000/user/login", user.value, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            withCredentials: true 
+        });
 
             if (response.data.success) {
                 userStore.setUser({
                     email: user.value.email,
-                    passwordLength: user.value.password.length,
                     token: response.data.token,
                 });
 
                 emit('setSuccess', response.data.success)
-                emit('setLoggedIn', response.data.token);
+                emit('setLoggedIn', response.data.token); // no longer need to emit this
                 emit("closeModal");
             }
         } catch (error) {
