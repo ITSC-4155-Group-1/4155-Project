@@ -5,6 +5,7 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo')
 const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
+const bookingRoutes = require('./routes/bookingRoutes')
 const cors = require ('cors')
 
 const port = 3000
@@ -54,6 +55,7 @@ app.use('/test', (req, res) => {
 
 app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
+app.use('/booking', bookingRoutes)
 
 // Basic error handling
 app.use((req, res, next) => {
