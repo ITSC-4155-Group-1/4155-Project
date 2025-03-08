@@ -10,7 +10,7 @@ const cors = require ('cors')
 
 const port = 3000
 const app = express()
-const url = "mongodb+srv://gatherlyAdmin:L6}1mU5m5NLe@gatherly.oorgz.mongodb.net/Gatherly_Data"
+const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
 // Database connect
 mongoose.connect(url)
@@ -38,7 +38,7 @@ app.use(
         resave: false,
         saveUninitialized: false,
         store: new MongoStore({
-            mongoUrl: "mongodb+srv://gatherlyAdmin:L6}1mU5m5NLe@gatherly.oorgz.mongodb.net/Gatherly_Data"
+            mongoUrl: "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
             }),
         cookie: {
             maxAge: 60*60*3000,
