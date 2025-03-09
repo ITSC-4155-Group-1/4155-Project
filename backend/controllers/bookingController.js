@@ -1,6 +1,50 @@
 const bookingModel = require('../model/bookingModel')
 const venueModel = require('../model/venueModel')
 
+exports.viewVenueBookings = (req, res, next) =>{
+    let id = req.body.id
+
+    bookingModel.find({venueId: id})
+    .then((bookings) =>{
+        if(bookings){
+            return bookings
+        }
+        else{
+            next(new Error('Booking does not exist').status(404))
+        }
+    })
+    .catch(err => next(err))
+}
+
+exports.viewMyBookings = (req, res, next) => {
+    let id = req.body.id
+
+    bookingModel.find({buyerId: id})
+    .then((bookings) =>{
+        if(bookings){
+            return bookings
+        }
+        else{
+            next(new Error('No bookings exist').status(404))
+        }
+    })
+    .catch(err => next(err))
+}
+
+exports.viewVenueBooking = (req, res, next) => {
+    let id = req.body.id
+    bookingModel.findById(id)
+    .then((booking) =>{
+        if(booking){
+            return booking
+        }
+        else{
+            next(new Error('Booking does not exist').status(404))
+        }
+    })
+    .catch(err => next(err))
+}
+
 exports.createBooking = (req, res, next) => {
     let venueId = req.body.id
     let booking = new bookingModel(req.body)
@@ -27,6 +71,7 @@ exports.deleteBooking = (req, res, next) =>{
             next(new Error('Booking does not exist').status(404))
         }
     })
+    .catch(err => next(err))
 }
 
 exports.updateBooking = (req, res, next) =>{
@@ -43,15 +88,4 @@ exports.updateBooking = (req, res, next) =>{
         }
         next(err);
     }) 
-}
-
-exports.deleteBooking = (req, res, next) =>{
-    let booking = new bookingModel(req.body)
-    let bookingId = req.body.id
-    booking.venueId = venueId
-    booking.findByIdAndDelete(bookingId)
-    .then((booking) =>{
-        res.status(200).json({success: "Booking deleted successfully"})
-    })
-    .catch(err=> next(err)) 
 }

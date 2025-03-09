@@ -6,4 +6,11 @@ const exp_router = express.Router()
 
 exp_router.post("/", bookingController.createBooking)
 
+exp_router.delete("/", bookingController.deleteBooking)
+
+//View existing bookings other users have made for my venue
+
+//View all existing I have made
+
+
 module.exports = exp_router
