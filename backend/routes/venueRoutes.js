@@ -11,4 +11,6 @@ exp_router.get('/', venueController.getVenues)
 
 exp_router.post('/', upload.array('images'), venueController.createVenue)
 
+exp_router.put('/', upload.array('images'), venueController.updateVenue)
+
 module.exports = exp_router

@@ -80,7 +80,12 @@ exports.updateBooking = (req, res, next) =>{
     booking.venueId = venueId
     booking.findByIdAndUpdate(bookingId, booking, {runValidators: true})
     .then((booking) =>{
-        res.status(200).json({success: "Booking updated successfully"})
+        if(booking){
+            res.status(200).json({success: "Booking updated successfully"})
+        }
+        else{
+            res.status(404).json({invalid: "Booking could not be found"})
+        }
     })
     .catch(err=>{
         if(err.name === 'ValidationError'){
