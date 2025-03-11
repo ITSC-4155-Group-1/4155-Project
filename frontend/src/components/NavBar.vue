@@ -115,15 +115,22 @@
     };
 
     const logout = async () => {
-        try {
-            await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
-            userStore.clearUser();
+        if (cookies.getCookie('authToken')) {
+            try {
+                await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
+                userStore.clearUser();
+                toggleLoggedIn(null);
+                displaySuccessBanner("Successfully logged out");
+                closeNavbar();
+                router.push('/')
+            } catch (error) {
+                displayErrorBanner(error.response?.data?.message || "Logout failed");
+            }
+        } else {
             toggleLoggedIn(null);
             displaySuccessBanner("Successfully logged out");
             closeNavbar();
             router.push('/')
-        } catch (error) {
-            displayErrorBanner(error.response?.data?.message || "Logout failed");
         }
     };
 </script>
