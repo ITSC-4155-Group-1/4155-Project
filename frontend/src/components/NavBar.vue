@@ -7,9 +7,9 @@
     import SignupModal from './SignupModal.vue';
     import router from '../router';
     import { useUserStore } from '../store/userDetails';
+    import { useCookie } from 'vue-cookie-next';
 
     const route = useRoute();
-    const user = ref(null);
     const isLoggedIn = ref(false);
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
@@ -19,6 +19,7 @@
     const showErrorBanner = ref(false);
     const showSuccessBanner = ref(false);
     const userStore = useUserStore();
+    const cookies = useCookie();
 
     const toggleNavbar = () => {
         isNavCollapsed.value = !isNavCollapsed.value;
@@ -79,9 +80,11 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        const savedToken = localStorage.getItem("authToken");
+        const savedToken = cookies.getCookie('authToken')
         if (savedToken) {
-            toggleLoggedIn(JSON.parse(savedToken));
+            toggleLoggedIn(savedToken);
+        } else {
+            toggleLoggedIn(null);
         }
     });
 
@@ -103,26 +106,32 @@
 
     const toggleLoggedIn = (token) => {
         if (token) {
-            isLoggedIn.value = !isLoggedIn.value;
-            user.value = token.value;
-            localStorage.setItem("authToken", JSON.stringify(token));
+            isLoggedIn.value = true;
+            cookies.setCookie('authToken', JSON.stringify(token), { expire: '1min' })
         } else {
             isLoggedIn.value = false;
-            user.value = null;
-            localStorage.removeItem("authToken");
+            cookies.removeCookie('authToken');
         }
     };
 
     const logout = async () => {
-        try {
-            await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
+        if (cookies.getCookie('authToken')) {
+            try {
+                await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
+                userStore.clearUser();
+                toggleLoggedIn(null);
+                displaySuccessBanner("Successfully logged out");
+                closeNavbar();
+                router.push('/')
+            } catch (error) {
+                displayErrorBanner(error.response?.data?.message || "Logout failed");
+            }
+        } else {
             userStore.clearUser();
             toggleLoggedIn(null);
             displaySuccessBanner("Successfully logged out");
             closeNavbar();
             router.push('/')
-        } catch (error) {
-            displayErrorBanner(error.response?.data?.message || "Logout failed");
         }
     };
 </script>
