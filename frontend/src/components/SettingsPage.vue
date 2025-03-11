@@ -1,16 +1,17 @@
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref } from 'vue';
     import { venues } from "../../../mockdata";
-    import VenueCard from "./VenueCard.vue"
+    import VenueCard from "./VenueCard.vue";
+    import { parseUser } from "../utils/userUtils"
 
     const venueList = ref(venues);
     const showModal = ref(false);
     const activeSection = ref('personal-info');
+    const updatePasswordDiv = ref(false);
+    const user = parseUser();
 
     const openModal = () => {
-        console.log('Before setting showModal:', showModal.value);
         showModal.value = true;
-        console.log('After setting showModal:', showModal.value);
     };
 
     const closeModal = () => {
@@ -25,6 +26,15 @@
     const setActiveSection = (section) => {
         activeSection.value = section;
     };
+
+    const toggleUpdatePasswordDiv = () => {
+        updatePasswordDiv.value = !updatePasswordDiv.value;
+    }
+
+    const updatePassword = async () => {
+        // backend call to update password
+        updatePassword.value = false;
+    }
 </script>
 
 <template>
@@ -51,17 +61,49 @@
                     <div class="profile-card">
                         <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar">
                         <div class="profile-info">
-                            <h3 class="username">SantiaJoe \._./</h3>
+                            <h3 class="username">
+                                {{ user?.firstName }} {{ user?.lastName }}
+                            </h3>
                         </div>
                     </div>
 
                     <div class="email-password">
-                        <p><strong>Email:</strong> example@gmail.com</p>
-                        <p><strong>Password:</strong> ************ <i class="edit-icon">✏️</i></p>
+                        <p><strong>Email:</strong> {{ user?.email }}</p>
+                        <p>
+                            <strong>Password:</strong> ************ 
+                            <i class="edit-icon" @click="toggleUpdatePasswordDiv">✏️</i>
+                        </p>
+                        <div v-if="updatePasswordDiv" class="w-35">
+                            <form @submit.prevent="updatePassword">
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="newPassword"
+                                        aria-describedby="newPassword"
+                                        required
+                                    >
+                                </div>
+                                <div class="mb-3">
+                                    <label for="repeatPassword" class="form-label">Re-type Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="repeatPassword"
+                                        required
+                                    >
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="rounded password-change-btn confirm" @click="updatePassword">Confirm</button>
+                                    <button type="submit" class="rounded password-change-btn cancel" @click="toggleUpdatePasswordDiv">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     
                     <div class="venues" v-if="activeSection === 'personal-info'">
-                        <h3>Current Venues</h3>
+                        <h3>Your Venues</h3>
                         <div class="venue-list">
                             <div class="row">
                                 <div 
@@ -74,6 +116,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- there'll be a Your Bookings section here (basically copy pasta from the section above) -->
 
                     <div v-if="showModal" class="modal-overlay">
                         <div class="modal-popup">
@@ -223,6 +267,33 @@
 .edit-icon {
     cursor: pointer;
     margin-left: 5px;
+}
+
+.w-35 {
+    width: 35vw;
+}
+
+.password-change-btn {
+    border: none;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    transition: background-color 0.25s ease-in-out;
+}
+
+.confirm {
+    background-color: var(--highlight);
+}
+
+.confirm:hover {
+    background-color: var(--highlight-dark-50);
+}
+
+.cancel {
+    background-color: red;
+}
+
+.cancel:hover {
+    background-color: rgb(209, 0, 0);
 }
 
 .venues {

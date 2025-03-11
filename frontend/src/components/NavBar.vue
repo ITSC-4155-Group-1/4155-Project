@@ -6,6 +6,7 @@
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
     import router from '../router';
+    import { useUserStore } from '../store/userDetails';
 
     const route = useRoute();
     const user = ref(null);
@@ -17,6 +18,7 @@
     const successMessage = ref('');
     const showErrorBanner = ref(false);
     const showSuccessBanner = ref(false);
+    const userStore = useUserStore();
 
     const toggleNavbar = () => {
         isNavCollapsed.value = !isNavCollapsed.value;
@@ -114,6 +116,7 @@
     const logout = async () => {
         try {
             await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
+            userStore.clearUser();
             toggleLoggedIn(null);
             displaySuccessBanner("Successfully logged out");
             closeNavbar();
