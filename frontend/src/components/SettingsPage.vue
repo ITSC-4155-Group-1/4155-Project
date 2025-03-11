@@ -103,7 +103,7 @@
                     </div>
                     
                     <div class="venues" v-if="activeSection === 'personal-info'">
-                        <h3>Current Venues</h3>
+                        <h3>Your Venues</h3>
                         <div class="venue-list">
                             <div class="row">
                                 <div 
@@ -116,6 +116,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- there'll be a Your Bookings section here (basically copy pasta from the section above) -->
 
                     <div v-if="showModal" class="modal-overlay">
                         <div class="modal-popup">
