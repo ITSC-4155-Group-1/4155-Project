@@ -127,6 +127,7 @@
                 displayErrorBanner(error.response?.data?.message || "Logout failed");
             }
         } else {
+            userStore.clearUser();
             toggleLoggedIn(null);
             displaySuccessBanner("Successfully logged out");
             closeNavbar();
