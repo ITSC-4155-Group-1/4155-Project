@@ -7,6 +7,14 @@
     });
 
     const notifList = ref(notifications);
+
+    function remove(event){
+        //Remove notification from display
+        const list_item = event.target.parentNode.parentNode;
+        list_item.classList.add("d-none");
+
+        //TODO: Add code to remove notif from database
+    }
 </script>
 
 <template>
@@ -16,7 +24,7 @@
             <li v-for="notif in notifList">
                 <div class="d-flex justify-content-between">
                     <p>{{ notif.notification }}</p>
-                    <button class="removeButton">x</button>
+                    <button class="removeButton" @click="remove">x</button>
                 </div>
             </li>
         </ul>
