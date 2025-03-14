@@ -107,7 +107,7 @@
     const toggleLoggedIn = (token) => {
         if (token) {
             isLoggedIn.value = true;
-            cookies.setCookie('authToken', JSON.stringify(token), { expire: '1min' })
+            cookies.setCookie('authToken', JSON.stringify(token), { expire: '3h' })
         } else {
             isLoggedIn.value = false;
             cookies.removeCookie('authToken');
