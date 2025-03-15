@@ -12,14 +12,13 @@
         capacity: 0,
         images: null,
     });
+    const addressError = ref(false);
 
     const handleFileUpload = (e) => {
-        console.log(e.target.files)
         const files = e.target.files;
-        if (files.length) {
-            form.images = Array.from(files);
+        if (files) {
+            form.value.images = Array.from(files);
         }
-        console.log(form.images)
     }
 
     const usStatesCities = {
@@ -74,14 +73,34 @@
         "Wisconsin": ["Milwaukee", "Madison", "Green Bay"],
         "Wyoming": ["Cheyenne", "Casper", "Laramie"]
     };
+
+    const createVenue = () => {
+        if (
+            form.value.state == "" ||
+            form.value.city == "" ||
+            form.value.address == "" ||
+            form.value.venueName == "" ||
+            form.value.description == "" ||
+            form.value.price < 0 ||
+            form.value.availability.length < 2 ||
+            form.value.capacity <= 0 ||
+            form.value.images == null
+        ) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        // make api call to create the venue
+        console.log(form.value)
+    };
 </script>
 
 <template>
     <div class="form-width mx-auto">
         <h1 class="text-center mt-2 mb-5 provide-space-color">Provide a Space</h1>
-        <form action="#" method="POST" class="mb-3">
+        <form @submit.prevent="createVenue" class="mb-3">
             <div class="mb-5">
-                <h2 class="form-description">Location</h2>
+                <h3>Location</h3>
                 <div class="d-flex gap-2">
                     <div class="mb-3 w-50">
                         <label for="state" class="form-label">State</label>
@@ -105,7 +124,7 @@
                     </div>
                     <div class="mb-3 w-50">
                         <label for="city" class="form-label">
-                            City {{ selectedState ? 'in ' + selectedState : '' }}
+                            City {{ form.state ? 'in ' + form.state : '' }}
                         </label>
                         <select
                             v-model="form.city"
@@ -139,11 +158,15 @@
                         aria-describedby="address"
                         placeholder="123 Country Road"
                         required
+                        :class="{ 'is-invalid': addressError }"
                     >
+                    <div v-if="addressError" class="invalid-feedback">
+                        Please enter a valid address (e.g., "123 Main St").
+                    </div>
                 </div>
             </div>
             <div>
-                <h2 class="form-description">Venue Details</h2>
+                <h3>Venue Details</h3>
                 <div class="mb-3">
                     <label for="venue_name" class="form-label">Venue Name</label>
                     <input
@@ -177,7 +200,7 @@
                             v-model="form.price"
                             :disabled="!form.description"
                             type="number"
-                            step="1"
+                            step="100"
                             class="form-control"
                             placeholder="80"
                             id="price"
@@ -227,7 +250,7 @@
                         multiple
                         required
                         @change="handleFileUpload"
-                        :disabled="!form.availability !== 2"
+                        :disabled="form.availability.length !== 2"
                     >
                 </div>
             </div>
@@ -239,10 +262,6 @@
 <style scoped>
     .provide-space-color {
         color: var(--primary);
-    }
-
-    .form-description {
-        color: var(--accent);
     }
 
     .form-width {
