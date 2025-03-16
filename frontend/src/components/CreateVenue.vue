@@ -5,6 +5,7 @@
         state: "",
         city: "",
         address: "",
+        zipCode: null,
         venueName: "",
         description: "",
         price: 0,
@@ -74,19 +75,38 @@
         "Wyoming": ["Cheyenne", "Casper", "Laramie"]
     };
 
+    const errors = ref({
+        state: false,
+        city: false,
+        address: false,
+        zipCode: false,
+        venueName: false,
+        description: false,
+        price: false,
+        capacity: false,
+        availability: false,
+        images: false,
+    });
+
+    const validateForm = () => {
+        errors.value.state = !form.value.state;
+        errors.value.city = !form.value.city;
+        errors.value.address = form.value.address.trim().length < 4;
+        errors.value.zipCode = !form.value.zipCode || form.value.zipCode.length < 5 || form.value.zipCode.length > 9;
+        errors.value.venueName = form.value.venueName.trim().length <= 0;
+        errors.value.description = form.value.description.trim().length < 10;
+        errors.value.price = form.value.price < 0 || form.value.price > 100000;
+        errors.value.capacity = form.value.capacity <= 0;
+        errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
+        errors.value.images = !form.value.images || form.value.images.length === 0;
+
+        return !Object.values(errors.value).includes(true); // true if all error values are true
+    }
+
     const createVenue = () => {
-        if (
-            form.value.state == "" ||
-            form.value.city == "" ||
-            form.value.address == "" ||
-            form.value.venueName == "" ||
-            form.value.description == "" ||
-            form.value.price < 0 ||
-            form.value.availability.length < 2 ||
-            form.value.capacity <= 0 ||
-            form.value.images == null
-        ) {
-            alert("Please fill in all required fields");
+        if (!validateForm()) {
+            // alert("Please fill in all required fields");
+            console.log(form.value)
             return;
         }
 
@@ -121,6 +141,9 @@
                                 {{ state }}
                             </option>
                         </select>
+                        <div v-if="errors.state" class="text-danger">
+                            Please select a state.
+                        </div>
                     </div>
                     <div class="mb-3 w-50">
                         <label for="city" class="form-label">
@@ -144,24 +167,50 @@
                                 {{ city }}
                             </option>
                         </select>
+                        <div v-if="errors.city" class="text-danger">
+                            Please select a city.
+                        </div>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">Address</label>
-                    <input
-                        v-model="form.address"
-                        :disabled="!form.city"
-                        type="text"
-                        class="form-control"
-                        id="address"
-                        name="address"
-                        aria-describedby="address"
-                        placeholder="123 Country Road"
-                        required
-                        :class="{ 'is-invalid': addressError }"
-                    >
-                    <div v-if="addressError" class="invalid-feedback">
-                        Please enter a valid address (e.g., "123 Main St").
+                <div class="d-flex gap-2">
+                    <div class="mb-3 w-50">
+                        <label for="address" class="form-label">Address</label>
+                        <input
+                            v-model="form.address"
+                            :disabled="!form.city"
+                            type="text"
+                            class="form-control"
+                            id="address"
+                            name="address"
+                            minlength="4"
+                            aria-describedby="address"
+                            placeholder="123 Country Road"
+                            required
+                            :class="{ 'is-invalid': addressError }"
+                        >
+                        <div v-if="errors.address" class="text-danger">
+                            Please enter a valid address (e.g., "123 Main St").
+                        </div>
+                    </div>
+                    <div class="mb-3 w-50">
+                        <label for="zip_code" class="form-label">Zip Code</label>
+                        <input
+                            v-model="form.zipCode"
+                            :disabled="!form.address"
+                            type="number"
+                            class="form-control"
+                            id="zip_code"
+                            name="zip_code"
+                            min="5"
+                            max="9"
+                            aria-describedby="zip_code"
+                            placeholder="12345"
+                            pattern="[0-9]{5}"
+                            required
+                        >
+                        <div v-if="errors.zipCode" class="text-danger">
+                            Please enter a valid zip code (5 to 9 digits long).
+                        </div>
                     </div>
                 </div>
             </div>
@@ -171,15 +220,19 @@
                     <label for="venue_name" class="form-label">Venue Name</label>
                     <input
                         v-model="form.venueName"
-                        :disabled="!form.address"
+                        :disabled="!form.zipCode"
                         type="text"
                         class="form-control"
                         id="venue_name"
                         name="venue_name"
                         aria-describedby="venue_name"
+                        minlength="1"
                         placeholder="Enter venue name"
                         required
                     >
+                    <div v-if="errors.venueName" class="text-danger">
+                            Please enter a venue name.
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">Venue Description</label>
@@ -187,11 +240,15 @@
                         v-model="form.description"
                         :disabled="!form.venueName"
                         class="form-control"
+                        minlength="10"
                         placeholder="Provide a short description of the venue"
                         id="description"
                         name="description"
                         required
                     ></textarea>
+                    <div v-if="errors.description" class="text-danger">
+                            Please enter a description that is at least 10 characters long.
+                    </div>
                 </div>
                 <div class="d-flex gap-2">
                     <div class="mb-3 w-50">
@@ -207,8 +264,11 @@
                             name="price"
                             required
                             min="0"
-                            max="10000000"
+                            max="100000"
                         >
+                        <div v-if="errors.price" class="text-danger">
+                            Please enter a valid price (USD) between 0 and 100,000.
+                        </div>
                     </div>
                     <div class="mb-3 w-50">
                         <label for="capacity" class="form-label">Max Capacity</label>
@@ -225,6 +285,9 @@
                             min="1"
                             max="150000"
                         >
+                        <div v-if="errors.capacity" class="text-danger">
+                            Please enter a valid capacity (between 1 and 150,000).
+                        </div>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -238,6 +301,9 @@
                         :min-date="new Date()"
                         :enable-time-picker="false"
                     />
+                    <div v-if="errors.availability" class="text-danger">
+                        Please select a start and end date.
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="image" class="form-label">Venue Image(s)</label>
@@ -252,9 +318,19 @@
                         @change="handleFileUpload"
                         :disabled="form.availability.length !== 2"
                     >
+                    <div class="form-text" v-if="errors.images === false">
+                        Please provide at least one image.
+                    </div>
+                    <div v-else class="text-danger">
+                        Please provide at least one image
+                    </div>
                 </div>
             </div>
-            <button type="submit" class="btn w-100">Submit</button>
+            <button
+                type="submit"
+                class="btn w-100"
+                :disabled="form.images == null"
+            >Submit</button>
         </form>
     </div>
 </template>
