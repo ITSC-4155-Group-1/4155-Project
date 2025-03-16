@@ -246,7 +246,7 @@
                         class="form-control"
                         id="image"
                         name="image"
-                        accept="image/*"
+                        accept="image/png, image/jpg, image/jpeg"
                         multiple
                         required
                         @change="handleFileUpload"
