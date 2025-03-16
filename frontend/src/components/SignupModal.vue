@@ -1,8 +1,11 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed } from 'vue';
     import axios from "axios";
 
     const emit = defineEmits(["closeModal", "switchToLogin"]);
+
+    const rePassword = ref("");
+    const passwordError = ref("");
 
     const newUser = ref({
         firstName: "",
@@ -11,7 +14,20 @@
         password: ""
     });
 
+    const passwordsMatch = computed(() => newUser.value.password === rePassword.value || rePassword.value === "");
+
+    const validatePasswords = () => {
+        if (!passwordsMatch.value) {
+            passwordError.value = "Passwords do not match.";
+            return false;
+        }
+        passwordError.value = "";
+        return true;
+    };
+
     const signup = async () => {
+        if (!validatePasswords()) return;
+
         try {
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
                 headers: { "Content-Type": "application/json" },
@@ -59,6 +75,8 @@
                                 name="firstName"
                                 placeholder="First Name"
                                 v-model="newUser.firstName"
+                                minlength="1"
+                                required
                             >
                         </div>
                         <div class="form-element">
@@ -69,6 +87,8 @@
                                 name="lastName"
                                 placeholder="Last Name"
                                 v-model="newUser.lastName"
+                                minlength="1"
+                                required
                             >
                         </div>
                     </div>
@@ -80,6 +100,7 @@
                             name="email"
                             placeholder="Enter email"
                             v-model="newUser.email"
+                            required
                         >
                     </div>
                     <div class="form-element">
@@ -90,6 +111,11 @@
                             name="password"
                             placeholder="Password"
                             v-model="newUser.password"
+                            required
+                            minlength="8"
+                            maxlength="30"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
+                            title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
                         >
                     </div>
                     <div class="form-element">
@@ -99,7 +125,15 @@
                             id="re-password"
                             name="re-password"
                             placeholder="Re-type password"
+                            required
+                            minlength="8"
+                            maxlength="30"
+                            v-model="rePassword"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
+                            title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
+                            @input="validatePasswords"
                         >
+                        <p v-if="passwordError" class="text-danger mt-1">{{ passwordError }}</p>
                     </div>
                     <button type="submit">Sign up</button>
                 </form>
@@ -131,7 +165,7 @@
         position: relative;
         border: 1px solid black;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-        z-index: 1000; /* Ensure it stays below the banner */
+        z-index: 1000;
     }
 
     .popup .close-btn {
