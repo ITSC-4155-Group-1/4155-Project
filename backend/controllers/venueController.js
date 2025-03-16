@@ -1,9 +1,28 @@
+const bookingModel = require('../model/bookingModel')
 const venueModel = require('../model/venueModel')
 
-
+// View all venues
 exports.getVenues = (req, res, next) =>{
     return venueModel.find()
 }
+
+// Get my venues
+exports.viewMyVenues = (req, res, next) => {
+    let id = req.body.id
+
+    venueModel.find({buyerId: id})
+    .then((venues) =>{
+        if(venues){
+            return venues
+        }
+        else{
+            next(new Error('No venues exist').status(404))
+        }
+    })
+    .catch(err => next(err))
+}
+
+
 
 exports.getVenue = (req, res, next) => {
     let id = req.body.id
@@ -22,9 +41,9 @@ exports.getVenue = (req, res, next) => {
 
 exports.deleteVenue = (req, res, next) =>{
     let venueId = req.body.id
-    venueModel.findByIdAndDelete(venueId)
-    .then((venue) => {
-        if(venue){
+    Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId})])
+    .then((deletedItems) => {
+        if(deletedItems){
             res.status(200).json({success: "venue deleted successfully"})
         }
         else{
