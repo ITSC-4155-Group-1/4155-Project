@@ -141,7 +141,7 @@
                                 {{ state }}
                             </option>
                         </select>
-                        <div v-if="errors.state" class="text-danger">
+                        <div v-if="errors.state" class="text-danger mt-1">
                             Please select a state.
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                                 {{ city }}
                             </option>
                         </select>
-                        <div v-if="errors.city" class="text-danger">
+                        <div v-if="errors.city" class="text-danger mt-1">
                             Please select a city.
                         </div>
                     </div>
@@ -188,7 +188,7 @@
                             required
                             :class="{ 'is-invalid': addressError }"
                         >
-                        <div v-if="errors.address" class="text-danger">
+                        <div v-if="errors.address" class="text-danger mt-1">
                             Please enter a valid address (e.g., "123 Main St").
                         </div>
                     </div>
@@ -208,7 +208,7 @@
                             pattern="[0-9]{5}"
                             required
                         >
-                        <div v-if="errors.zipCode" class="text-danger">
+                        <div v-if="errors.zipCode" class="text-danger mt-1">
                             Please enter a valid zip code (5 to 9 digits long).
                         </div>
                     </div>
@@ -230,7 +230,7 @@
                         placeholder="Enter venue name"
                         required
                     >
-                    <div v-if="errors.venueName" class="text-danger">
+                    <div v-if="errors.venueName" class="text-danger mt-1">
                             Please enter a venue name.
                     </div>
                 </div>
@@ -246,7 +246,7 @@
                         name="description"
                         required
                     ></textarea>
-                    <div v-if="errors.description" class="text-danger">
+                    <div v-if="errors.description" class="text-danger mt-1">
                             Please enter a description that is at least 10 characters long.
                     </div>
                 </div>
@@ -266,7 +266,7 @@
                             min="0"
                             max="100000"
                         >
-                        <div v-if="errors.price" class="text-danger">
+                        <div v-if="errors.price" class="text-danger mt-1">
                             Please enter a valid price (USD) between 0 and 100,000.
                         </div>
                     </div>
@@ -285,7 +285,7 @@
                             min="1"
                             max="150000"
                         >
-                        <div v-if="errors.capacity" class="text-danger">
+                        <div v-if="errors.capacity" class="text-danger mt-1">
                             Please enter a valid capacity (between 1 and 150,000).
                         </div>
                     </div>
@@ -301,7 +301,7 @@
                         :min-date="new Date()"
                         :enable-time-picker="false"
                     />
-                    <div v-if="errors.availability" class="text-danger">
+                    <div v-if="errors.availability" class="text-danger mt-1">
                         Please select a start and end date.
                     </div>
                 </div>
@@ -321,7 +321,7 @@
                     <div class="form-text" v-if="errors.images === false">
                         Please provide at least one image.
                     </div>
-                    <div v-else class="text-danger">
+                    <div v-else class="text-danger mt-1">
                         Please provide at least one image
                     </div>
                 </div>
