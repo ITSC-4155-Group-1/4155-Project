@@ -3,12 +3,14 @@
     import { venues } from "../../../mockdata";
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
+    import { useUserStore } from '../store/userDetails';
 
     const venueList = ref(venues);
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
     const user = parseUser();
+    const userStore = useUserStore();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -70,7 +72,7 @@
                         <i class="icon">⭐</i> Favorites
                     </li>
                 </ul>
-                <a class="logout">Logout</a> <!-- need to make functional -->
+                <a class="logout" @click="userStore.logout()">Logout</a> <!-- need to make functional (don't forget) -->
             </div>
 
             <div class="main-content">
@@ -275,6 +277,7 @@
     padding: 10px;
     font-size: 1.3rem;
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .profile-card {
