@@ -33,20 +33,22 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 
 app.use(
-    session({
-        secret: "6yA'1%iO%sCn(|1q0<Ex1bf654",
-        resave: false,
-        saveUninitialized: false,
-        store: new MongoStore({
-            mongoUrl: "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
-            }),
-        cookie: {
-            maxAge: 60*60*3000,
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax"
-        }
-    })
+  session({
+    secret: "6yA'1%iO%sCn(|1q0<Ex1bf654",
+    resave: false,
+    saveUninitialized: false,
+    store: new MongoStore({
+      mongoUrl: "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data",
+      ttl: 3 * 60 * 60, // TimeToLive deletes after 3 hours
+      autoRemove: 'interval',
+      autoRemoveInterval: 60, // checks every 60 minutes
+    }),
+    cookie: {
+      maxAge: 3 * 60 * 60 * 1000, // 3 hours
+      httpOnly: true,
+      secure: false,
+    },
+  })
 );
 
 app.use('/test', (req, res) => {
