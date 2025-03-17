@@ -152,7 +152,7 @@
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.overflow = 'hidden';
             document.body.style.paddingRight = `${scrollbarWidth}px`;
-            document.body.style.backgroundColor = '#F0F0F0';
+            document.body.style.backgroundColor = '#0000000d';
         } else {
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
@@ -164,7 +164,7 @@
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.overflow = 'hidden';
             document.body.style.paddingRight = `${scrollbarWidth}px`;
-            document.body.style.backgroundColor = '#F0F0F0';
+            document.body.style.backgroundColor = '#0000000d';
         } else {
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
@@ -498,6 +498,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: rgba(0,0,0,0.5);
         z-index: 1000;
     }
 
