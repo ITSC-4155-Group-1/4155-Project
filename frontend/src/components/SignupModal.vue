@@ -38,7 +38,7 @@
                 setTimeout(() => {
                     emit("closeModal");
                     emit("switchToLogin")
-                }, 2500);
+                }, 1);
             }
         } catch (error) {
             if (error.response) {
