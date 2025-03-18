@@ -21,7 +21,12 @@
         isFilled.value = !isFilled.value;
     };
 
-    const minDate = computed(() => venue.value.availability_start_date ? new Date(venue.value.availability_start_date) : new Date());
+    const minDate = computed(() => {
+        const venueStartDate = new Date(venue.value.availability_start_date);
+        const today = new Date();
+
+        return venueStartDate > today ? venueStartDate : today;
+    });
     const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
     const collapsibleSections = ref([
@@ -53,6 +58,7 @@
             cleaningFee: cleaningFee,
             processing: processing,
             image: venue.value.image.join(','),
+            capacity: venue.value.capacity
         })
 
         router.push('/cart')

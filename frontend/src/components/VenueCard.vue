@@ -13,7 +13,6 @@ const toggleIsFilled = () => {
 </script>
 
 <template>
-    <!-- The entire card except for the heart icon will be clickable -->
     <div class="card border-0 background hover-effect p-2">
         <router-link :to="`/venues/${venue.venue_name}`" class="text-decoration-none">
             <div class="image-container position-relative">
@@ -26,6 +25,7 @@ const toggleIsFilled = () => {
                     </span>
                     {{ venue.rating }} / 5.0 
                 </span>
+                <!-- need to convert image array to image carousel -->
                 <img :src="venue.image[1]" class="card-img-top" alt="Image of venue">
                 <span class="badge position-absolute bottom-0 end-0 m-2 capacity">{{ venue.capacity }} people </span>
             </div>

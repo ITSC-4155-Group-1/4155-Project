@@ -1,11 +1,10 @@
 <script setup>
     import { ref } from 'vue';
-    import axios from "axios";
     import { useUserStore } from '../store/userDetails';
 
     const userStore = useUserStore();
 
-    const emit = defineEmits(['closeModal']);
+    const emit = defineEmits(['closeModal', 'setSuccess', 'setError', 'closeModal']);
 
     const user = ref({
         email: '',
@@ -13,31 +12,15 @@
     });
 
     const login = async () => {
-        try {
-            const response = await axios.post("http://localhost:3000/user/login", user.value, {
-            withCredentials: true 
-        });
-
-            if (response.data.success) {
-                userStore.setUser({
-                    email: user.value.email,
-                    token: response.data.token,
-                });
-
-                emit('setSuccess', response.data.success)
-                emit('setLoggedIn', response.data.token); // no longer need to emit this
-                emit("closeModal");
-            }
-        } catch (error) {
-            if (error.response) {
-                if (error.response.status === 400 && error.response.data.invalid) {
-                    emit('setError', error.response.data.invalid)
-                }
-            } else {
-                emit('setError', "An unexpected error occurred. Please try again.");
-            }
+        const response = await userStore.login(user.value);
+        if (response.success) {
+            emit('setSuccess', response.message);
+            emit('setLoggedIn', response.token);
+            emit('closeModal');
+        } else {
+            emit('setError', response.error);
         }
-    }
+    };
 
 </script>
 
