@@ -1,4 +1,5 @@
 const express = require('express')
+const venueMiddleware = require('../middleware/venueMiddleware')
 const bookingController = require('../controllers/bookingController')
 const validator = require ('../middleware/userMiddleware')
 const inputValidator = require('../middleware/validation')
@@ -10,7 +11,7 @@ exp_router.post('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, book
 exp_router.delete('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bookingController.deleteBooking)
 
 //View existing bookings other users have made for my venue
-exp_router.get('/host', validator.alreadyLoggedIn, bookingMiddleware.isHost, bookingController.viewVenueBookings)
+exp_router.get('/host', validator.alreadyLoggedIn, venueMiddleware.isHost, bookingController.viewVenueBookings)
 
 //View all existing bookings I have made. No validator to check if user is correct as controller checks session cookie
 exp_router.get('/', validator.alreadyLoggedIn, bookingController.viewMyBookings)

@@ -1,4 +1,5 @@
 const express = require('express')
+const venueController = require('../controllers/venueController')
 const bookingController = require('../controllers/bookingController')
 const validator = require ('../middleware/userMiddleware')
 const inputValidator = require('../middleware/validation')
@@ -12,7 +13,7 @@ const {upload} = require('../middleware/venueMiddleware')
 //Display all venues (user does not have to be logged in)
 exp_router.get('/', venueController.getVenues)
 //Display all venues owned by user
-exp_router.get('/user', validator.alreadyLoggedIn, venueController.viewMyBookings)
+exp_router.get('/user', validator.alreadyLoggedIn, venueController.viewMyVenues)
 
 exp_router.post('/', validator.alreadyLoggedIn, upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.createVenue)
 
