@@ -15,14 +15,43 @@ export const useUserStore = defineStore('user', () => {
     const cookies = useCookie();
 
     const setUser = (userData) => {
-        user.value = userData;
-        localStorage.setItem('user', JSON.stringify(user));
+        user.value.email = userData.email;
+        user.value.token = userData.token;
+        localStorage.setItem('user', JSON.stringify(user.value));
     }
 
     const clearUser = () => {
         user.value = { email: '', token: '' }
         localStorage.removeItem('user');
         cookies.removeCookie('authToken');
+    }
+
+    const login = async (credentials) => {
+        const creds = {
+            email: credentials.email,
+            password: credentials.password,
+        };
+
+        try {
+            const response = await axios.post('http://localhost:3000/user/login', creds, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                setUser({
+                    email: credentials.email,
+                    token: response.data.token,
+                });
+
+                return { success: true, token: response.data.token, message: response.data.success };
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400 && error.response.data.invalid) {
+                return { success: false, error: error.response.data.invalid }
+            }
+            console.error('error', error)
+            return { success: false, error: 'An unexpected error occurred. Please try again.' }
+        }
     }
 
     const logout = async () => {
@@ -39,5 +68,5 @@ export const useUserStore = defineStore('user', () => {
         location.reload();
     }
 
-    return { user, setUser, clearUser, logout }
+    return { user, setUser, clearUser, login, logout }
 })

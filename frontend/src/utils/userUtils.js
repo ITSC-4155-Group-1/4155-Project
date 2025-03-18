@@ -4,7 +4,7 @@ export const parseUser = () => {
     if (!userData) return null; // null if the no user exists
 
     try {
-        const parsedUser = JSON.parse(userData)
+        const parsedUser = JSON.parse(userData);
 
         const user = parsedUser._value || parsedUser;
 
