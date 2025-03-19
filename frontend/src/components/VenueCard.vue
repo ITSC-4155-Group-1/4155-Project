@@ -1,6 +1,7 @@
 <script setup>
     import { ref, computed, toRefs } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import { useRouter } from 'vue-router'
     import 'vue3-carousel/carousel.css'
 
     const props = defineProps({
@@ -11,15 +12,16 @@
     const isFilled = ref(false);
     // console.log(venue.value)
     const images = computed(() => venue.value.image ?? []);
+    const router = useRouter();
 
     const toggleIsFilled = () => {
         // will make a backend call to favorite it
         isFilled.value = !isFilled.value;
     };
 
-    const goToVenue = (venueName) => {
-        // will make a backend call to go to the venue page
-        router.push(`/venues/${venueName}`)
+    const goToVenue = (event) => {
+        event.stopPropagation();
+        router.push(`/venues/${venue.value.venue_name}`)
     };
 
     const carouselConfig = {
@@ -48,12 +50,12 @@
                         class="card-img-top"
                         alt="Venue Images"
                         loading="lazy"
-                        @click="goToVenue(venue.venue_name)"
+                        @click="goToVenue"
                     >
                 </Slide>
                 
                 <template #addons>
-                    <Navigation class="mx-1" />
+                    <Navigation class="mx-1" @stop.click />
                 </template>
             </Carousel>
             <span class="badge position-absolute bottom-0 end-0 m-2 capacity">{{ venue.capacity }} people </span>
