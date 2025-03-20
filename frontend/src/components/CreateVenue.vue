@@ -106,12 +106,10 @@
     const createVenue = () => {
         if (!validateForm()) {
             // alert("Please fill in all required fields");
-            console.log(form.value)
             return;
         }
 
         // make api call to create the venue
-        console.log(form.value)
     };
 </script>
 
