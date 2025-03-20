@@ -16,6 +16,7 @@ exports.login = (req, res, next) => {
                 req.session.user = user._id;
                 req.session.firstName = user.firstName;
                 req.session.lastName = user.lastName;
+                req.session.image = null;
                 res.json({ success: `Login successful`, token: req.session });
             } else {
                 return res.status(400)
