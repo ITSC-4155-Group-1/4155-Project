@@ -85,11 +85,11 @@ exports.logout = (req, res, next) => {
 // Account deletion
 exports.deleteAccount = (req, res, next) =>{
     let userId = req.body.id
-    venueModel.find({host: userID})
+    venueModel.find({host: userId})
     .then((venues) =>{
         if(venues){
             let venueIds = venues.filter(venue => venue.id)
-            Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId)])
+            Promise.all([venueModel.deleteMany({_id: venueIds}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId)])
             .then((deletedItems) => {
                 if(deletedItems){
                     if (!req.session) {
