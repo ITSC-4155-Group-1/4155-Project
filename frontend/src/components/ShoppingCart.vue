@@ -215,22 +215,8 @@
                             </p>
                         </blockquote>
                         <figcaption class="blockquote-footer d-flex align-items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="gray"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="ms-2 me-1"
-                            > <!-- svg will change to the person's pfp -->
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="8" r="3" />
-                                <path d="M8 18v-2a4 4 0 0 1 8 0v2" />
-                            </svg>
+                            <!-- TODO: needs to be the host's pfp -->
+                            <img class="figCaptionImg" :src="user?.pfp || '/images/profile_4.jpeg'" alt="host pfp" >
                             {{ host ? host : "Host" }}
                         </figcaption>
                     </figure>
@@ -435,6 +421,13 @@
 
     .blockquote p {
         font-size: 1rem;
+    }
+
+    .figCaptionImg {
+        height: 35px;
+        width: 35px;
+        border-radius: 50%;
+        margin-right: 0.25rem;
     }
 
     .short-border {
