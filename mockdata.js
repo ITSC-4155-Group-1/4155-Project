@@ -136,24 +136,40 @@ export const users = [
 //Messages:
 export const messages = [
     {
+        "from": "Santiago",
         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        "timestamp": new Date("October 13, 2024 11:13:00")
+        "timestamp": new Date("October 13, 2024 11:13:00"),
+        "opened": false
     },
     {
+        "from": "Larry",
+        "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "timestamp": new Date("October 13, 2024 11:14:00"),
+        "opened": true
+    },
+    {
+        "from": "Santiago",
         "message": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        "timestamp": new Date("November 5, 2024 14:23:00")
+        "timestamp": new Date("October 13, 2024 14:23:00"),
+        "opened": false
     },
     {
+        "from": "Denny",
         "message": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-        "timestamp": new Date("December 1, 2024 09:05:00")
+        "timestamp": new Date("September 1, 2024 09:05:00"),
+        "opened": true,
     },
     {
+        "from": "\\-.-/",
         "message": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-        "timestamp": new Date("January 15, 2025 16:40:00")
+        "timestamp": new Date("September 1, 2025 16:40:00"),
+        "opened": true,
     },
     {
+        "from": "Lil guy",
         "message": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        "timestamp": new Date("February 3, 2025 10:17:00")
+        "timestamp": new Date("October 15, 2025 10:17:00"),
+        "opened": false,
     }
 ]
 
