@@ -7,7 +7,6 @@ import CreateVenue from "./components/CreateVenue.vue";
 import ShoppingCart from "./components/ShoppingCart.vue";
 import NotifPage from "./components/NotifPage.vue"
 import Messages from "./components/Messages.vue";
-import ErrorPage from "./components/ErrorPage.vue";
 
 const routes = [
     { path: '/', component: LandingPage },
@@ -17,7 +16,6 @@ const routes = [
     { path: '/cart', component: ShoppingCart },
     { path: '/notifications', component: NotifPage },
     { path: '/messages', component: Messages },
-    { path: '/error', component: ErrorPage },
 ];
 
 const router = createRouter({
