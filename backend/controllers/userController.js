@@ -1,5 +1,6 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
+const venueModel = require("../model/venueModel");
 
 exports.login = (req, res, next) => {
     let email = req.body.email;
@@ -34,11 +35,6 @@ exports.signup = (req, res, next) => {
         if (existingUser) {
             return res.status(400).json({ invalid: "Email is already in use" });
         }
-
-        if (!password) {
-            return res.status(400).json({ invalid: "Password is required" });
-        }
-
         bcrypt.hash(password, 10)
         .then((hashedPass) => {
             let newUser = new userModel({
@@ -85,3 +81,61 @@ exports.logout = (req, res, next) => {
         }
     });
 };
+
+// Account deletion
+exports.deleteAccount = (req, res, next) =>{
+    let userId = req.body.id
+    venueModel.find({host: userID})
+    .then((venues) =>{
+        if(venues){
+            let venueIds = venues.filter(venue => venue.id)
+            Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId)])
+            .then((deletedItems) => {
+                if(deletedItems){
+                    if (!req.session) {
+                        return res.status(400).json({ invalid: "No active session" });
+                    }
+                    req.session.destroy((err) => {
+                        if (err) {
+                            return next(err);
+                        } else {
+                            res.json({ success: "Successfully deleted account and removed session" });
+                        }
+                    })
+                }
+                else{
+                    next(new Error('Account does not exist').status(404))
+                }
+            })
+            .catch(err => next(err))
+        }
+        else{
+            next(new Error('No venues exist').status(404))
+        }
+    })
+    .catch(err => next(err))
+}
+// Update User account settings
+
+exports.updateUser = (req, res, next) =>{
+    let password = req.body.password
+    bcrypt.hash(password, 10)
+    .then((hashedPass) => {
+    let userId = req.body.id
+    user.findByIdAndUpdate(userId, {password: hashedPass}, {runValidators: true})
+    .then((user) =>{
+        if(user){
+            res.status(200).json({success: "User updated successfully"})
+        }
+        else{
+            res.status(404).json({invalid: "User could not be found"})
+        }
+    })
+    .catch(err=>{
+        if(err.name === 'ValidationError'){
+            res.status(400).json({invalid: err.message})
+        }
+        next(err);
+    }) 
+    })
+}

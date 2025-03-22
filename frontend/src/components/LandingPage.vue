@@ -19,6 +19,7 @@
                             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='30' height='30' fill='%23FF4081'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 4.71 5.92 10.87 6.2 11.2.42.46 1.18.46 1.6 0C13.08 19.87 19 13.71 19 9c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9s-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E" alt="pinpoint icon">
                         </div>
                         <div class="input-group d-flex align-items-center w-100 p-2 custom-input">
+                            <!-- need to replace this input with a VueDatePicker -->
                             <input type="date" class="form-control font-size-18 bg-light" placeholder="When">
                         </div>
 
@@ -99,7 +100,7 @@
         background-repeat: no-repeat;
         background-position: right 10px center;
         background-size: 16px;
-        padding-right: 30px; /* Ensure space for the icon */
+        padding-right: 30px;
         cursor: pointer;
         color: var(--secondary)
     }
@@ -110,7 +111,6 @@
         border: 0;
     }
 
-    /* Change color and size of the calendar icon */
     input[type="date"]::-webkit-calendar-picker-indicator  {
         filter: brightness(0) saturate(100%) invert(61%) sepia(90%) saturate(5534%) hue-rotate(316deg) brightness(101%) contrast(101%);
         font-size: 20px;

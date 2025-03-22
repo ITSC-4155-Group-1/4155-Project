@@ -31,3 +31,24 @@ exports.isBookingAvailable = (req, res, next) =>{
     })
     .catch(err => next(err))
 }
+
+exports.isBooker = (req, res, next) => {
+    let buyer = req.session.user
+    let bookingId = req.body.id
+    bookingModel.findById(bookingId)
+    .then((booking) => {
+        if(booking){
+            if(booking.buyerId === buyer){
+                next()
+            }
+            else {
+                next(new Error('You are not the one who made this booking').status(400))
+            }
+        }
+        else{
+            next(new Error('Booking does not exist').status(404))
+        }        
+    })
+    .catch(err => next(err))
+  }
+  

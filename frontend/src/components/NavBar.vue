@@ -1,15 +1,12 @@
 <script setup>
     import '../assets/main.css';
     import { ref, watch, onBeforeUnmount, onMounted, computed } from 'vue';
-    import axios from 'axios';
     import { useRoute } from 'vue-router';
     import LoginModal from './LoginModal.vue';
     import SignupModal from './SignupModal.vue';
-    import router from '../router';
-    import { useUserStore } from '../store/userDetails';
+    import { useCookie } from 'vue-cookie-next';
 
     const route = useRoute();
-    const user = ref(null);
     const isLoggedIn = ref(false);
     const showWhichModal = ref(null);
     const isScrolled = ref(false);
@@ -18,7 +15,7 @@
     const successMessage = ref('');
     const showErrorBanner = ref(false);
     const showSuccessBanner = ref(false);
-    const userStore = useUserStore();
+    const cookies = useCookie();
 
     const toggleNavbar = () => {
         isNavCollapsed.value = !isNavCollapsed.value;
@@ -63,7 +60,14 @@
     };
 
     watch(showWhichModal, (newVal) => {
-        document.body.style.overflow = newVal ? 'hidden' : 'auto';
+        if (newVal === 'login' || newVal === 'signup') {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
     });
 
     watch(route, () => {
@@ -72,6 +76,7 @@
 
     onBeforeUnmount(() => {
         document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = ''; 
         window.removeEventListener('scroll', handleScroll);
     });
 
@@ -79,9 +84,11 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        const savedToken = localStorage.getItem("authToken");
+        const savedToken = cookies.getCookie('authToken')
         if (savedToken) {
-            toggleLoggedIn(JSON.parse(savedToken));
+            toggleLoggedIn(savedToken);
+        } else {
+            toggleLoggedIn(null);
         }
     });
 
@@ -103,26 +110,11 @@
 
     const toggleLoggedIn = (token) => {
         if (token) {
-            isLoggedIn.value = !isLoggedIn.value;
-            user.value = token.value;
-            localStorage.setItem("authToken", JSON.stringify(token));
+            isLoggedIn.value = true;
+            cookies.setCookie('authToken', JSON.stringify(token), { expire: '3h' })
         } else {
             isLoggedIn.value = false;
-            user.value = null;
-            localStorage.removeItem("authToken");
-        }
-    };
-
-    const logout = async () => {
-        try {
-            await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
-            userStore.clearUser();
-            toggleLoggedIn(null);
-            displaySuccessBanner("Successfully logged out");
-            closeNavbar();
-            router.push('/')
-        } catch (error) {
-            displayErrorBanner(error.response?.data?.message || "Logout failed");
+            cookies.removeCookie('authToken');
         }
     };
 </script>
@@ -163,17 +155,24 @@
                     </li>
                     <RouterLink 
                         v-if="isLoggedIn"
+                        to="/messages"
+                        class="nav-link"
+                    >
+                        Messages
+                    </RouterLink>
+                    <RouterLink 
+                        v-if="isLoggedIn"
+                        to="/notifications"
+                        class="nav-link"
+                    >
+                        Notifications
+                    </RouterLink>
+                    <RouterLink 
+                        v-if="isLoggedIn"
                         to="/venues/new"
                         class="nav-link"
                     >
                         Provide a Space
-                    </RouterLink>
-                    <RouterLink 
-                        v-if="isLoggedIn"
-                        to="/cart"
-                        class="nav-link"
-                    >
-                        Your Cart
                     </RouterLink>
                     <RouterLink 
                         v-if="isLoggedIn"
@@ -182,9 +181,6 @@
                     >
                         Settings
                     </RouterLink>
-                    <li v-if="isLoggedIn">
-                        <a class="nav-link" @click="logout">Logout</a>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -239,7 +235,7 @@
         z-index: 9999;
         font-weight: bold;
         opacity: 1;
-        transition: opacity 0.5s ease-in-out; /* Smooth fade effect */
+        transition: opacity 0.5s ease-in-out;
     }
 
     .success-banner {
