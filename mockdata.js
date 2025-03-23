@@ -176,18 +176,28 @@ export const messages = [
 //Notifications
 export const notifications = [
     {
-        "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+        "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "read": false,
+        "for": "snat6"
     },
     {
-        "notification": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        "notification": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "read": false,
+        "for": "snat6"
     },
     {
-        "notification": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "notification": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "read": false,
+        "for": "snat5"
     },
     {
-        "notification": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "notification": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "read": false,
+        "for": "Larry"
     },
     {
-        "notification": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        "notification": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "read": false,
+        "for": "Lil Guy"
     }
 ]
