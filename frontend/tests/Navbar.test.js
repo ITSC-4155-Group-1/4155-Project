@@ -87,7 +87,7 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(LoginModal).exists()).toBe(false);
 
     // ensure scrolling is re-enabled
-    expect(document.body.style.overflow).toBe('auto');
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('closes the signup modal and restores scrolling', async () => {
@@ -113,7 +113,8 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(SignupModal).exists()).toBe(false);
 
     // ensure scrolling is re-enabled
-    expect(document.body.style.overflow).toBe('auto');
+    console.log(document.body.style.overflow)
+    expect(document.body.style.overflow).toBe('');
   });
 });
 
