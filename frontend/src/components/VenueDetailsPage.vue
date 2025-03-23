@@ -3,6 +3,8 @@
     import { venues } from '../../../mockdata.js';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -16,6 +18,7 @@
     const total = ref(0);
     const isFilled = ref(false);
     const activeIndex = ref(0); // accordion active index
+    const showMoreImages = ref(false);
 
     // TODO: will make a call to the backend to save the venue for the user
     const saveVenue = () => {
@@ -28,6 +31,7 @@
 
         return venueStartDate > today ? venueStartDate : today;
     });
+
     const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
     const collapsibleSections = ref([
@@ -119,6 +123,17 @@
     const toggleAccordion = (index) => {
         activeIndex.value = activeIndex.value === index ? null : index;
     };
+
+    const toggleShowMoreImages = () => {
+        showMoreImages.value = !showMoreImages.value;
+        document.body.style.overflow = showMoreImages.value ? 'hidden' : 'auto';
+    };
+
+    const carouselConfig = {
+        height: 700,
+        itemsToShow: 1,
+        wrapAround: true,
+    }
 </script>
 
 <template>
@@ -191,8 +206,20 @@
                             :key="index" 
                             :src="image" 
                             alt="Venue image" 
-                            class=" rounded"
+                            class="rounded"
+                            :class="{ 'show-more-images-overlay' : index === 3 }"
                         >
+                        <div 
+                            v-if="index === 3"
+                            class="black-overlay position-absolute top-0 left-0 w-100 h-100 d-flex justify-content-center align-items-center"
+                        >
+                            <button
+                                class="show-more-images-btn border-0 px-1 py-2 rounded bg-transparent text-light"
+                                @click="toggleShowMoreImages"
+                            >
+                                Show More &#8594;
+                            </button>
+                        </div>
                     </div>
                 </template>
                 <template v-if="venue.image.length < 5">
@@ -205,6 +232,27 @@
             </div>
         </div>
         <p v-else>No image available</p>
+
+        <div
+            v-if="showMoreImages"
+            class="show-more-images-container mx-auto position-fixed top-0  w-100 h-100 d-flex justify-content-center align-items-center"
+        >
+            <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
+            <Carousel v-bind="carouselConfig">
+                <Slide v-for="image in venue.image" :key="image">
+                    <img
+                        :src="image"
+                        alt="Venue Images"
+                        loading="lazy"
+                        class="w-80 h-100 object-fit-cover rounded"
+                    >
+                </Slide>
+                
+                <template #addons>
+                    <Navigation class="mx-4" />
+                </template>
+            </Carousel>
+        </div>
 
         <div class="d-flex justify-space-around gap-5">
             <div class="w-65 my-2">
@@ -373,6 +421,10 @@
         width: 95%;
     }
 
+    .w-80 {
+        width: 80%;
+    }
+
     .w-65 {
         width: 65%;
     }
@@ -434,6 +486,24 @@
         font-size: 14px;
     }
 
+    .show-more-images-overlay {
+        position: relative;
+        z-index: 1;
+    }
+
+    .black-overlay {
+        background-color: rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+    }
+
+    .show-more-images-btn {
+        font-size: 19px;
+    }
+
+    .show-more-images-btn:hover {
+        text-decoration: underline;
+    }
+
     .rating {
         color: var(--highlight);
     }
@@ -489,5 +559,29 @@
     .custom-accordion-box {
         border: none !important;
         background-color: #eaeaea;
+    }
+
+    .show-more-images-container {
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1050;
+        left: 0;
+    }
+
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        padding: 0 4rem;
+        margin: 0 auto;
+    }
+
+    .close-show-more-images-container {
+        position: absolute;
+        top: 25px;
+        right: 40px;
+        font-size: 1.8rem;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
     }
 </style>
