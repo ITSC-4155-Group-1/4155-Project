@@ -15,8 +15,9 @@
     const processing = 50;
     const total = ref(0);
     const isFilled = ref(false);
+    const activeIndex = ref(0); // accordion active index
 
-    // will make a call to the backend to save the venue for the user
+    // TODO: will make a call to the backend to save the venue for the user
     const saveVenue = () => {
         isFilled.value = !isFilled.value;
     };
@@ -114,6 +115,10 @@
 
         return validOptions;
     });
+
+    const toggleAccordion = (index) => {
+        activeIndex.value = activeIndex.value === index ? null : index;
+    };
 </script>
 
 <template>
@@ -151,7 +156,7 @@
                 </span>
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
-                    @click="saveVenue()"
+                    @click="saveVenue"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -169,6 +174,7 @@
                 </span>
             </div>
         </div>
+
         <div class="d-flex gap-2 image-gallery"
             v-if="venue.image && venue.image.length"
         >
@@ -180,7 +186,7 @@
             </div>
             <div class="w-50 other-images-grid">
                 <template v-if="venue.image.length > 1">
-                    <div class="grid-item" v-for="(image, index) in venue.image.slice(1, 5)">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.image.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
@@ -190,7 +196,11 @@
                     </div>
                 </template>
                 <template v-if="venue.image.length < 5">
-                    <div v-for="index in 5 - venue.image.length" :key="'placeholder-' + index" class="placeholder-box rounded"></div>
+                    <div
+                        v-for="index in 5 - venue.image.length"
+                        :key="'placeholder-' + index"
+                        class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
+                    ></div>
                 </template>
             </div>
         </div>
@@ -237,17 +247,22 @@
                 <p class="fs-6">{{ venue.venue_description }}</p>
                 
                 <!-- Collapsible Sections -->
-                <div class="accordionContainer" v-for="(section, index) in collapsibleSections" :key="index">
-                    <div class="accordion" :id="'accordionExample' + index">
-                        <div class="accordion-item">
+                <div class="accordionContainer">
+                    <!-- <div class="accordion">
+                        <div
+                            class="accordion-item"
+                            v-for="(section, index) in collapsibleSections"
+                            :key="index"
+                        >
                             <h2 class="accordion-header" :id="'heading' + index">
                                 <button 
                                     class="accordion-button custom-accordion-button collapsed fs-5"
                                     type="button" 
                                     :data-bs-toggle="'collapse'" 
                                     :data-bs-target="'#collapse' + index" 
-                                    :aria-expanded="false"
-                                    :aria-controls="'collapse' + index">
+                                    :aria-expanded="true"
+                                    :aria-controls="'collapse' + index"
+                                >
                                     {{ section.title }}
                                 </button>
                             </h2>
@@ -257,6 +272,36 @@
                                 :class="{'show': index === 0}"
                                 :data-bs-parent="'#accordionExample' + index">
                                 <div class="accordion-body">
+                                    {{ section.content }}
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="accordion" id="venueAccordion">
+                        <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item">
+                            <h2 class="accordion-header" :id="'heading-' + index">
+                                <button
+                                    class="accordion-button custom-accordion-button"
+                                    :class="{ 'collapsed': activeIndex !== index }"
+                                    type="button"
+                                    @click="toggleAccordion(index)"
+                                    :aria-expanded="activeIndex === index"
+                                    :aria-controls="'collapse-' + index"
+                                >
+                                    {{ section.title }}
+                                    <span class="ms-auto">
+                                        <i :class="activeIndex === index ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+                                    </span>
+                                </button>
+                            </h2>
+                            <div
+                                :id="'collapse-' + index"
+                                class="accordion-collapse collapse"
+                                :class="{ 'show': activeIndex === index }"
+                                :aria-labelledby="'heading-' + index"
+                                data-bs-parent="#venueAccordion"
+                            >
+                                <div class="accordion-body px-2">
                                     {{ section.content }}
                                 </div>
                             </div>
@@ -393,7 +438,7 @@
 
     .venue-location {
         font-size: 20px;
-        color: #757575;
+        color: var(--secondary);
     }
 
     .other-images-grid {
@@ -404,28 +449,18 @@
         gap: 5px;
     }
 
-    .grid-item {
-        position: relative;
-    }
-
     .grid-item img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Ensures the image covers the cell while maintaining aspect ratio */
+        object-fit: cover;
         object-position: center;
     }
 
     .placeholder-box {
-        width: 100%;
-        height: 100%;
-        background-color: #f0f0f0;
-        border: 2px dashed #ccc;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        border-color:#ccc;
+        border-style: dashed;
         color: #ccc;
         font-size: 14px;
-        text-align: center;
     }
 
     .rating {
