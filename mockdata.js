@@ -22,7 +22,16 @@ export const venues = [
         "availability_start_date": new Date("2025, 4, 5"),
         "availability_end_date": new Date("2025, 11, 20"),
         "capacity": 150,
-        "image": ["/images/mountain-lodge.jpg", "/images/Mountain_Lodge.jpeg", "/images/Mountain_Lodge_1.jpeg"],
+        "image": [
+            "/images/mountain-lodge.jpg",
+            "/images/Mountain_Lodge.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg"
+        ],
         "rating": 4.6
     },
     {
