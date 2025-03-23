@@ -210,3 +210,36 @@ export const notifications = [
         "for": "Lil Guy"
     }
 ]
+
+export const reviews = [
+    {
+        "rating": 5,
+        "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "user_id": "snat6",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 4,
+        "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "user_id": "snat5",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 1,
+        "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "user_id": "snat5",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 3,
+        "comment": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "user_id": "Larry",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 2,
+        "comment": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "user_id": "Lil Guy",
+        "venue_name": "Mountain Lodge"
+    },
+]
