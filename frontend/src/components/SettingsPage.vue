@@ -1,14 +1,20 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed } from 'vue';
     import { venues } from "../../../mockdata";
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
+    import { useUserStore } from '../store/userDetails';
 
     const venueList = ref(venues);
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
     const user = parseUser();
+    const userStore = useUserStore();
+
+    const newPassword = ref("");
+    const rePassword = ref("");
+    const passwordError = ref("");
 
     const openModal = () => {
         showModal.value = true;
@@ -31,7 +37,20 @@
         updatePasswordDiv.value = !updatePasswordDiv.value;
     }
 
+    const passwordsMatch = computed(() => newPassword.value === rePassword.value || rePassword.value === "");
+
+    const validatePasswords = () => {
+        if (!passwordsMatch.value) {
+            passwordError.value = "Passwords do not match.";
+            return false;
+        }
+        passwordError.value = "";
+        return true;
+    };
+
     const updatePassword = async () => {
+        if (!validatePasswords()) return;
+
         // backend call to update password
         updatePassword.value = false;
     }
@@ -53,13 +72,13 @@
                         <i class="icon">⭐</i> Favorites
                     </li>
                 </ul>
-                <a class="logout" href="#">Logout</a>
+                <a class="logout" @click="userStore.logout()">Logout</a> <!-- need to make functional (don't forget) -->
             </div>
 
             <div class="main-content">
                 <div v-if="activeSection === 'personal-info'">
                     <div class="profile-card">
-                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar">
+                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> <!-- user can update their pfp -->
                         <div class="profile-info">
                             <h3 class="username">
                                 {{ user?.firstName }} {{ user?.lastName }}
@@ -83,7 +102,15 @@
                                         id="newPassword"
                                         aria-describedby="newPassword"
                                         required
+                                        v-model="newPassword"
+                                        minlength="8"
+                                        maxlength="30"
+                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
+                                        title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
                                     >
+                                    <div class="form-text">
+                                        Must contain at least 8 characters, including uppercase and lowercase letters, and numbers.
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="repeatPassword" class="form-label">Re-type Password</label>
@@ -92,7 +119,14 @@
                                         class="form-control"
                                         id="repeatPassword"
                                         required
+                                        v-model="rePassword"
+                                        minlength="8"
+                                        maxlength="30"
+                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
+                                        title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
+                                        @input="validatePasswords"
                                     >
+                                    <p v-if="passwordError" class="text-danger mt-1">{{ passwordError }}</p>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="rounded password-change-btn confirm" @click="updatePassword">Confirm</button>
@@ -243,6 +277,7 @@
     padding: 10px;
     font-size: 1.3rem;
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .profile-card {

@@ -4,6 +4,7 @@ exports.alreadyLoggedIn = (req, res, next) => {
         return next()
     }
     else{
+        console.log(req.session)
         res.status(400).json({invalid: 'You are not logged in yet'})
     }    
 }

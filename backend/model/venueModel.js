@@ -2,7 +2,6 @@ const mongoose = require ('mongoose')
 const {Schema} = mongoose
 
 const venueSchema = new Schema({
-    buyerId: {type: Schema.Types.ObjectID, ref: 'User'},
     venueName: {type: String, required: [true, 'Venue name is required']},
     description: {type: String, required: [true, 'Venue description is required']},
     host: {type: Schema.Types.ObjectID, ref: 'User'},

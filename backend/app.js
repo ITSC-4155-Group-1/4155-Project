@@ -5,11 +5,12 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo')
 const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
+const bookingRoutes = require('./routes/bookingRoutes')
 const cors = require ('cors')
 
 const port = 3000
 const app = express()
-const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data";
+const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
 // Database connect
 mongoose.connect(url)
@@ -56,6 +57,7 @@ app.use('/test', (req, res) => {
 
 app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
+app.use('/booking', bookingRoutes)
 
 // Basic error handling
 app.use((req, res, next) => {

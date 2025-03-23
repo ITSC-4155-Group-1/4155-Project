@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, computed } from 'vue';
+    import { ref, computed, watch, onUnmounted } from 'vue';
     import { useRouter } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
 
@@ -13,40 +13,51 @@
     const host = cartStore.cartDetails.host;
     const venueName = cartStore.cartDetails.venueName;
     const venuePrice = cartStore.cartDetails.venuePrice;
-    const startDate = cartStore.cartDetails.startDate;
-    const endDate = cartStore.cartDetails.endDate;
-    const attendees = cartStore.cartDetails.attendees;
+    const reserveDates = ref([cartStore.cartDetails.startDate, cartStore.cartDetails.endDate]);
+    const newReserveDates = ref(null);
+    const attendees = ref(cartStore.cartDetails.attendees);
+    const newAttendees = ref('');
     const cleaningFee = cartStore.cartDetails.cleaningFee;
     const taxes = cartStore.cartDetails.processing;;
     const images = cartStore.cartDetails.image ? cartStore.cartDetails.image.split(',') : [];
     const total = ref(0);
+    const dateModalToggled = ref(false);
+    const newDatesError = ref("");
+    const attendeesModalToggled = ref(false);
+    const newAttendeesError = ref("");
 
     
     const abbreviatedDates = computed(() => {
         const months = {
-            1: "Jan",
-            2: "Feb",
-            3: "Mar",
-            4: "Apr",
-            5: "May",
-            6: "Jun",
-            7: "Jul",
-            8: "Aug",
-            9: "Sep",
-            10: "Oct",
-            11: "Nov",
-            12: "Dec"
+            0: "Jan",
+            1: "Feb",
+            2: "Mar",
+            3: "Apr",
+            4: "May",
+            5: "Jun",
+            6: "Jul",
+            7: "Aug",
+            8: "Sep",
+            9: "Oct",
+            10: "Nov",
+            11: "Dec"
         };
-        const start = [months[new Date(startDate).getMonth()], new Date(startDate).getDate()];
-        const end = [months[new Date(endDate).getMonth()], new Date(endDate).getDate()];
+        const start = [
+            months[new Date(reserveDates.value[0]).getMonth()], 
+            new Date(reserveDates.value[0]).getDate()
+        ];
+        const end = [
+            months[new Date(reserveDates.value[1]).getMonth()],
+            new Date(reserveDates.value[1]).getDate()
+        ];
 
         return `${start[0]}. ${start[1]} - ${end[0]}. ${end[1]}`;
     })
 
     const calculateDays = computed(() => {
-        if (startDate && endDate) {
-            const start = new Date(startDate).getDate();
-            const end = new Date(endDate).getDate();
+        if (reserveDates.value[0] && reserveDates.value[1]) {
+            const start = new Date(reserveDates.value[0]).getDate();
+            const end = new Date(reserveDates.value[1]).getDate();
             const diffTime = end - start;
             return Math.max(1, diffTime);
         }
@@ -60,6 +71,109 @@
 
         total.value = (venuePrice * calculateDays.value) + Number(cleaningFee) + Number(taxes);
         return parseFloat(total.value).toFixed(2);
+    });
+
+    const validAttendeeOptions = computed(() => {
+        const capacity = cartStore.cartDetails.capacity;
+        const options = [
+            { label: '1-40', value: '1-40' },
+            { label: '41-100', value: '41-100' },
+            { label: '101-200', value: '101-200' },
+            { label: '200+', value: '200+' }
+        ];
+
+        const validOptions = [];
+
+        options.forEach(option => {
+            const [min, max] = option.value.split('-').map(Number);
+
+            if (option.value === '200+') {
+                if (capacity >= 200) {
+                    validOptions.push(option);
+                }
+            } else if (capacity >= min && capacity <= max) {
+                validOptions.push(option);
+            } else if (capacity > min) {
+                validOptions.push(option);
+            }
+        });
+
+        return validOptions;
+    });
+
+    const toggleDateModal = () => {
+        if (!dateModalToggled.value) {
+            newReserveDates.value = [...reserveDates.value];
+        }
+
+        dateModalToggled.value = !dateModalToggled.value;
+    }
+
+    const toggleAttendeesModal = () => {
+        if (!attendeesModalToggled.value) {
+            newAttendees.value = attendees.value;
+        }
+
+        attendeesModalToggled.value = !attendeesModalToggled.value;
+    }
+
+    const changeDates = () => {
+        if (!newReserveDates.value || newReserveDates.value.length < 2) {
+            newDatesError.value = "Please select 2 dates."
+            return;
+        }
+
+        newDatesError.value = "";
+        reserveDates.value = [...newReserveDates.value];
+        dateModalToggled.value = false;
+    }
+
+    const changeAttendees = () => {
+        let isNotValid = true;
+
+        validAttendeeOptions.value.forEach(option => {
+            if (newAttendees.value === option.value) {
+                isNotValid = false;
+            }
+        });
+
+        if (isNotValid) {
+            newAttendeesError.value = "Please enter a valid number of attendees."
+            return;
+        }
+
+        newAttendeesError.value = "";
+        attendees.value = newAttendees.value;
+        attendeesModalToggled.value = false;
+    }
+
+    watch(dateModalToggled, (isOpen) => {
+        if (isOpen) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.backgroundColor = '#0000000d';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    });
+
+    watch(attendeesModalToggled, (isOpen) => {
+        if (isOpen) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.backgroundColor = '#0000000d';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    });
+
+    onUnmounted(() => {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     });
 
     const book = () => {
@@ -140,7 +254,7 @@
                     <p>
                         By selecting the button below, I agree to the Host's Venue Rules and Ground rules for attendees, and that Gatherly can charge my payment method if I'm responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request
                     </p>
-                    <button type="submit" class="btn" @click="book">Book</button>
+                    <button type="submit" class="btn custom-btn confirm" @click="book">Book</button>
                 </div>
             </div>
             <div class="d-flex flex-column border border-1 border-black rounded-3 p-4 w-25 your-trip">
@@ -151,14 +265,26 @@
                             <span class="fw-medium">Dates:</span>
                             {{ abbreviatedDates }}
                         </span>
-                        <a class="color-black" href="#">Edit</a>
+                        <button
+                            type="button"
+                            class="border-0 text-decoration-underline"
+                            @click="toggleDateModal"
+                        >
+                            Edit
+                        </button>
                     </div>
                     <div class="d-flex justify-content-between details">
                         <span>
                             <span class="fw-medium">Attendees:</span> 
                             {{ attendees }}
                         </span>
-                        <a class="color-black" href="#">Edit</a>
+                        <button
+                            type="button"
+                            class="border-0 text-decoration-underline"
+                            @click="toggleAttendeesModal"
+                        >
+                            Edit
+                        </button>
                     </div>
                 </div>
                 <div class="info border-bottom border-black pb-4 pt-4">
@@ -184,7 +310,100 @@
                 </div>
             </div>
         </div>
+
+        <div v-if="dateModalToggled" class="overlay">
+            <div class="popup bg-light">
+                <button class="close-btn" @click="toggleDateModal">
+                    &times;
+                </button>
+
+                <div>
+                    <h3>Edit Dates</h3>
+                    <div class="d-flex flex-column gap-1">
+                        <VueDatePicker
+                            v-model="newReserveDates"
+                            type="date"
+                            range
+                            placeholder="mm/dd/yyyy - mm/dd/yyyy"
+                            :min-date="new Date()"
+                            :enable-time-picker="false"
+                        />
+                        <div v-if="newDatesError">
+                            <span class="text-danger">
+                                {{ newDatesError }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn confirm"
+                            @click="changeDates"
+                        >
+                            Save
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn cancel"
+                            @click="toggleDateModal"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="attendeesModalToggled" class="overlay">
+            <div class="popup bg-light">
+                <button class="close-btn" @click="toggleAttendeesModal">
+                    &times;
+                </button>
+
+                <div>
+                    <h3>Edit Attendees</h3>
+                    <div class="d-flex flex-column gap-1">
+                        <select
+                            class="form-select attendees-no-box-shadow"
+                            id="attendees"
+                            v-model="newAttendees"
+                            required
+                        >
+                            <option 
+                                v-for="option in validAttendeeOptions" 
+                                :key="option.value" 
+                                :value="option.value"
+                            >
+                                {{ option.label }}
+                            </option>
+                        </select>
+                        <div v-if="newAttendeesError">
+                            <span class="text-danger">
+                                {{ newAttendeesError }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn confirm"
+                            @click="changeAttendees"
+                        >
+                            Save
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn cancel"
+                            @click="toggleAttendeesModal"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 </template>
 
 <style scoped>
@@ -224,16 +443,31 @@
         margin: 0.5rem auto;
     }
 
-    button[type="submit"] {
+    .custom-btn {
         width: fit-content;
         padding: 0.75rem 2rem;
-        background-color: var(--highlight);
         color: white;
         transition: background-color 0.2s ease-in-out;
     }
+
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
     
-    button[type="submit"]:hover {
+    .confirm:hover {
+        color: white;
         background-color: var(--highlight-dark-50);
+    }
+
+    .cancel {
+        color: white;
+        background-color: red;
+    }
+
+    .cancel:hover {
+        color: white;
+        background-color: darkred;
     }
 
     .your-trip {
@@ -254,11 +488,38 @@
         margin-top: 1rem;
     }
 
-    .color-black {
-        color: black;
-    }
-
     .primary-color {
         color: var(--primary);
+    }
+
+    .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .popup {
+        position: relative;
+        width: 50%;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: #333;
     }
 </style>
