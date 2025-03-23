@@ -278,7 +278,7 @@
                         </div>
                     </div> -->
                     <div class="accordion" id="venueAccordion">
-                        <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item">
+                        <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item custom-accordion-box">
                             <h2 class="accordion-header" :id="'heading-' + index">
                                 <button
                                     class="accordion-button custom-accordion-button"
@@ -515,7 +515,7 @@
         background-color: var(--background);
     }
 
-    .accordion-item {
+    .custom-accordion-box {
         border: none !important;
         background-color: #eaeaea;
     }
