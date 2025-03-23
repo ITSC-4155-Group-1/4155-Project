@@ -1,6 +1,6 @@
 <script setup>
     import { ref, computed, onMounted } from 'vue';
-    import { venues } from '../../../mockdata.js';
+    import { venues, reviews } from '../../../mockdata.js';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
@@ -11,6 +11,7 @@
 
     const route = useRoute();
     const venue = ref({});
+    const venueReviews = ref([]);
     const dateRange = ref(null);
     const attendees = ref('');
     const cleaningFee = 200;
@@ -44,8 +45,17 @@
 
     onMounted(() => {
         const venueId = route.params.id;
-        venue.value = venues.find(v => v.venue_name === venueId);
+        const singularVenue = venues.find(v => v.venue_name === venueId)
+        venue.value = singularVenue;
+        venueReviews.value = reviews.filter(r => r.venue_name === singularVenue.venue_name);
     });
+
+    const venueRating = computed(() => {
+        const totalReviews = venueReviews.value.length;
+        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+
+        return totalReviews > 0 ? totalStars / totalReviews : 0;
+    })
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
@@ -257,7 +267,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div class="w-65 my-2">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <div v-if="venue.rating">
+                    <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
                             <svg
                                 width="23"
@@ -268,8 +278,11 @@
                                 <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                                     fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
                             </svg>
-                            {{ venue.rating }} / 5.0 
+                            {{ venueRating.toFixed(1) }} / 5.0 
                         </span>
+                    </div>
+                    <div v-else>
+                        <span class="fs-5 fw-medium rating">No Reviews</span>
                     </div>
 
                     <div v-if="venue.capacity">
@@ -292,7 +305,7 @@
                 </div>
     
                 <h5>About the space</h5>
-                <p class="fs-6">{{ venue.venue_description }}</p>
+                <p>{{ venue.venue_description }}</p>
                 
                 <!-- Collapsible Sections -->
                 <div class="accordionContainer">
@@ -324,6 +337,48 @@
                                     {{ section.content }}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reviews mt-4" v-if="venueReviews.length > 0">
+                    <h5 class="mb-3">
+                        {{ venueReviews.length > 1 ? 'Reviews' : 'Review' }}
+                        ({{ venueReviews.length }})
+                    </h5>
+                    <div
+                        class="review-container" v-for="review in venueReviews"
+                        :key="review.comment + '_' + review.user_id"
+                    >
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <img
+                                        src="/images/profile_4.jpeg"
+                                        alt="profile pic"
+                                        class="rounded-circle object-fit-cover"
+                                        width="35"
+                                    >
+                                    <span class="reviewer">{{ review.user_id }}</span>
+                                </div>
+                                <div>
+                                    <span class="rating fs-5 fw-bolder">
+                                        <svg
+                                            width="23"
+                                            height="23"
+                                            viewBox="0 0 15 15"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
+                                                fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
+                                        </svg>
+                                        {{ review.rating.toFixed(1) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="review-comment">{{ review.comment }}</p>
                         </div>
                     </div>
                 </div>
@@ -583,5 +638,13 @@
         background: none;
         border: none;
         cursor: pointer;
+    }
+
+    .reviewer {
+        font-size: 17px;
+    }
+
+    .review-comment {
+        font-size: 16px;
     }
 </style>
