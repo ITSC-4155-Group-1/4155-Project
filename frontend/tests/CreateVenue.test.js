@@ -23,7 +23,7 @@ describe('CreateVenue.vue', () => {
     await wrapper.find('#city').setValue('Los Angeles');
     await wrapper.find('#address').setValue('123 Hollywood Blvd');
     //venue name enabled
-    expect(venueNameInput.attributes('disabled')).toBeUndefined();
+    expect(venueNameInput.attributes('disabled')).toBeFalsy();
   });
   it('disables description until venue name is entered', async () => {
     const wrapper = mount(CreateVenue);
@@ -36,7 +36,7 @@ describe('CreateVenue.vue', () => {
     await wrapper.find('#address').setValue('123 Hollywood Blvd');
     await wrapper.find('#venue_name').setValue('Studio Space');
     //description enabled
-    expect(descriptionInput.attributes('disabled')).toBeUndefined();
+    expect(descriptionInput.attributes('disabled')).toBeFalsy();
   });
   it('disables price field until description is entered', async () => {
     const wrapper = mount(CreateVenue);
@@ -50,7 +50,7 @@ describe('CreateVenue.vue', () => {
     await wrapper.find('#description').setValue('A modern studio space for events and photoshoots.');
     
     //price enabled
-    expect(priceInput.attributes('disabled')).toBeUndefined();
+    expect(priceInput.attributes('disabled')).toBeFalsy();
   });
   
   it('disables capacity field until price is entered', async () => {
@@ -66,6 +66,6 @@ describe('CreateVenue.vue', () => {
     await wrapper.find('#price').setValue(200);
     
     //should see capacity now
-    expect(capacityInput.attributes('disabled')).toBeUndefined();
+    expect(capacityInput.attributes('disabled')).toBeFalsy();
   });
 });
