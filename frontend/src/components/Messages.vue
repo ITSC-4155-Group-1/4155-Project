@@ -1,12 +1,13 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed, reactive, watch, onMounted } from 'vue';
     import { parseUser } from "../utils/userUtils"
     import { messages } from "../../../mockdata"
 
-    const messagesData = ref(messages);
+    const allMessages = ref([...messages]) // stores all the messages (default and newly sent ones)
+    const messagesData = ref([...messages]);
 
     // should default to the most recent person you messaged
-    const messagingWho = ref('Person 1');
+    const messagingWho = ref(messages[0]?.from);
 
     const filterButton = ref('all');
     const filterInput = ref(null);
@@ -17,9 +18,37 @@
         messagingWho.value = person;
     };
 
+    const markMessagesAsOpened = (person) => {
+        allMessages.value = allMessages.value.map(message => {
+            if (message.from === person) {
+                return { ...message, opened: true };
+            }
+            return message;
+        });
+        messagesData.value = [...allMessages.value];
+    };
+
+    onMounted(() => {
+        markMessagesAsOpened(messagingWho.value);
+    });
+
+    watch(messagingWho, (newPerson) => {
+        markMessagesAsOpened(newPerson);
+    });
+
+    const messagesForASpecificUser = computed(() => {
+        return allMessages.value.filter(
+            message =>
+                message.from === messagingWho.value ||
+                (message.to === messagingWho.value && message.from === user?.firstName)
+        );
+    });
+
     const setFilterButton = (filter) => {
         if (filter === 'unread') {
-            const unreadMessages = messagesData.value.filter(message => !message.opened);
+            const unreadMessages = messagesData.value.filter(
+                message => !message.opened && message.from !== user?.firstName
+            );
             listOfMessagesNames.value = [...new Set(unreadMessages.map(message => message.from))];
             messagesData.value = unreadMessages;
         } else {
@@ -47,18 +76,36 @@
     };
 
     const newMessage = ref('');
-    const exampleMessages = ref([
-        { sender: 'Santiago', text: "Hey, how are you?" },
-        { sender: 'Me', text: "I'm good, what about you?" }
-    ]);
-
     const sendMessage = () => {
         if (newMessage.value.trim()) {
-            exampleMessages.value.push({ sender: 'Me', text: newMessage.value });
+            const newMsg = {
+                from: user?.firstName,
+                to: messagingWho.value,
+                message: newMessage.value,
+                timestamp: new Date(),
+                opened: false,
+            };
+
+            allMessages.value = [...allMessages.value, reactive(newMsg)];
+            messagesData.value = [...allMessages.value];
+
+            if (!listOfMessagesNames.value.includes(messagingWho.value)) {
+                listOfMessagesNames.value.push(messagingWho.value);
+            }
+
             newMessage.value = '';
         }
     };
 
+    const formatTimestamp = (timestamp) => {
+        return new Date(timestamp).toLocaleString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            month: 'short',
+            day: 'numeric',
+        });
+    };
 </script>
 
 <template>
@@ -115,13 +162,14 @@
                 <!-- each person's messages -->
                 <ul
                     v-if="listOfMessagesNames.length > 0"
-                    v-for="(name, idx) in listOfMessagesNames"
                     class="sidebar-menu list-style-none m-0 p-0"
                 >
                     <li
+                        v-for="(name, idx) in listOfMessagesNames"
                         class="d-flex align-items-center p-3"
                         role="button"
                         @click="setMessagingWho(name)"
+                        :class="{ active: messagingWho === name }"
                         :key="`${name}_${idx}`"
                     >
                         <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> <!-- this needs to be the other person's pfp -->
@@ -135,13 +183,25 @@
             <!-- the way it the information is displayed may need to change -->
             <div class="chat-box d-flex flex-column w-100 flex-fill">
                 <div class="message-inbox d-flex flex-column flex-fill overflow-y-auto p-4">
-                    <div class="d-flex flex-column g-1 pb-2 flex-fill overflow-y-auto">
+                    <div class="d-flex flex-column flex-fill overflow-y-auto">
                         <div
-                            v-for="(message, index) in exampleMessages"
+                            v-for="(message, index) in messagesForASpecificUser"
                             :key="index"
-                            :class="['message', message.sender === 'Me' ? 'sent' : 'received']"
+                            class="d-flex flex-column mb-2"
                         >
-                            {{ message.text }}
+                            <div
+                                :class="[
+                                    'message', message.from === user?.firstName ? 'sent' : 'received'
+                                ]"
+                            >
+                                <div>{{ message.message }}</div>
+                            </div>
+
+                            <span
+                                :class="['timestamp', message.from === user?.firstName ? 'sent' : 'received']"
+                            >
+                                {{ formatTimestamp(message.timestamp) }} by {{ message.from === user?.firstName ? 'Me' : message.from }}
+                            </span>
                         </div>
                     </div>
 
@@ -208,7 +268,7 @@
         border-radius: 20px; 
     }
 
-    .sidebar-menu li:active {
+    .sidebar-menu li.active {
         background: #dbeafe;
         font-weight: bold;
     }
@@ -237,7 +297,6 @@
         border-radius: 7px;
         max-width: 50%;
         word-wrap: break-word;
-        margin: 3px 0;
     }
 
     .message.received {
@@ -250,6 +309,18 @@
         color: white;
         align-self: flex-end;
         margin-right: 5px;
+    }
+
+    .timestamp {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .timestamp.sent {
+        margin-right: 5px;
+        align-self: flex-end;
     }
 
     .messages-container:has(.chat-profile:empty) {
