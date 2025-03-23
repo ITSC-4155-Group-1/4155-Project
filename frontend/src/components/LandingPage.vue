@@ -11,10 +11,8 @@
         attendees: ''
     });
 
-    // note to self: we're returning true either because the queries can be empty (have fun deciphering this)
+    // note to self: we're returning true either way because the queries can be empty (have fun deciphering this)
     const search = () => {
-        // console.log('here', searchQuery.value.date, venues[0].value.availability_start_date, venues[0].value.availability_end_date);
-        
         venueList.value = venues.filter(venue => {
             const locationMatch = searchQuery.value.location 
                 ? venue.location.toLowerCase().includes(searchQuery.value.location.toLowerCase()) 
@@ -32,7 +30,6 @@
         });
     };
 
-    // Helper function to compare attendees correctly
     const filterAttendees = (venueAttendees, groupSize) => {
         switch (groupSize) {
             case "small-group": return venueAttendees >= 1 && venueAttendees <= 40;
@@ -111,13 +108,18 @@
     </div>
     
     <div class="main-container">
-        <div class="row">
-            <div 
+        <div class="row" v-if="venueList.length > 0">
+            <div
                 v-for="(venue, index) in venueList" 
                 :key="index + '_' + venue.venue_name" 
                 class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
             >
                 <VenueCard :venue="venue" />
+            </div>
+        </div>
+        <div v-else>
+            <div class="text-center p-5 m-5">
+                <h4>No venues found that match your search criteria.</h4>
             </div>
         </div>
     </div>
