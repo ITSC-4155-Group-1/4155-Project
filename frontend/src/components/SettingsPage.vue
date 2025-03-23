@@ -61,7 +61,7 @@
     const updatePassword = async () => {
         if (!validatePasswords()) return;
 
-        // backend call to update password
+        // TODO: backend call to update password
         updatePassword.value = false;
     }
 
@@ -82,7 +82,7 @@
             return;
         }
 
-        // backend call to update pfp
+        // TODO: backend call to update pfp
         changePfpModal.value = false;
     }
 </script>
@@ -305,7 +305,7 @@
     }
 
     .sidebar {
-        width: 20%;
+        min-width: 15%;
         padding: 20px;
         display: flex;
         flex-direction: column;
