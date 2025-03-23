@@ -113,6 +113,7 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(SignupModal).exists()).toBe(false);
 
     // ensure scrolling is re-enabled
+    console.log(document.body.style.overflow)
     expect(document.body.style.overflow).toBe('auto');
   });
 });
