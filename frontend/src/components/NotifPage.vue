@@ -1,25 +1,29 @@
 <script setup>
     import { notifications } from '../../../mockdata';
     import { ref } from "vue"
+    import { parseUser } from '../utils/userUtils'
 
-    const notifList = ref(notifications);
+    const user = parseUser();
+    const notifList = ref(null);
+    notifList.value = notifications.filter(notification => {
+        return notification.read === false && notification.for === user?.firstName;
+    });
 
     const remove = (index) => {
-    // Trigger fade-out by adding a class
     notifList.value[index].isFading = true;
+    notifList.value[index].read = true;
 
-    // Wait for animation to finish before removing
     setTimeout(() => {
         notifList.value.splice(index, 1);
         // TODO: Add code to remove notif from database
-    }, 500); // Matches the CSS transition duration
+    }, 500);
 };
 </script>
 
 <template>
     <div class="notifContainer mx-auto">
         <h1 class="pb-2">Notifications</h1>
-        <ul class="list-group list-unstyled">
+        <ul class="list-group list-unstyled" v-if="notifList.length > 0">
             <li
                 v-for="(notif, idx) in notifList"
                 :key="idx"
@@ -33,6 +37,7 @@
                 </div>
             </li>
         </ul>
+        <div v-else class="text-center">No unread notifications</div>
     </div>
 </template>
 
