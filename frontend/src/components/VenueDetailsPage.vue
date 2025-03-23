@@ -248,35 +248,6 @@
                 
                 <!-- Collapsible Sections -->
                 <div class="accordionContainer">
-                    <!-- <div class="accordion">
-                        <div
-                            class="accordion-item"
-                            v-for="(section, index) in collapsibleSections"
-                            :key="index"
-                        >
-                            <h2 class="accordion-header" :id="'heading' + index">
-                                <button 
-                                    class="accordion-button custom-accordion-button collapsed fs-5"
-                                    type="button" 
-                                    :data-bs-toggle="'collapse'" 
-                                    :data-bs-target="'#collapse' + index" 
-                                    :aria-expanded="true"
-                                    :aria-controls="'collapse' + index"
-                                >
-                                    {{ section.title }}
-                                </button>
-                            </h2>
-                            <div 
-                                :id="'collapse' + index" 
-                                class="accordion-collapse collapse"
-                                :class="{'show': index === 0}"
-                                :data-bs-parent="'#accordionExample' + index">
-                                <div class="accordion-body">
-                                    {{ section.content }}
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
                     <div class="accordion" id="venueAccordion">
                         <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item custom-accordion-box">
                             <h2 class="accordion-header" :id="'heading-' + index">
