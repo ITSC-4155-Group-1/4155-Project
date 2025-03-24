@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useCookie } from 'vue-cookie-next'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { showSuccessToast, showErrorToast } from '../utils/toast'
 
 
 export const useUserStore = defineStore('user', () => {
@@ -43,13 +44,17 @@ export const useUserStore = defineStore('user', () => {
                     token: response.data.token,
                 });
 
+                showSuccessToast(response.data.success);
+
                 return { success: true, token: response.data.token, message: response.data.success };
             }
         } catch (error) {
             if (error.response && error.response.status === 400 && error.response.data.invalid) {
+                showErrorToast(error.response.data.invalid);
                 return { success: false, error: error.response.data.invalid }
             }
             console.error('error', error)
+            showErrorToast(error.response.data.invalid);
             return { success: false, error: 'An unexpected error occurred. Please try again.' }
         }
     }
@@ -60,13 +65,42 @@ export const useUserStore = defineStore('user', () => {
                 await axios.get('http://localhost:3000/user/logout', { withCredentials: true });
             }
         } catch (error) {
+            showErrorToast(error.response.data.invalid)
             console.error('Logout failed:', error.response?.data?.message || error);
         }
 
         clearUser();
         router.push('/');
         location.reload();
+        showSuccessToast('Logged out successfully');
     }
 
-    return { user, setUser, clearUser, login, logout }
+    const signup = async (newUser) => {
+        const creds = {
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.email,
+            password: newUser.password,
+        }
+        
+        try {
+            const response = await axios.post('http://localhost:3000/user/signup', creds, {
+                withCredentials: true,
+            })
+
+            if (response.data.success) {
+                showSuccessToast(response.data.success)
+                return { success: true }
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400 && error.response.data.invalid) {
+                showErrorToast(error.response.data.invalid)
+                return { success: false }
+            }
+                showErrorToast('An unexpected error occurred. Please try again.')
+                return { success: false }
+        }
+    }
+
+    return { user, setUser, clearUser, login, logout, signup }
 })
