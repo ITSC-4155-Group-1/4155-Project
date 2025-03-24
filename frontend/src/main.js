@@ -23,7 +23,8 @@ createApp(App)
     .use(VueCookieNext)
     .use(Vue3Toastify,
         {
-            autoClose: 5000
+            autoClose: 5000,
+            limit: 2, // puts additional toasts in a queue
         }
     )
     .component('VueDatePicker', VueDatePicker)
