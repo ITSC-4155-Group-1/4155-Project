@@ -3,6 +3,8 @@
     import { useRouter } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
     import { showSuccessToast } from '../utils/toast';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -196,12 +198,18 @@
     const book = async () => {
         // send a request to the backend to book the venue
         
-        // if successful, send to home page and display success toast, else display error toast
+        // if successful, send to home page, remove the local storage item, and display success toast, else display error toast
         localStorage.removeItem('cartDetails');
         await router.push('/');
         nextTick(() => {
             showSuccessToast("Your venue booking has been successfully created!");
         });
+    }
+
+    const carouselConfig = {
+        height: 600,
+        itemsToShow: 1,
+        wrapAround: true,
     }
 </script>
 
@@ -228,8 +236,20 @@
         <div class="d-flex gap-5 justify-content-between mb-3">
             <div class="d-flex flex-column w-75 gap-4">
                 <div class="img-container">
-                    <!-- should change to carousel -->
-                    <img :src="images[0]" alt="venue image">
+                    <Carousel v-bind="carouselConfig">
+                        <Slide v-for="image in images" :key="image">
+                            <img
+                                :src="image"
+                                alt="Venue Images"
+                                loading="lazy"
+                                class="object-fit-cover rounded"
+                            >
+                        </Slide>
+                        
+                        <template #addons>
+                            <Navigation class="mx-2" />
+                        </template>
+                    </Carousel>
                 </div>
                 <div class="d-flex flex-column">
                     <figure class="mb-0">
@@ -431,8 +451,15 @@
         cursor: pointer;
     }
 
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        margin: 0 auto;
+    }
+
     .img-container {
         height: 600px;
+        width: 100%;
         overflow: hidden;
         border-radius: 17px;
     }
@@ -440,7 +467,6 @@
     .img-container img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
     }
 
     .blockquote p {
