@@ -4,6 +4,8 @@
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
+    import { showSuccessToast, showErrorToast } from '../utils/toast';
+    import { useRoute } from 'vue-router'
 
     const venueList = ref(venues);
     const showModal = ref(false);
@@ -11,6 +13,7 @@
     const updatePasswordDiv = ref(false);
     const user = parseUser();
     const userStore = useUserStore();
+    const route = useRoute();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -30,6 +33,8 @@
     const confirmDelete = () => {
         alert("Account Deleted!"); 
         closeModal();
+
+        // will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
     };
 
     const setActiveSection = (section) => {
@@ -62,7 +67,10 @@
         if (!validatePasswords()) return;
 
         // TODO: backend call to update password
+        // if successful, display the success toast, else display the error toast
+        showSuccessToast("Successfully updated your password.");
         updatePassword.value = false;
+        updatePasswordDiv.value = false;
     }
 
     const changePfp = (e) => {
@@ -83,6 +91,8 @@
         }
 
         // TODO: backend call to update pfp
+        // if successful, display the success toast, else display the error toast
+        showSuccessToast("Successfully updated your profile picture.");
         changePfpModal.value = false;
     }
 </script>

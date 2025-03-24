@@ -1,8 +1,9 @@
 <script setup>
     import { ref, computed } from 'vue';
-    import axios from "axios";
+    import { useUserStore } from "../store/userDetails";
 
     const emit = defineEmits(["closeModal", "switchToLogin"]);
+    const userStore = useUserStore();
 
     const rePassword = ref("");
     const passwordError = ref("");
@@ -28,9 +29,17 @@
     const signup = async () => {
         if (!validatePasswords()) return;
 
+        const response = await userStore.signup(newUser.value);
+        if (response.success) {
+            setTimeout(() => {
+                emit("closeModal");
+                emit("switchToLogin")
+            });
+        }
+
         try {
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
-                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
             });
 
             if (response.data.success) {

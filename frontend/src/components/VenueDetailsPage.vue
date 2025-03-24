@@ -5,6 +5,7 @@
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
+    import { showSuccessToast } from '../utils/toast.js';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -24,6 +25,14 @@
     // TODO: will make a call to the backend to save the venue for the user
     const saveVenue = () => {
         isFilled.value = !isFilled.value;
+        if (isFilled.value) {
+            showSuccessToast(
+                'Successfully favorited this venue.',
+                'successId',
+            );
+        } else {
+            showSuccessToast('Successfully unfavorited this venue.');
+        }
     };
 
     const minDate = computed(() => {
@@ -74,7 +83,7 @@
             processing: processing,
             image: venue.value.image.join(','),
             capacity: venue.value.capacity
-        })
+        });
 
         router.push('/cart')
     };

@@ -1,5 +1,7 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, nextTick } from 'vue';
+    import { showSuccessToast, showErrorToast } from '../utils/toast';
+    import { useRouter } from 'vue-router';
 
     const form = ref({
         state: "",
@@ -13,7 +15,9 @@
         capacity: 0,
         images: null,
     });
+
     const addressError = ref(false);
+    const router = useRouter();
 
     const handleFileUpload = (e) => {
         const files = e.target.files;
@@ -103,13 +107,24 @@
         return !Object.values(errors.value).includes(true); // true if all error values are true
     }
 
-    const createVenue = () => {
+    const createVenue = async () => {
         if (!validateForm()) {
-            // alert("Please fill in all required fields");
+            showErrorToast('Missing required information.')
             return;
         }
 
-        // make api call to create the venue
+        // TODO: make api call to create the venue
+        // if successful, show the successful toast, else show the error toast
+        // TODO: Create a toast store to show toasts cross navigation (will do tomorrow) I'M PUTTING THIS HERE BECAUSE I WANT TO EAT DINNER AND SPEND TIME WITH SAGE
+        try {
+            await router.push('/settings');
+
+            nextTick(() => {
+                showSuccessToast('Venue created successfully!');
+            })
+        } catch (error) {
+            showErrorToast('Failed to create venue. Please try again.');
+        }
     };
 </script>
 
@@ -199,8 +214,8 @@
                             class="form-control"
                             id="zip_code"
                             name="zip_code"
-                            min="5"
-                            max="9"
+                            minlength="5"
+                            maxlength="9"
                             aria-describedby="zip_code"
                             placeholder="12345"
                             pattern="[0-9]{5}"

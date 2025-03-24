@@ -1,7 +1,8 @@
 <script setup>
-    import { ref, computed, watch, onUnmounted } from 'vue';
+    import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
     import { useRouter } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
+    import { showSuccessToast } from '../utils/toast';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -126,6 +127,7 @@
         newDatesError.value = "";
         reserveDates.value = [...newReserveDates.value];
         dateModalToggled.value = false;
+        showSuccessToast('Successfully updated the dates.');
     }
 
     const changeAttendees = () => {
@@ -145,6 +147,7 @@
         newAttendeesError.value = "";
         attendees.value = newAttendees.value;
         attendeesModalToggled.value = false;
+        showSuccessToast('Successfully updated the number of attendees.');
     }
 
     watch(dateModalToggled, (isOpen) => {
@@ -176,9 +179,14 @@
         document.body.style.paddingRight = '';
     });
 
-    const book = () => {
+    const book = async () => {
         // send a request to the backend to book the venue
         console.log("Booking venue...");
+        // if successful, send to home page and display success toast, else display error toast
+        await router.push('/');
+        nextTick(() => {
+            showSuccessToast("Your venue booking has been successfully created!");
+        });
     }
 </script>
 
@@ -205,6 +213,7 @@
         <div class="d-flex gap-5 justify-content-between mb-3">
             <div class="d-flex flex-column w-75 gap-4">
                 <div class="img-container">
+                    <!-- should change to carousel -->
                     <img :src="images[0]" alt="venue image">
                 </div>
                 <div class="d-flex flex-column">
@@ -427,7 +436,7 @@
         height: 35px;
         width: 35px;
         border-radius: 50%;
-        margin-right: 0.25rem;
+        margin-right: 0.5rem;
     }
 
     .short-border {

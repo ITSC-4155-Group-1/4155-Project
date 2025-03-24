@@ -3,6 +3,7 @@
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import { useRouter } from 'vue-router'
     import 'vue3-carousel/carousel.css'
+    import { showSuccessToast } from '../utils/toast';
 
     const props = defineProps({
         venue: Object,
@@ -10,13 +11,18 @@
 
     const { venue } = toRefs(props)
     const isFilled = ref(false);
-    // console.log(venue.value)
     const images = computed(() => venue.value.image ?? []);
     const router = useRouter();
 
     const toggleIsFilled = () => {
-        // will make a backend call to favorite it
+        // TODO: will make a backend call to favorite it
+        // if successful, favorite it and display success toast, else display error toast
         isFilled.value = !isFilled.value;
+        if (isFilled.value) {
+            showSuccessToast('Successfully favorited this venue.');
+        } else {
+            showSuccessToast('Successfully unfavorited this venue.');
+        }
     };
 
     const goToVenue = (event) => {

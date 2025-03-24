@@ -4,7 +4,7 @@
 
     const userStore = useUserStore();
 
-    const emit = defineEmits(['closeModal', 'setSuccess', 'setError', 'closeModal']);
+    const emit = defineEmits(['closeModal', 'setLoggedIn']);
 
     const user = ref({
         email: '',
@@ -14,11 +14,8 @@
     const login = async () => {
         const response = await userStore.login(user.value);
         if (response.success) {
-            emit('setSuccess', response.message);
             emit('setLoggedIn', response.token);
             emit('closeModal');
-        } else {
-            emit('setError', response.error);
         }
     };
 
@@ -45,6 +42,7 @@
                             id="email"
                             placeholder="Enter email"
                             v-model="user.email"
+                            required
                         >
                     </div>
                     <div class="form-element">
@@ -54,6 +52,7 @@
                             id="password"
                             placeholder="Password"
                             v-model="user.password"
+                            required
                         >
                     </div>
                     <button type="submit">Login</button>
