@@ -70,9 +70,16 @@ export const useUserStore = defineStore('user', () => {
         }
 
         clearUser();
-        router.push('/');
+
+        localStorage.setItem('showToast', JSON.stringify(
+            {
+                message: 'Logged out successfully',
+                type: 'success'
+            }
+        ));
+
+        await router.push('/');
         location.reload();
-        showSuccessToast('Logged out successfully');
     }
 
     const signup = async (newUser) => {
