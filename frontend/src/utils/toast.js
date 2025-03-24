@@ -5,7 +5,7 @@ export const showSuccessToast = (message, options = {}) => {
     const customId = 'success-id'
     toast.success(message, {
         position: toast.POSITION.BOTTOM_LEFT,
-        toastId: customId, // prevents duplicate toasts
+        toastId: options.toastId ? customId : undefined,
         ...options
     })
 }
