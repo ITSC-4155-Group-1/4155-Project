@@ -11,16 +11,22 @@
         router.back();
     }
 
-    const host = cartStore.cartDetails.host;
-    const venueName = cartStore.cartDetails.venueName;
-    const venuePrice = cartStore.cartDetails.venuePrice;
-    const reserveDates = ref([cartStore.cartDetails.startDate, cartStore.cartDetails.endDate]);
+    const localStorageCartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+
+    const host = cartStore.cartDetails.host || localStorageCartDetails.host;
+    const venueName = cartStore.cartDetails.venueName || localStorageCartDetails.venueName;
+    const venuePrice = cartStore.cartDetails.venuePrice || localStorageCartDetails.venuePrice;
+    const reserveDates = ref([
+        cartStore.cartDetails.startDate || localStorageCartDetails.startDate,
+        cartStore.cartDetails.endDate || localStorageCartDetails.endDate
+    ]);
     const newReserveDates = ref(null);
-    const attendees = ref(cartStore.cartDetails.attendees);
+    const attendees = ref(cartStore.cartDetails.attendees || localStorageCartDetails.attendees);
     const newAttendees = ref('');
-    const cleaningFee = cartStore.cartDetails.cleaningFee;
-    const taxes = cartStore.cartDetails.processing;;
-    const images = cartStore.cartDetails.image ? cartStore.cartDetails.image.split(',') : [];
+    const cleaningFee = cartStore.cartDetails.cleaningFee || localStorageCartDetails.cleaningFee;
+    const taxes = cartStore.cartDetails.processing || localStorageCartDetails.processing;
+    const images = cartStore.cartDetails.image ?
+        cartStore.cartDetails.image.split(',') : localStorageCartDetails.image.split(',');
     const total = ref(0);
     const dateModalToggled = ref(false);
     const newDatesError = ref("");
@@ -75,7 +81,7 @@
     });
 
     const validAttendeeOptions = computed(() => {
-        const capacity = cartStore.cartDetails.capacity;
+        const capacity = cartStore.cartDetails.capacity || localStorageCartDetails.capacity;
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
@@ -124,6 +130,11 @@
             return;
         }
 
+        // updating the local storage cart details
+        localStorageCartDetails.startDate = new Date(newReserveDates.value[0]).toISOString();
+        localStorageCartDetails.endDate = new Date(newReserveDates.value[1]).toISOString();
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
+
         newDatesError.value = "";
         reserveDates.value = [...newReserveDates.value];
         dateModalToggled.value = false;
@@ -143,6 +154,9 @@
             newAttendeesError.value = "Please enter a valid number of attendees."
             return;
         }
+
+        localStorageCartDetails.attendees = newAttendees.value;
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
 
         newAttendeesError.value = "";
         attendees.value = newAttendees.value;
@@ -181,8 +195,9 @@
 
     const book = async () => {
         // send a request to the backend to book the venue
-        console.log("Booking venue...");
+        
         // if successful, send to home page and display success toast, else display error toast
+        localStorage.removeItem('cartDetails');
         await router.push('/');
         nextTick(() => {
             showSuccessToast("Your venue booking has been successfully created!");

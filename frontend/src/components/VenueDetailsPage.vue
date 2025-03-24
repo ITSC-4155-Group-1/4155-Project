@@ -72,6 +72,20 @@
             return;
         }
 
+        // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
+        localStorage.setItem('cartDetails', JSON.stringify({
+            host: venue.value.host_id,
+            venueName: venue.value.venue_name,
+            venuePrice: venue.value.price,
+            startDate: dateRange.value[0],
+            endDate: dateRange.value[1],
+            attendees: attendees.value,
+            cleaningFee: cleaningFee,
+            processing: processing,
+            image: venue.value.image.join(','),
+            capacity: venue.value.capacity
+        }));
+
         cartStore.setCartDetails({
             host: venue.value.host_id,
             venueName: venue.value.venue_name,
