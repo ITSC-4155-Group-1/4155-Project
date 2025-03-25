@@ -18,4 +18,5 @@ exp_router.get('/', validator.alreadyLoggedIn, bookingController.viewMyBookings)
 
 //Update booking I have made
 exp_router.put('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bookingMiddleware.isBookingAvailable, inputValidator.bookingValidation, inputValidator.displayValidation, bookingController.updateBooking)
-module.exports = exp_router
+
+

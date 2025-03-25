@@ -41,7 +41,7 @@ exports.getVenue = (req, res, next) => {
 
 exports.deleteVenue = (req, res, next) =>{
     let venueId = req.body.id
-    Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId})])
+    Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId}), reviewModel.deleteMany({venueId: venueId})])
     .then((deletedItems) => {
         if(deletedItems){
             res.status(200).json({success: "venue deleted successfully"})
@@ -57,7 +57,7 @@ exports.updateVenue = (req, res, next) =>{
     let venue = new venueModel(req.body)
     let venueId = req.body.id
     venue.venueId = venueId
-    venue.findByIdAndUpdate(venueId, venue, {runValidators: true})
+    venueModel.findByIdAndUpdate(venueId, venue, {runValidators: true})
     .then((venue) =>{
         if(venue){
             res.status(200).json({success: "Venue updated successfully"})
