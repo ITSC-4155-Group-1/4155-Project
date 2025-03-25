@@ -13,5 +13,5 @@ exp_router.get('/logout', validator.alreadyLoggedIn, userController.logout)
 //Delete Account
 exp_router.delete('/', validator.alreadyLoggedIn, userController.deleteAccount )
 //Update Account Settings (Password, profile picture)
-exp_router.put('/', validator.alreadyLoggedIn, userController.updateUser)
+exp_router.put('/', validator.alreadyLoggedIn, upload.array('image'), userController.updateUser)
 module.exports = exp_router

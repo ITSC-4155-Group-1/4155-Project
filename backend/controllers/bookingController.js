@@ -81,7 +81,7 @@ exports.updateBooking = (req, res, next) =>{
     let booking = new bookingModel(req.body)
     let bookingId = req.body.id
     booking.venueId = venueId
-    booking.findByIdAndUpdate(bookingId, booking, {runValidators: true})
+    bookingModel.findByIdAndUpdate(bookingId, booking, {runValidators: true})
     .then((booking) =>{
         if(booking){
             res.status(200).json({success: "Booking updated successfully"})
