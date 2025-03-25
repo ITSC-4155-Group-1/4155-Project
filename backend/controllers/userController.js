@@ -87,34 +87,38 @@ exports.logout = (req, res, next) => {
 // Account deletion
 exports.deleteAccount = (req, res, next) =>{
     let userId = req.body.id
-    venueModel.find({host: userID})
-    .then((venues) =>{
-        if(venues){
-            let venueIds = venues.filter(venue => venue.id)
-            Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}, reviewModel.deleteMany({reviewerId : userId}))])
-            .then((deletedItems) => {
-                if(deletedItems){
-                    if (!req.session) {
-                        return res.status(400).json({ invalid: "No active session" });
+    if (!req.session) {
+        return res.status(400).json({ invalid: "No active session" });
+    }
+    Promise.all([userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}, reviewModel.deleteMany({reviewerId : userId}))])
+    .then((userData) => {
+        venueModel.find({host: userID})
+        .then((venues) =>{
+            if(venues){
+                let venueIds = venues.filter(venue => venue.id)
+                Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}, reviewModel.deleteMany({venueId: {$in: {venueIds}}}))])
+                .then((deletedItems) => {
+                    if(deletedItems){
+                        req.session.destroy((err) => {
+                            if (err) {
+                                return next(err);
+                            } else {
+                                res.json({ success: "Successfully deleted account and removed session" });
+                            }
+                        })
                     }
-                    req.session.destroy((err) => {
-                        if (err) {
-                            return next(err);
-                        } else {
-                            res.json({ success: "Successfully deleted account and removed session" });
-                        }
-                    })
-                }
-                else{
-                    next(new Error('Account does not exist').status(404))
-                }
-            })
-            .catch(err => next(err))
-        }
-        else{
-            next(new Error('No venues exist').status(404))
-        }
-    })
+                    else{
+                        next(new Error('Account does not exist').status(404))
+                    }
+                })
+                .catch(err => next(err))
+            }
+            else{
+                res.json({ success: "Successfully deleted account and removed session" });
+            }
+        })
+        .catch(err => next(err))
+    })        
     .catch(err => next(err))
 }
 // Update User account settings
