@@ -6,7 +6,7 @@ const MongoStore = require('connect-mongo')
 const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
-const favoriteRoutes = require('./routes/shoppingCartRoutes');
+const favoritesRoutes = require('./routes/favoritesRoutes');
 //const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
 
@@ -60,7 +60,7 @@ app.use('/test', (req, res) => {
 app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
-app.use('/favorites', favoriteRoutes);
+app.use('/favorites', favoritesRoutes);
 //app.use('/messages', messageRoutes);
 
 // Basic error handling
