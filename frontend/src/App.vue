@@ -15,14 +15,7 @@
             navHeight.value = navbar.offsetHeight;
         }
 
-        const lastRoute = sessionStorage.getItem('lastRoute');
-        if (lastRoute) {
-            router.push(lastRoute);
-        } else {
-          router.push('/');
-        }
-
-        const storedToast = localStorage.getItem('showToast');
+      const storedToast = localStorage.getItem('showToast');
         if (storedToast) {
             const { message, type } = JSON.parse(storedToast);
             if (type === 'success') {
