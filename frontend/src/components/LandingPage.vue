@@ -114,7 +114,7 @@
                 :key="index + '_' + venue.venue_name" 
                 class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
             >
-                <VenueCard :venue="venue" />
+                <VenueCard :venue="venue" :host="venue.host_id" />
             </div>
         </div>
         <div v-else>
