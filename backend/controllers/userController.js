@@ -16,6 +16,7 @@ exports.login = (req, res, next) => {
                 req.session.user = user._id;
                 req.session.firstName = user.firstName;
                 req.session.lastName = user.lastName;
+                req.session.image = null;
                 res.json({ success: `Login successful`, token: req.session });
             } else {
                 return res.status(400)
@@ -85,11 +86,11 @@ exports.logout = (req, res, next) => {
 // Account deletion
 exports.deleteAccount = (req, res, next) =>{
     let userId = req.body.id
-    venueModel.find({host: userID})
+    venueModel.find({host: userId})
     .then((venues) =>{
         if(venues){
             let venueIds = venues.filter(venue => venue.id)
-            Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId)])
+            Promise.all([venueModel.deleteMany({_id: venueIds}), bookingModel.deleteMany({venueId: {$in: venueIds}}), userModel.findByIdAndDelete(userId)])
             .then((deletedItems) => {
                 if(deletedItems){
                     if (!req.session) {

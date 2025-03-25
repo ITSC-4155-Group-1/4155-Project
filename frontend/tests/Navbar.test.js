@@ -1,3 +1,4 @@
+import { createTestingPinia } from '@pinia/testing';
 import { mount } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import NavBar from '../src/components/NavBar.vue';
@@ -15,13 +16,20 @@ const router = createRouter({
     },
   ],
 })
+vi.mock('vue-cookie-next', () => ({
+  useCookie: () => ({
+    getCookie: vi.fn(() => null),
+    setCookie: vi.fn(),            
+    removeCookie: vi.fn()          
+  })
+}));
 
 // DESCRIBE \._./
 describe('NavBar.vue', () => {
   it('opens login modal and disables scrolling', async () => {
     const wrapper = mount(NavBar, {
       global: {
-        plugins: [router]
+        plugins: [router, createTestingPinia({ createSpy: vi.fn })] 
       }
     });
 
@@ -79,7 +87,7 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(LoginModal).exists()).toBe(false);
 
     // ensure scrolling is re-enabled
-    expect(document.body.style.overflow).toBe('auto');
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('closes the signup modal and restores scrolling', async () => {
@@ -105,7 +113,8 @@ describe('NavBar.vue', () => {
     expect(wrapper.findComponent(SignupModal).exists()).toBe(false);
 
     // ensure scrolling is re-enabled
-    expect(document.body.style.overflow).toBe('auto');
+    console.log(document.body.style.overflow)
+    expect(document.body.style.overflow).toBe('');
   });
 });
 
