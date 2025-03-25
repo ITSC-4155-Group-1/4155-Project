@@ -18,6 +18,7 @@ exports.login = (req, res, next) => {
                 req.session.user = user._id;
                 req.session.firstName = user.firstName;
                 req.session.lastName = user.lastName;
+                req.session.image = null;
                 res.json({ success: `Login successful`, token: req.session });
             } else {
                 return res.status(400)
@@ -90,13 +91,13 @@ exports.deleteAccount = (req, res, next) =>{
     if (!req.session) {
         return res.status(400).json({ invalid: "No active session" });
     }
-    Promise.all([userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}, reviewModel.deleteMany({reviewerId : userId}))])
+    Promise.all([userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}), reviewModel.deleteMany({reviewerId : userId})])
     .then((userData) => {
         venueModel.find({host: userID})
         .then((venues) =>{
             if(venues){
                 let venueIds = venues.filter(venue => venue.id)
-                Promise.all([venueModel.deleteMany({_id: venueId}), bookingModel.deleteMany({venueId: {$in: venueIds}}, reviewModel.deleteMany({venueId: {$in: {venueIds}}}))])
+                Promise.all([venueModel.deleteMany({_id: {$in: venueIds}), bookingModel.deleteMany({venueId: {$in: venueIds}}, reviewModel.deleteMany({venueId: {$in: venueIds}}))])
                 .then((deletedItems) => {
                     if(deletedItems){
                         req.session.destroy((err) => {

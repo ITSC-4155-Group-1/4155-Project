@@ -1,7 +1,10 @@
 <script setup>
-    import { ref, computed, watch, onUnmounted } from 'vue';
+    import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
     import { useRouter } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
+    import { showSuccessToast } from '../utils/toast';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -10,16 +13,22 @@
         router.back();
     }
 
-    const host = cartStore.cartDetails.host;
-    const venueName = cartStore.cartDetails.venueName;
-    const venuePrice = cartStore.cartDetails.venuePrice;
-    const reserveDates = ref([cartStore.cartDetails.startDate, cartStore.cartDetails.endDate]);
+    const localStorageCartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+
+    const host = cartStore.cartDetails.host || localStorageCartDetails.host;
+    const venueName = cartStore.cartDetails.venueName || localStorageCartDetails.venueName;
+    const venuePrice = cartStore.cartDetails.venuePrice || localStorageCartDetails.venuePrice;
+    const reserveDates = ref([
+        cartStore.cartDetails.startDate || localStorageCartDetails.startDate,
+        cartStore.cartDetails.endDate || localStorageCartDetails.endDate
+    ]);
     const newReserveDates = ref(null);
-    const attendees = ref(cartStore.cartDetails.attendees);
+    const attendees = ref(cartStore.cartDetails.attendees || localStorageCartDetails.attendees);
     const newAttendees = ref('');
-    const cleaningFee = cartStore.cartDetails.cleaningFee;
-    const taxes = cartStore.cartDetails.processing;;
-    const images = cartStore.cartDetails.image ? cartStore.cartDetails.image.split(',') : [];
+    const cleaningFee = cartStore.cartDetails.cleaningFee || localStorageCartDetails.cleaningFee;
+    const taxes = cartStore.cartDetails.processing || localStorageCartDetails.processing;
+    const images = cartStore.cartDetails.image ?
+        cartStore.cartDetails.image.split(',') : localStorageCartDetails.image.split(',');
     const total = ref(0);
     const dateModalToggled = ref(false);
     const newDatesError = ref("");
@@ -74,7 +83,7 @@
     });
 
     const validAttendeeOptions = computed(() => {
-        const capacity = cartStore.cartDetails.capacity;
+        const capacity = cartStore.cartDetails.capacity || localStorageCartDetails.capacity;
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
@@ -123,9 +132,15 @@
             return;
         }
 
+        // updating the local storage cart details
+        localStorageCartDetails.startDate = new Date(newReserveDates.value[0]).toISOString();
+        localStorageCartDetails.endDate = new Date(newReserveDates.value[1]).toISOString();
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
+
         newDatesError.value = "";
         reserveDates.value = [...newReserveDates.value];
         dateModalToggled.value = false;
+        showSuccessToast('Successfully updated the dates.');
     }
 
     const changeAttendees = () => {
@@ -142,9 +157,13 @@
             return;
         }
 
+        localStorageCartDetails.attendees = newAttendees.value;
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
+
         newAttendeesError.value = "";
         attendees.value = newAttendees.value;
         attendeesModalToggled.value = false;
+        showSuccessToast('Successfully updated the number of attendees.');
     }
 
     watch(dateModalToggled, (isOpen) => {
@@ -176,9 +195,21 @@
         document.body.style.paddingRight = '';
     });
 
-    const book = () => {
+    const book = async () => {
         // send a request to the backend to book the venue
-        console.log("Booking venue...");
+        
+        // if successful, send to home page, remove the local storage item, and display success toast, else display error toast
+        localStorage.removeItem('cartDetails');
+        await router.push('/');
+        nextTick(() => {
+            showSuccessToast("Your venue booking has been successfully created!");
+        });
+    }
+
+    const carouselConfig = {
+        height: 600,
+        itemsToShow: 1,
+        wrapAround: true,
     }
 </script>
 
@@ -205,7 +236,20 @@
         <div class="d-flex gap-5 justify-content-between mb-3">
             <div class="d-flex flex-column w-75 gap-4">
                 <div class="img-container">
-                    <img :src="images[0]" alt="venue image">
+                    <Carousel v-bind="carouselConfig">
+                        <Slide v-for="image in images" :key="image">
+                            <img
+                                :src="image"
+                                alt="Venue Images"
+                                loading="lazy"
+                                class="object-fit-cover rounded"
+                            >
+                        </Slide>
+                        
+                        <template #addons>
+                            <Navigation class="mx-2" />
+                        </template>
+                    </Carousel>
                 </div>
                 <div class="d-flex flex-column">
                     <figure class="mb-0">
@@ -215,22 +259,8 @@
                             </p>
                         </blockquote>
                         <figcaption class="blockquote-footer d-flex align-items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="gray"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="ms-2 me-1"
-                            > <!-- svg will change to the person's pfp -->
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="8" r="3" />
-                                <path d="M8 18v-2a4 4 0 0 1 8 0v2" />
-                            </svg>
+                            <!-- TODO: needs to be the host's pfp -->
+                            <img class="figCaptionImg" :src="user?.pfp || '/images/profile_4.jpeg'" alt="host pfp" >
                             {{ host ? host : "Host" }}
                         </figcaption>
                     </figure>
@@ -421,8 +451,15 @@
         cursor: pointer;
     }
 
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        margin: 0 auto;
+    }
+
     .img-container {
         height: 600px;
+        width: 100%;
         overflow: hidden;
         border-radius: 17px;
     }
@@ -430,11 +467,17 @@
     .img-container img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
     }
 
     .blockquote p {
         font-size: 1rem;
+    }
+
+    .figCaptionImg {
+        height: 35px;
+        width: 35px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
     }
 
     .short-border {

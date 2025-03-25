@@ -1,24 +1,38 @@
 <script setup>
     import { ref, computed, onMounted } from 'vue';
-    import { venues } from '../../../mockdata.js';
+    import { venues, reviews } from '../../../mockdata.js';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
+    import { showSuccessToast } from '../utils/toast.js';
 
     const router = useRouter();
     const cartStore = useCartStore();
 
     const route = useRoute();
     const venue = ref({});
+    const venueReviews = ref([]);
     const dateRange = ref(null);
     const attendees = ref('');
     const cleaningFee = 200;
     const processing = 50;
     const total = ref(0);
     const isFilled = ref(false);
+    const activeIndex = ref(0); // accordion active index
+    const showMoreImages = ref(false);
 
-    // will make a call to the backend to save the venue for the user
+    // TODO: will make a call to the backend to save the venue for the user
     const saveVenue = () => {
         isFilled.value = !isFilled.value;
+        if (isFilled.value) {
+            showSuccessToast(
+                'Successfully favorited this venue.',
+                'successId',
+            );
+        } else {
+            showSuccessToast('Successfully unfavorited this venue.');
+        }
     };
 
     const minDate = computed(() => {
@@ -27,6 +41,7 @@
 
         return venueStartDate > today ? venueStartDate : today;
     });
+
     const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
     const collapsibleSections = ref([
@@ -39,14 +54,37 @@
 
     onMounted(() => {
         const venueId = route.params.id;
-        venue.value = venues.find(v => v.venue_name === venueId);
+        const singularVenue = venues.find(v => v.venue_name === venueId)
+        venue.value = singularVenue;
+        venueReviews.value = reviews.filter(r => r.venue_name === singularVenue.venue_name);
     });
+
+    const venueRating = computed(() => {
+        const totalReviews = venueReviews.value.length;
+        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+
+        return totalReviews > 0 ? totalStars / totalReviews : 0;
+    })
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
             alert("Please fill out all required fields.");
             return;
         }
+
+        // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
+        localStorage.setItem('cartDetails', JSON.stringify({
+            host: venue.value.host_id,
+            venueName: venue.value.venue_name,
+            venuePrice: venue.value.price,
+            startDate: dateRange.value[0],
+            endDate: dateRange.value[1],
+            attendees: attendees.value,
+            cleaningFee: cleaningFee,
+            processing: processing,
+            image: venue.value.image.join(','),
+            capacity: venue.value.capacity
+        }));
 
         cartStore.setCartDetails({
             host: venue.value.host_id,
@@ -59,7 +97,7 @@
             processing: processing,
             image: venue.value.image.join(','),
             capacity: venue.value.capacity
-        })
+        });
 
         router.push('/cart')
     };
@@ -114,6 +152,21 @@
 
         return validOptions;
     });
+
+    const toggleAccordion = (index) => {
+        activeIndex.value = activeIndex.value === index ? null : index;
+    };
+
+    const toggleShowMoreImages = () => {
+        showMoreImages.value = !showMoreImages.value;
+        document.body.style.overflow = showMoreImages.value ? 'hidden' : 'auto';
+    };
+
+    const carouselConfig = {
+        height: 700,
+        itemsToShow: 1,
+        wrapAround: true,
+    }
 </script>
 
 <template>
@@ -151,7 +204,7 @@
                 </span>
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
-                    @click="saveVenue()"
+                    @click="saveVenue"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -169,6 +222,7 @@
                 </span>
             </div>
         </div>
+
         <div class="d-flex gap-2 image-gallery"
             v-if="venue.image && venue.image.length"
         >
@@ -180,26 +234,63 @@
             </div>
             <div class="w-50 other-images-grid">
                 <template v-if="venue.image.length > 1">
-                    <div class="grid-item" v-for="(image, index) in venue.image.slice(1, 5)">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.image.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
                             alt="Venue image" 
-                            class=" rounded"
+                            class="rounded"
+                            :class="{ 'show-more-images-overlay' : index === 3 }"
                         >
+                        <div 
+                            v-if="index === 3"
+                            class="black-overlay position-absolute top-0 left-0 w-100 h-100 d-flex justify-content-center align-items-center"
+                        >
+                            <button
+                                class="show-more-images-btn border-0 px-1 py-2 rounded bg-transparent text-light"
+                                @click="toggleShowMoreImages"
+                            >
+                                Show More &#8594;
+                            </button>
+                        </div>
                     </div>
                 </template>
                 <template v-if="venue.image.length < 5">
-                    <div v-for="index in 5 - venue.image.length" :key="'placeholder-' + index" class="placeholder-box rounded"></div>
+                    <div
+                        v-for="index in 5 - venue.image.length"
+                        :key="'placeholder-' + index"
+                        class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
+                    ></div>
                 </template>
             </div>
         </div>
         <p v-else>No image available</p>
 
+        <div
+            v-if="showMoreImages"
+            class="show-more-images-container mx-auto position-fixed top-0  w-100 h-100 d-flex justify-content-center align-items-center"
+        >
+            <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
+            <Carousel v-bind="carouselConfig">
+                <Slide v-for="image in venue.image" :key="image">
+                    <img
+                        :src="image"
+                        alt="Venue Images"
+                        loading="lazy"
+                        class="w-80 h-100 object-fit-cover rounded"
+                    >
+                </Slide>
+                
+                <template #addons>
+                    <Navigation class="mx-4" />
+                </template>
+            </Carousel>
+        </div>
+
         <div class="d-flex justify-space-around gap-5">
             <div class="w-65 my-2">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <div v-if="venue.rating">
+                    <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
                             <svg
                                 width="23"
@@ -210,8 +301,11 @@
                                 <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                                     fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
                             </svg>
-                            {{ venue.rating }} / 5.0 
+                            {{ venueRating.toFixed(1) }} / 5.0 
                         </span>
+                    </div>
+                    <div v-else>
+                        <span class="fs-5 fw-medium rating">No Reviews</span>
                     </div>
 
                     <div v-if="venue.capacity">
@@ -234,32 +328,80 @@
                 </div>
     
                 <h5>About the space</h5>
-                <p class="fs-6">{{ venue.venue_description }}</p>
+                <p>{{ venue.venue_description }}</p>
                 
                 <!-- Collapsible Sections -->
-                <div class="accordionContainer" v-for="(section, index) in collapsibleSections" :key="index">
-                    <div class="accordion" :id="'accordionExample' + index">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" :id="'heading' + index">
-                                <button 
-                                    class="accordion-button custom-accordion-button collapsed fs-5"
-                                    type="button" 
-                                    :data-bs-toggle="'collapse'" 
-                                    :data-bs-target="'#collapse' + index" 
-                                    :aria-expanded="false"
-                                    :aria-controls="'collapse' + index">
+                <div class="accordionContainer">
+                    <div class="accordion" id="venueAccordion">
+                        <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item custom-accordion-box">
+                            <h2 class="accordion-header" :id="'heading-' + index">
+                                <button
+                                    class="accordion-button custom-accordion-button"
+                                    :class="{ 'collapsed': activeIndex !== index }"
+                                    type="button"
+                                    @click="toggleAccordion(index)"
+                                    :aria-expanded="activeIndex === index"
+                                    :aria-controls="'collapse-' + index"
+                                >
                                     {{ section.title }}
+                                    <span class="ms-auto">
+                                        <i :class="activeIndex === index ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+                                    </span>
                                 </button>
                             </h2>
-                            <div 
-                                :id="'collapse' + index" 
+                            <div
+                                :id="'collapse-' + index"
                                 class="accordion-collapse collapse"
-                                :class="{'show': index === 0}"
-                                :data-bs-parent="'#accordionExample' + index">
-                                <div class="accordion-body">
+                                :class="{ 'show': activeIndex === index }"
+                                :aria-labelledby="'heading-' + index"
+                                data-bs-parent="#venueAccordion"
+                            >
+                                <div class="accordion-body px-2">
                                     {{ section.content }}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reviews mt-4" v-if="venueReviews.length > 0">
+                    <h5 class="mb-3">
+                        {{ venueReviews.length > 1 ? 'Reviews' : 'Review' }}
+                        ({{ venueReviews.length }})
+                    </h5>
+                    <div
+                        class="review-container" v-for="review in venueReviews"
+                        :key="review.comment + '_' + review.user_id"
+                    >
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <img
+                                        src="/images/profile_4.jpeg"
+                                        alt="profile pic"
+                                        class="rounded-circle object-fit-cover"
+                                        width="35"
+                                    >
+                                    <span class="reviewer">{{ review.user_id }}</span>
+                                </div>
+                                <div>
+                                    <span class="rating fs-5 fw-bolder">
+                                        <svg
+                                            width="23"
+                                            height="23"
+                                            viewBox="0 0 15 15"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
+                                                fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
+                                        </svg>
+                                        {{ review.rating.toFixed(1) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="review-comment">{{ review.comment }}</p>
                         </div>
                     </div>
                 </div>
@@ -357,6 +499,10 @@
         width: 95%;
     }
 
+    .w-80 {
+        width: 80%;
+    }
+
     .w-65 {
         width: 65%;
     }
@@ -393,7 +539,7 @@
 
     .venue-location {
         font-size: 20px;
-        color: #757575;
+        color: var(--secondary);
     }
 
     .other-images-grid {
@@ -404,28 +550,36 @@
         gap: 5px;
     }
 
-    .grid-item {
-        position: relative;
-    }
-
     .grid-item img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Ensures the image covers the cell while maintaining aspect ratio */
+        object-fit: cover;
         object-position: center;
     }
 
     .placeholder-box {
-        width: 100%;
-        height: 100%;
-        background-color: #f0f0f0;
-        border: 2px dashed #ccc;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        border-color:#ccc;
+        border-style: dashed;
         color: #ccc;
         font-size: 14px;
-        text-align: center;
+    }
+
+    .show-more-images-overlay {
+        position: relative;
+        z-index: 1;
+    }
+
+    .black-overlay {
+        background-color: rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+    }
+
+    .show-more-images-btn {
+        font-size: 19px;
+    }
+
+    .show-more-images-btn:hover {
+        text-decoration: underline;
     }
 
     .rating {
@@ -480,8 +634,40 @@
         background-color: var(--background);
     }
 
-    .accordion-item {
+    .custom-accordion-box {
         border: none !important;
         background-color: #eaeaea;
+    }
+
+    .show-more-images-container {
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1050;
+        left: 0;
+    }
+
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        padding: 0 4rem;
+        margin: 0 auto;
+    }
+
+    .close-show-more-images-container {
+        position: absolute;
+        top: 25px;
+        right: 40px;
+        font-size: 1.8rem;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .reviewer {
+        font-size: 17px;
+    }
+
+    .review-comment {
+        font-size: 16px;
     }
 </style>

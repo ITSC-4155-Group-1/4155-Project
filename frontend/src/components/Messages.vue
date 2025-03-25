@@ -1,91 +1,225 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed, reactive, watch, onMounted } from 'vue';
     import { parseUser } from "../utils/userUtils"
-    
-    const showModal = ref(false);
-    const activeSection = ref('personal-info');
-    const updatePasswordDiv = ref(false);
-    const user = parseUser();
+    import { messages } from "../../../mockdata"
 
-    const setActiveSection = (section) => {
-        activeSection.value = section;
+    const allMessages = ref([...messages]) // stores all the messages (default and newly sent ones)
+    const messagesData = ref([...messages]);
+
+    // should default to the most recent person you messaged
+    const messagingWho = ref(messages[0]?.from);
+
+    const filterButton = ref('all');
+    const filterInput = ref(null);
+    const user = parseUser();
+    const listOfMessagesNames = ref([...new Set(messages.map(message => message.from))])
+
+    const setMessagingWho = (person) => {
+        messagingWho.value = person;
     };
 
-    const toggleUpdatePasswordDiv = () => {
-        updatePasswordDiv.value = !updatePasswordDiv.value;
-    }
+    const markMessagesAsOpened = (person) => {
+        allMessages.value = allMessages.value.map(message => {
+            if (message.from === person) {
+                return { ...message, opened: true };
+            }
+            return message;
+        });
+        messagesData.value = [...allMessages.value];
+    };
 
-    const updatePassword = async () => {
-        // backend call to update password
-        updatePassword.value = false;
-    }
+    onMounted(() => {
+        markMessagesAsOpened(messagingWho.value);
+    });
 
-    //This is just sample. You can change this 
+    watch(messagingWho, (newPerson) => {
+        markMessagesAsOpened(newPerson);
+    });
+
+    const messagesForASpecificUser = computed(() => {
+        return allMessages.value.filter(
+            message =>
+                message.from === messagingWho.value ||
+                (message.to === messagingWho.value && message.from === user?.firstName)
+        );
+    });
+
+    const setFilterButton = (filter) => {
+        if (filter === 'unread') {
+            const unreadMessages = messagesData.value.filter(
+                message => !message.opened && message.from !== user?.firstName
+            );
+            listOfMessagesNames.value = [...new Set(unreadMessages.map(message => message.from))];
+            messagesData.value = unreadMessages;
+        } else {
+            messagesData.value = messages;
+            listOfMessagesNames.value = [...new Set(messagesData.value.map(message => message.from))];
+        }
+        filterButton.value = filter;
+    };
+
+    const filterSearchBar = () => {
+        const filter = filterInput.value?.toLowerCase() || "";
+        
+        if (filter) {
+            const messagesResult = messages.filter(message => 
+                message.from.toLowerCase().includes(filter) || 
+                message.message.toLowerCase().includes(filter)
+            );
+
+            listOfMessagesNames.value = [...new Set(messagesResult.map(message => message.from))];
+            messagesData.value = messagesResult;
+        } else {
+            messagesData.value = messages;
+            listOfMessagesNames.value = [...new Set(messages.map(message => message.from))];
+        }
+    };
+
     const newMessage = ref('');
-    const messages = ref([
-        { sender: 'Santiago', text: 'Hey, how are you?' },
-        { sender: 'Me', text: 'I’m good, what about you?' }
-    ]);
-
     const sendMessage = () => {
         if (newMessage.value.trim()) {
-            messages.value.push({ sender: 'Me', text: newMessage.value });
+            const newMsg = {
+                from: user?.firstName,
+                to: messagingWho.value,
+                message: newMessage.value,
+                timestamp: new Date(),
+                opened: false,
+            };
+
+            allMessages.value = [...allMessages.value, reactive(newMsg)];
+            messagesData.value = [...allMessages.value];
+
+            if (!listOfMessagesNames.value.includes(messagingWho.value)) {
+                listOfMessagesNames.value.push(messagingWho.value);
+            }
+
             newMessage.value = '';
         }
     };
 
+    const formatTimestamp = (timestamp) => {
+        return new Date(timestamp).toLocaleString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            month: 'short',
+            day: 'numeric',
+        });
+    };
 </script>
 
 <template>
     <div>
-        <div class="messages-container">
-            <div class="sidebar">
-                <div>
-                    <div class="sidebar-header">
-                        <h2 class="sidebar-title">Messages</h2>
-                        <button class="search-btn">
-                            <img src="/images/search.png" alt="Search" />
-                        </button>
+        <div class="d-flex gap-2">
+            <div
+                class="sidebar flex-shrink-0 overflow-y-auto d-flex flex-column justify-content-start w-25 p-4"
+            >
+                <div class="d-flex flex-column gap-3">
+                    <div class="w-50">
+                        <h2 class="sidebar-title p-0 m-0">Inbox</h2>
+                    </div>
+                    <div>
+                        <form
+                            @submit.prevent="filterSearchBar"
+                            class="d-flex align-items-center justify-content-between gap-2"
+                        >
+                            <input
+                                v-model="filterInput"
+                                type="text"
+                                placeholder="Search"
+                                class="border-0 w-100 rounded px-2 py-1 outline-none"
+                            >
+                            <div class="d-flex justify-content-end">
+                                <img
+                                    class="searchIcon bg-none"
+                                    src="/images/search.png"
+                                    alt="Search"
+                                    role="button"
+                                    @click="filterSearchBar"
+                                />
+                            </div>
+                        </form>
                     </div>
                     
-                    <div class="filter-buttons">
-                        <button :class="{ active: activeSection === 'all-messages' }" @click="setActiveSection('all-messages')">
-                            All
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <button
+                            class="px-3 py-2 rounded border-0 filterButtons"
+                            role="button"
+                            :class="{ active: filterButton === 'all' }"
+                            @click="setFilterButton('all')">
+                            <span>All</span>
                         </button>
-                        <button :class="{ active: activeSection === 'unread-messages' }" @click="setActiveSection('unread-messages')">
-                            Unread
+                        <button
+                            class="px-3 py-2 rounded border-0 filterButtons"
+                            role="button"
+                            :class="{ active: filterButton === 'unread' }"
+                            @click="setFilterButton('unread')">
+                            <span>Unread</span>
                         </button>
                     </div>
                 </div>
-                <!-- Here is the code for each person's messages -->
-                <ul class="sidebar-menu">
-                    <li :class="{ active: activeSection === 'Person 1' }" @click="setActiveSection('Person 1')">
-                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> Santiago
-                    </li>
-                    <li :class="{ active: activeSection === 'Person 2' }" @click="setActiveSection('Person 2')">
-                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> Lil Guy
-                    </li>
-                    <li :class="{ active: activeSection === 'Person 3' }" @click="setActiveSection('Person 3')">
-                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> \._./
+
+                <!-- each person's messages -->
+                <ul
+                    v-if="listOfMessagesNames.length > 0"
+                    class="sidebar-menu list-style-none m-0 p-0"
+                >
+                    <li
+                        v-for="(name, idx) in listOfMessagesNames"
+                        class="d-flex align-items-center p-3"
+                        role="button"
+                        @click="setMessagingWho(name)"
+                        :class="{ active: messagingWho === name }"
+                        :key="`${name}_${idx}`"
+                    >
+                        <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"> <!-- this needs to be the other person's pfp -->
+                        <span>{{ name }}</span>
                     </li>
                 </ul>
+                <span v-else class="text-center m-3">No person found.</span>
             </div>
-            <!-- Each individual persons texting chat, Only Person 1 works because it is hard coded. -->
-            <div v-if="activeSection === 'Person 1'" class="chat-profile">
-                <div class="chat-image"> 
-                    <img class="avatar" src="/images/profile_4.jpeg" alt="User Avatar"><h4>Santiago</h4>
-                </div>
-                <div class="message-inbox">
-                    <div class="messages">
-                        <div v-for="(message, index) in messages" :key="index" :class="['message', message.sender === 'Me' ? 'sent' : 'received']">
-                            {{ message.text }}
+
+            <!-- only need this 'template'; information needs to update based on the 'activeSection' variable -->
+            <!-- the way it the information is displayed may need to change -->
+            <div class="chat-box d-flex flex-column w-100 flex-fill">
+                <div class="message-inbox d-flex flex-column flex-fill overflow-y-auto p-4">
+                    <div class="d-flex flex-column flex-fill overflow-y-auto">
+                        <div
+                            v-for="(message, index) in messagesForASpecificUser"
+                            :key="index"
+                            class="d-flex flex-column mb-2"
+                        >
+                            <div
+                                :class="[
+                                    'message', message.from === user?.firstName ? 'sent' : 'received'
+                                ]"
+                            >
+                                <div>{{ message.message }}</div>
+                            </div>
+
+                            <span
+                                :class="['timestamp', message.from === user?.firstName ? 'sent' : 'received']"
+                            >
+                                {{ formatTimestamp(message.timestamp) }} by {{ message.from === user?.firstName ? 'Me' : message.from }}
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Input Box -->
-                    <div class="texting-box">
-                        <input v-model="newMessage" @keyup.enter="sendMessage" type="text" placeholder="Type a message..." />
-                        <button @click="sendMessage">Send</button>
+                    <div class="d-flex gap-3 py-3">
+                        <input
+                            v-model="newMessage"
+                            @keyup.enter="sendMessage"
+                            type="text"
+                            placeholder="Type a message..." 
+                            class="messageInput w-100 p-2 border-0 rounded"
+                        />
+                        <button
+                            class="submitMessageBtn rounded border-0 px-3 py-2"
+                            @click="sendMessage"
+                            role="button"
+                        >
+                            Send
+                        </button>
                     </div>
                 </div>
             </div>
@@ -94,231 +228,117 @@
 </template>
 
 <style scoped>
-.messages-container {
-    display: flex;
-    padding: 5px;
-    border-top: 2px solid #ddd; 
-}
+    .searchIcon {
+        height: 25px;
+        width: 25px;
+    }
 
-.sidebar {
-    width: 25%;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    border-right: 2px solid #ddd; 
-    height: 90vh; 
-    overflow-y: auto;
-    flex-shrink: 0;
-}
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
 
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 5px;
-}
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
 
-.search-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #3F51B5;
-    transition: color 0.3s;
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px; 
-    height: 25px;
-    width: 25px;
-}
+    .sidebar-title {
+        color: var(--primary);
+    }
 
-.search-btn img{
-    height: 25px;
-    width: 25px;
-}
+    .outline-none {
+        outline: none;
+    }
 
-.sidebar::-webkit-scrollbar {
-    width: 8px;
-}
+    .filterButtons {
+        transition: background 0.3s;
+    }
 
-.sidebar::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-}
+    .filterButtons.active {
+        background: #dbeafe;
+        font-weight: bold;
+    }
 
-.sidebar-title {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #3F51B5;
-}
+    .filterButtons:hover {
+        background: #c5e0ff;
+    }
 
-.sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+    .sidebar-menu li {
+        transition: background 0.3s;
+        border-radius: 20px; 
+    }
 
-.filter-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    align-items: center;
-}
+    .sidebar-menu li.active {
+        background: #dbeafe;
+        font-weight: bold;
+    }
 
-.filter-buttons button {
-    padding: 10px 15px;
-    border-radius: 20px; 
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
+    .sidebar-menu li:hover {
+        background: #e7f0ff;
+    }
 
-.filter-buttons button.active {
-    background: #dbeafe;
-    font-weight: bold;
-}
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 20px;
+    }
 
-.filter-buttons button:hover {
-    background: #c5e0ff;
-}
+    .chat-box {
+        height: 90vh;
+    }
 
-.sidebar-menu {
-    list-style: none;
-    padding: 0;
-}
+    .message-inbox {
+        background: #f9f9f9;
+    }
 
-.sidebar-menu li {
-    padding: 15px 15px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: background 0.3s;
-    border-radius: 20px; 
-}
+    .message {
+        padding: 10px 15px;
+        border-radius: 7px;
+        max-width: 50%;
+        word-wrap: break-word;
+    }
 
-.sidebar-menu li.active {
-    background: #dbeafe;
-    font-weight: bold;
-}
+    .message.received {
+        background: #e0e0e0;
+        align-self: flex-start;
+    }
 
-.sidebar-menu li:hover {
-    background: #e7f0ff;
-}
+    .message.sent {
+        background: var(--primary);
+        color: white;
+        align-self: flex-end;
+        margin-right: 5px;
+    }
 
-.avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 20px;
-}
+    .timestamp {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 4px;
+        display: block;
+    }
 
-.chat-profile {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    height: 90vh;
-    flex-grow: 1;
-}
+    .timestamp.sent {
+        margin-right: 5px;
+        align-self: flex-end;
+    }
 
-.chat-image{
-    display: flex;
-    flex-direction: row;
-    padding: 20px 20px 20px 20px;
-    width: 100%;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid #ddd; 
-}
+    .messages-container:has(.chat-profile:empty) {
+        justify-content: space-between;
+    }
 
-.chat-image h4 {
-    margin: 0;  
-    line-height: 1;  
-    display: flex;
-    align-items: center;
-}
+    .messageInput { 
+        outline: none;
+        background: var(--background);
+    }
 
-.chat-image {
-    display: flex;
-    flex-direction: row;
-    padding: 20px;
-    width: 100%;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid #ddd;
+    .submitMessageBtn {
+        background: var(--primary);
+        color: white;
+        transition: 0.3s;
+    }
 
-}
-
-.message-inbox {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding: 20px;
-    background: #f9f9f9;
-}
-
-.messages {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 20px;
-    flex: 1; 
-    overflow-y: auto;
-}
-
-.message {
-    padding: 10px 15px;
-    border-radius: 15px;
-    max-width: 70%;
-    word-wrap: break-word;
-}
-
-.message.received {
-    background: #e0e0e0;
-    align-self: flex-start;
-}
-
-.message.sent {
-    background: #3F51B5;
-    color: white;
-    align-self: flex-end;
-}
-
-.messages-container:has(.chat-profile:empty) {
-    justify-content: space-between;
-}
-
-.texting-box {
-    display: flex;
-    padding: 10px;
-    background: white;
-    border-top: 2px solid #ddd;
-    margin-top: auto;
-}
-
-.texting-box input {
-    flex-grow: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 20px;
-    outline: none;
-    background: #f0f0f0;
-}
-
-.texting-box button {
-    padding: 10px 15px;
-    margin-left: 10px;
-    border: none;
-    border-radius: 20px;
-    background: #3F51B5;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.texting-box button:hover {
-    background: #283593;
-}
+    .submitMessageBtn:hover {
+        background: #283593;
+    }
 </style>
