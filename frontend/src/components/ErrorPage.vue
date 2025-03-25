@@ -1,28 +1,27 @@
 <script setup>
     import { ref } from 'vue';
-    import { useRoute } from 'vue-router';
+    import { useRouter } from 'vue-router';
     import { parseUser } from "../utils/userUtils"
     
     const showModal = ref(false);
     const user = parseUser();
-    const route = useRoute();
+    const router = useRouter();
 
     const goHome = () => {
-        route.push('/');
+        router.push('/');
     };
 </script>
 
 <template>
     <div class="error-page">
         <div class="content">
-            <h2>404 Page Not Found</h2>
-            <p>Oops! The page you are looking for does not exist.</p>
+            <h2> 404 Error </h2> 
+            <p>Oops! The page you are looking for does not exist.</p> 
             <!-- TODO: -->
             <!-- Dino Game Here. I am going to smash my damn desk ;-; -->
             <button @click="goHome" class="home-button">Go Back Home</button>
         </div>
     </div>
-
 </template>
 
 <style scoped>
@@ -30,7 +29,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
         text-align: center;
         flex-direction: column;
     }

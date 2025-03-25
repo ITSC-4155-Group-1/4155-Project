@@ -17,7 +17,7 @@ const routes = [
     { path: '/cart', component: ShoppingCart },
     { path: '/notifications', component: NotifPage },
     { path: '/messages', component: Messages },
-    { path: '/error', component: ErrorPage },
+    { path: '/:pathMatch(.*)*' , component: ErrorPage },
 ];
 
 const router = createRouter({
