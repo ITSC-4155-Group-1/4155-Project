@@ -5,8 +5,6 @@
     import { useRouter } from 'vue-router';
     import { showSuccessToast, showErrorToast } from './utils/toast';
 
-    const router = useRouter();
-
     const navHeight = ref(86);
 
     onMounted(() => {
