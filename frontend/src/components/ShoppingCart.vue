@@ -5,9 +5,11 @@
     import { showSuccessToast } from '../utils/toast';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
-
+    import { parseUser } from '../utils/userUtils.js';
+    
     const router = useRouter();
     const cartStore = useCartStore();
+    const user = parseUser();
 
     const goBack = () => {
         router.back();
@@ -278,13 +280,19 @@
                         </li>
                         <li>Last but not least, enjoy!</li>
                     </ol>
-                    <hr class="short-border">
+                    <hr class="short-border" v-if="user?.firstName !== host">
                 </div>
-                <div class="d-flex flex-column">
+                <div class="d-flex flex-column" v-if="user?.firstName !== host">
                     <p>
                         By selecting the button below, I agree to the Host's Venue Rules and Ground rules for attendees, and that Gatherly can charge my payment method if I'm responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request
                     </p>
-                    <button type="submit" class="btn custom-btn confirm" @click="book">Book</button>
+                    <button
+                        type="submit"
+                        class="btn custom-btn confirm"
+                        @click="book"
+                    >
+                        Book
+                    </button>
                 </div>
             </div>
             <div class="d-flex flex-column border border-1 border-black rounded-3 p-4 w-25 your-trip">

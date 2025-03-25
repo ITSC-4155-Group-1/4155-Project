@@ -6,9 +6,11 @@
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
     import { showSuccessToast } from '../utils/toast.js';
+    import { parseUser } from '../utils/userUtils.js'
 
     const router = useRouter();
     const cartStore = useCartStore();
+    const user = parseUser();
 
     const route = useRoute();
     const venue = ref({});
@@ -57,6 +59,16 @@
         const singularVenue = venues.find(v => v.venue_name === venueId)
         venue.value = singularVenue;
         venueReviews.value = reviews.filter(r => r.venue_name === singularVenue.venue_name);
+        
+        const cartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+        if (cartDetails) {
+            if (cartDetails.startDate && cartDetails.endDate) {
+                dateRange.value = [new Date(cartDetails.startDate), new Date(cartDetails.endDate)];
+            }
+            if (cartDetails.attendees) {
+                attendees.value = cartDetails.attendees;
+            }
+        }
     });
 
     const venueRating = computed(() => {
@@ -288,7 +300,10 @@
         </div>
 
         <div class="d-flex justify-space-around gap-5">
-            <div class="w-65 my-2">
+            <div
+                class="w-65 my-2"
+                :class="user?.name !== venue.host_id ? 'w-100' : ''"
+            >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
@@ -308,7 +323,9 @@
                         <span class="fs-5 fw-medium rating">No Reviews</span>
                     </div>
 
-                    <div v-if="venue.capacity">
+                    <div
+                        v-if="venue.capacity"
+                    >
                         <span class="fs-5 fw-medium d-flex align-items-center gap-1">
                             <svg
                                 width="23"
@@ -408,7 +425,10 @@
             </div>
 
             <!-- Booking Form Container -->
-            <div class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light">
+            <div
+                class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
+                v-if="user?.firstName !== venue.host_id"
+            >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">
                         <label for="dateRange" class="form-label fw-medium fs-5">Select Dates:</label>
@@ -421,7 +441,6 @@
                             :max-date="maxDate"
                             :enable-time-picker="false"
                             required
-                            class="date-picker-input"
                         />
                     </div>
     
