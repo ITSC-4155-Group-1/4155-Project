@@ -1,23 +1,97 @@
 <script setup>
-    import { ref, nextTick } from 'vue';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
-    import { useRouter } from 'vue-router';
+    import { ref, nextTick, onUnmounted } from 'vue'
+    import { useRouter } from 'vue-router'
+    import axios from 'axios'
+    import { showSuccessToast } from '../utils/toast.js';
+
+    const venue = JSON.parse(localStorage.getItem('venueDetails')) ? 
+                        ref(JSON.parse(localStorage.getItem('venueDetails'))) : ref({});
+    const router = useRouter();
+    const addressError = ref(false);
+
+    const usAbbreviations = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District of Columbia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PA": "Pennsylvania",
+        "RI": "Rhode Island",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    const usAbbreviatedToState = (state) => {
+        return usAbbreviations[state] ? usAbbreviations[state] : state;
+    }
+
+    const usStateToAbbreviation = (state) => {
+        for (let key in usAbbreviations) {
+            if (usAbbreviations[key] === state) {
+                return key;
+            }
+        }
+        return state;
+    }
 
     const form = ref({
-        state: "",
-        city: "",
-        address: "",
-        zipCode: null,
-        venueName: "",
-        description: "",
-        price: 0,
-        availability: [],
-        capacity: 0,
-        images: null,
+        state: usAbbreviatedToState(venue.value.location.split(', ')[1]),
+        city: venue.value.location.split(', ')[0],
+        address: "1234 Country Place", // hardcoding cause I don't have an address in the mock data
+        zipCode: 12345,
+        venueName: venue.value.venue_name,
+        description: venue.value.venue_description,
+        price: venue.value.price,
+        availability: [
+            new Date(venue.value.availability_start_date),
+            new Date(venue.value.availability_end_date)
+        ],
+        capacity: venue.value.capacity,
+        images: null, // idk if this'll be retrievable  
     });
-
-    const addressError = ref(false);
-    const router = useRouter();
 
     const handleFileUpload = (e) => {
         const files = e.target.files;
@@ -107,30 +181,37 @@
         return !Object.values(errors.value).includes(true); // true if all error values are true
     }
 
-    const createVenue = async () => {
+    const updateVenue = async () => {
         if (!validateForm()) {
-            showErrorToast('Missing required information.')
             return;
         }
 
-        // TODO: make api call to create the venue
-        // if successful, show the successful toast, else show the error toast
+        // TODO: make api call to update the venue
+        // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
         try {
+            
+            
+            localStorage.removeItem('venueDetails');
             await router.push('/settings');
 
             nextTick(() => {
-                showSuccessToast('Venue created successfully!');
-            })
-        } catch (error) {
-            showErrorToast('Failed to create venue. Please try again.');
+                showSuccessToast('Venue updated successfully!');
+            });
+        } catch (e) {
+            showErrorToast('Failed to update venue');
         }
-    };
+
+    }
+
+    onUnmounted(() => {
+        localStorage.removeItem('venueDetails');
+    })
 </script>
 
 <template>
     <div class="form-width mx-auto">
-        <h1 class="text-center mt-2 mb-5 provide-space-color">Provide a Space</h1>
-        <form @submit.prevent="createVenue" class="mb-3">
+        <h1 class="text-center mt-2 mb-5 provide-space-color">Editing {{ form.venueName }}</h1>
+        <form @submit.prevent="updateVenue" class="mb-3">
             <div class="mb-5">
                 <h3>Location</h3>
                 <div class="d-flex gap-2">
@@ -144,9 +225,9 @@
                             v-model="form.state"
                             required
                         >
-                            <option value="" selected disabled>State</option>
+                            <option disabled value="">Select a state</option>
                             <option
-                                v-for="(city, state) in usStatesCities"
+                                v-for="(cities, state) in usStatesCities"
                                 :value="state"
                                 :key="state"
                             >
@@ -159,7 +240,7 @@
                     </div>
                     <div class="mb-3 w-50">
                         <label for="city" class="form-label">
-                            City {{ form.state ? 'in ' + form.state : '' }}
+                            City {{ form.state ? 'in ' + usStateToAbbreviation(form.state) : '' }}
                         </label>
                         <select
                             v-model="form.city"
@@ -170,7 +251,7 @@
                             name="city"
                             required
                         >
-                            <option value="" selected disabled>City</option>
+                            <option disabled value="">Select a city</option>
                             <option
                                 v-for="city in usStatesCities[form.state]"
                                 :value="city"

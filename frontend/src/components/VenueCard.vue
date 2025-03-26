@@ -1,9 +1,10 @@
 <script setup>
-    import { ref, computed, toRefs } from 'vue';
+    import { ref, computed, toRefs, nextTick } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
-    import { useRouter } from 'vue-router'
+    import { useRouter, useRoute } from 'vue-router'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast } from '../utils/toast';
+    import { showSuccessToast, showWarningToast } from '../utils/toast';
+    import { parseUser } from '../utils/userUtils'
 
     const props = defineProps({
         venue: Object,
@@ -13,6 +14,10 @@
     const isFilled = ref(false);
     const images = computed(() => venue.value.image ?? []);
     const router = useRouter();
+    const route = useRoute();
+    const user = parseUser();
+    const isHost = computed(() => venue.value.host_id === user?.firstName);
+    const isSettingsPage = computed(() => route.path === '/settings');
 
     const toggleIsFilled = () => {
         // TODO: will make a backend call to favorite it
@@ -29,6 +34,18 @@
         event.stopPropagation();
         router.push(`/venues/${venue.value.venue_name}`)
     };
+
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value.venue_name}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
 
     const carouselConfig = {
         height: 225,
@@ -75,7 +92,7 @@
                 </div>
             </div>
         </router-link>
-        <span class="heart-icon position-absolute bottom-0 end-0 m-3">
+        <span class="heart-icon position-absolute bottom-0 end-0 m-3" v-if="!isHost">
             <svg
                 @click="toggleIsFilled()"
                 :fill="isFilled ? '#FF4081' : 'none'"
@@ -89,6 +106,13 @@
                 >
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
+        </span>
+        <span
+            class="heart-icon position-absolute bottom-0 end-0 m-3"
+            v-else-if="isHost && isSettingsPage"
+            @click="goToEditVenue"
+        >
+            ✏️
         </span>
     </div>
 </template>

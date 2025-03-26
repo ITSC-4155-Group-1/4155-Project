@@ -4,7 +4,7 @@ export const venues = [
     {
         "venue_name": "Beach Resort",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_2", 
+        "host_id": "snat6", 
         "location": "Miami, FL",
         "price": 2500,
         "availability_start_date": new Date("2025, 3, 1"),
@@ -16,8 +16,8 @@ export const venues = [
     {
         "venue_name": "Mountain Lodge",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_3", 
-        "location": "Asheville, NC",
+        "host_id": "snat6", 
+        "location": "Charlotte, NC",
         "price": 1800,
         "availability_start_date": new Date("2025, 4, 5"),
         "availability_end_date": new Date("2025, 11, 20"),
@@ -37,7 +37,7 @@ export const venues = [
     {
         "venue_name": "City Conference Center",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_4", 
+        "host_id": "snat6", 
         "location": "New York, NY",
         "price": 4500,
         "availability_start_date": new Date("2025, 2, 15"),

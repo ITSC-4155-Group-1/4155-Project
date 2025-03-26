@@ -113,7 +113,7 @@
                         <i class="icon">⭐</i> Favorites
                     </li>
                 </ul>
-                <a class="logout" @click="userStore.logout()">Logout</a> <!-- need to make functional (don't forget) -->
+                <a class="logout" @click="userStore.logout()">Logout</a>
             </div>
 
             <div class="main-content">

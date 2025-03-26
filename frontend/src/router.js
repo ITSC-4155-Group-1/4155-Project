@@ -7,6 +7,7 @@ import CreateVenue from "./components/CreateVenue.vue";
 import ShoppingCart from "./components/ShoppingCart.vue";
 import NotifPage from "./components/NotifPage.vue"
 import Messages from "./components/Messages.vue";
+import EditVenue from "./components/EditVenue.vue";
 import ErrorPage from "./components/ErrorPage.vue";
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
     { path: '/cart', component: ShoppingCart },
     { path: '/notifications', component: NotifPage },
     { path: '/messages', component: Messages },
+    { path: '/edit-venue/:id', component: EditVenue },
     { path: '/:pathMatch(.*)*' , component: ErrorPage },
 ];
 
