@@ -302,7 +302,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.name !== venue.host_id ? 'w-100' : ''"
+                :class="user?.name !== venue.host_id ? 'smaller-container' : ''"
             >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
@@ -528,6 +528,11 @@
 
     .w-35 {
         width: 35%;
+    }
+
+    .smaller-container {
+        width: 95%;
+        margin: 4px 0;
     }
 
     .image-gallery {
