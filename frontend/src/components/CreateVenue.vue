@@ -115,7 +115,6 @@
 
         // TODO: make api call to create the venue
         // if successful, show the successful toast, else show the error toast
-        // TODO: Create a toast store to show toasts cross navigation (will do tomorrow) I'M PUTTING THIS HERE BECAUSE I WANT TO EAT DINNER AND SPEND TIME WITH SAGE
         try {
             await router.push('/settings');
 
