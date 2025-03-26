@@ -97,7 +97,11 @@ exports.deleteAccount = (req, res, next) =>{
         .then((venues) =>{
             if(venues){
                 let venueIds = venues.filter(venue => venue.id)
-                Promise.all([venueModel.deleteMany({_id: {$in: venueIds}), bookingModel.deleteMany({venueId: {$in: venueIds}}, reviewModel.deleteMany({venueId: {$in: venueIds}}))])
+                Promise.all([
+                    venueModel.deleteMany({ _id: { $in: venueIds } }),
+                    bookingModel.deleteMany({ venueId: { $in: venueIds } },
+                    reviewModel.deleteMany({venueId: {$in: venueIds}}))
+                ])
                 .then((deletedItems) => {
                     if(deletedItems){
                         req.session.destroy((err) => {
