@@ -217,6 +217,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="saveVenue"
+                    v-if="venue.host_id !== user?.firstName"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
