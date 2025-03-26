@@ -1,14 +1,13 @@
 <script setup>
-    import { ref, computed, toRefs } from 'vue';
+    import { ref, computed, toRefs, nextTick } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import { useRouter, useRoute } from 'vue-router'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast } from '../utils/toast';
+    import { showSuccessToast, showWarningToast } from '../utils/toast';
     import { parseUser } from '../utils/userUtils'
 
     const props = defineProps({
         venue: Object,
-        host: String,
     });
 
     const { venue } = toRefs(props)
@@ -17,7 +16,7 @@
     const router = useRouter();
     const route = useRoute();
     const user = parseUser();
-    const isHost = computed(() => props.host === user?.firstName);
+    const isHost = computed(() => venue.value.host_id === user?.firstName);
     const isSettingsPage = computed(() => route.path === '/settings');
 
     const toggleIsFilled = () => {
@@ -35,6 +34,18 @@
         event.stopPropagation();
         router.push(`/venues/${venue.value.venue_name}`)
     };
+
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value.venue_name}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
 
     const carouselConfig = {
         height: 225,
@@ -99,6 +110,7 @@
         <span
             class="heart-icon position-absolute bottom-0 end-0 m-3"
             v-else-if="isHost && isSettingsPage"
+            @click="goToEditVenue"
         >
             ✏️
         </span>
