@@ -3,6 +3,7 @@ const userController = require('../controllers/userController')
 const validator = require ('../middleware/userMiddleware')
 const inputValidator = require('../middleware/validation')
 const exp_router = express.Router()
+const {upload} = require('../middleware/venueMiddleware')
 
 exp_router.post('/signup', validator.isNotLoggedIn, inputValidator.accountValidation, inputValidator.displayValidation, userController.signup)
 
