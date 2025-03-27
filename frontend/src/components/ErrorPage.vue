@@ -24,7 +24,7 @@
                 class="btn custom-btn confirm mb-2"
                 @click="submitReview"
             >
-                Go back to home
+                Go Back Home
             </button>
         </div>
     </div>
