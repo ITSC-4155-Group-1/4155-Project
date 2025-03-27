@@ -14,17 +14,21 @@ const port = 3000
 const app = express()
 const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
-// Database connect
-mongoose.connect(url)
-.then(() =>{
-    app.listen(port, () => {
-        console.log("Server is running!")
+// Database connect checking environment variable so tests can run
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(url)
+    .then(() => {
+      app.listen(port, () => {
+        console.log("Server is running!");
+      });
     })
-})
-.catch((err) => {
-    console.log(err.message)
-})
+    .catch((err) => {
+      console.log(err.message);
+    });
+}
 
+// exporting for testing
+module.exports = app;
 // Session creation and routing
 app.use(cors({
     origin: "http://localhost:5173",
