@@ -1,6 +1,6 @@
 <script setup>
     import { ref, computed } from 'vue';
-    import { venues } from "../../../mockdata";
+    import { venues } from "../../mockdata";
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';

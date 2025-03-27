@@ -1,6 +1,6 @@
 <script setup>
     import { ref, computed, onMounted } from 'vue';
-    import { venues } from '../../../mockdata.js';
+    import { venues } from '../../mockdata.js';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
 

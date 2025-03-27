@@ -1,5 +1,5 @@
 <script setup>
-    import { venues } from "../../../mockdata";
+    import { venues } from "../../mockdata";
     import { ref } from "vue"
     import VenueCard from "./VenueCard.vue"
 

@@ -1,5 +1,5 @@
 <script setup>
-    import { notifications } from '../../../mockdata';
+    import { notifications } from '../../mockdata';
     import { ref } from "vue"
 
     defineProps({
