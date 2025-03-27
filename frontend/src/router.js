@@ -9,6 +9,7 @@ import NotifPage from "./components/NotifPage.vue"
 import Messages from "./components/Messages.vue";
 import EditVenue from "./components/EditVenue.vue";
 import ErrorPage from "./components/ErrorPage.vue";
+import LeaveRating from "./components/LeaveRating.vue";
 
 const routes = [
     { path: '/', component: LandingPage },
@@ -19,6 +20,7 @@ const routes = [
     { path: '/notifications', component: NotifPage },
     { path: '/messages', component: Messages },
     { path: '/edit-venue/:id', component: EditVenue },
+    { path: '/review', component: LeaveRating }, // path will be '/review:/id later
     { path: '/:pathMatch(.*)*' , component: ErrorPage },
 ];
 
