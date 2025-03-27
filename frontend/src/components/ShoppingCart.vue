@@ -198,7 +198,7 @@
     });
 
     const book = async () => {
-        // send a request to the backend to book the venue
+        // TODO: send a request to the backend to book the venue
         
         // if successful, send to home page, remove the local storage item, and display success toast, else display error toast
         localStorage.removeItem('cartDetails');

@@ -34,7 +34,7 @@
         alert("Account Deleted!"); 
         closeModal();
 
-        // will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
+        // TODO: will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
     };
 
     const setActiveSection = (section) => {
