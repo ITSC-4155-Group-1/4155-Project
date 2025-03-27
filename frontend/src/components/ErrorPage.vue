@@ -13,26 +13,24 @@
 </script>
 
 <template>
-    <div class="error-page">
+    <div class="error-page d-flex justify-content-center align-items-center text-center flex-column">
         <div class="content">
             <h2> 404 Error </h2> 
             <p>Oops! The page you are looking for does not exist.</p> 
             <!-- TODO: -->
             <!-- Dino Game Here. I am going to smash my damn desk ;-; -->
-            <button @click="goHome" class="home-button">Go Back Home</button>
+            <button
+                type="submit"
+                class="btn custom-btn confirm mb-2"
+                @click="submitReview"
+            >
+                Go back to home
+            </button>
         </div>
     </div>
 </template>
 
 <style scoped>
-    .error-page {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        flex-direction: column;
-    }
-
     .content {
         max-width: 600px;
         padding: 20px;
@@ -53,18 +51,20 @@
         color: #666;
     }
 
-    .home-button {
-        background-color: #007bff;
+    .custom-btn {
+        width: fit-content;
+        padding: 0.75rem 2rem;
         color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 20px;
+        transition: background-color 0.2s ease-in-out;
     }
 
-    .home-button:hover {
-        background-color: #0056b3;
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
+
+    .confirm:hover {
+        color: white;
+        background-color: var(--highlight-dark-50);
     }
 </style>
