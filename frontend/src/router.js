@@ -71,7 +71,7 @@ const routes = [
         path: '/review',
         name: 'review-venue',
         component: LeaveRating
-    }, // path will be '/review:/id later, and will need to add the error handling for this as well, will pretty much be copy and paste
+    }, // TODO: path will be '/review:/id later, and will need to add the error handling for this as well, will pretty much be copy and paste
     {
         path: '/:pathMatch(.*)*',
         name: 'error-page',
