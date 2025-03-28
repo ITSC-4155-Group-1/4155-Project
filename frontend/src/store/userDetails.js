@@ -127,13 +127,88 @@ export const useUserStore = defineStore('user', () => {
                 clearUser()
                 await router.push('/')
                 location.reload()
+            } else {
+                showErrorToast(response.data.invalid)
+                return { success: false }
             }
         } catch (error) {
             showErrorToast('An unexpected error occurred. Please try again.')
-            console.error('Failed to delete user:', error.response?.data?.message || error)
+            console.error('Failed to delete user:', error.response?.data?.invalid || error)
         }
 
     }
 
-    return { user, setUser, clearUser, login, logout, signup, deleteUser }
+    const updateUserPassword = async (newPassword) => {
+        const creds = {
+            password: newPassword,
+        }
+
+        try {
+            const response = await axios.put(
+                `http://localhost:3000/user`, 
+                creds, 
+                { withCredentials: true }
+            )
+
+            if (response.data.success) {
+                showSuccessToast(response.data.success);
+                return { success: true }
+            } else {
+                showErrorToast(response.data.invalid);
+                return { success: false }
+            }
+        } catch (error) {
+            showErrorToast('An unexpected error occurred. Please try again.')
+            console.error('Failed to update password:', error.response?.data?.invalid || error)
+        }
+    }
+
+    const updateUserPfp = async (newPfp) => {
+        const formData = new FormData();
+        formData.append('image', newPfp);
+        
+        try {
+            const response = await axios.put(
+                `http://localhost:3000/user`, 
+                formData, 
+                { 
+                    withCredentials: true,
+                    headers: { 'Content-Type':'multipart/form-data' }
+                }
+            )
+            
+            if (response.data.success) {
+                localStorage.setItem('showToast', JSON.stringify(
+                    {
+                        message: response.data.success,
+                        type: 'success',
+                    }
+                ));
+                
+                const userToChangePfp = JSON.parse(localStorage.getItem('user'));
+                userToChangePfp.token.image = response.data.image;
+                localStorage.setItem('user', JSON.stringify(userToChangePfp));
+
+                return { success: true }
+            } else {
+                showErrorToast(response.data.invalid);
+                return { success: false }
+            }
+        } catch (error) {
+            showErrorToast('An unexpected error occurred. Please try again.')
+            console.error('Failed to update profile picture:', error.response?.data?.message || error)
+        }
+    }
+
+    return {
+        user,
+        setUser,
+        clearUser,
+        login,
+        logout,
+        signup,
+        deleteUser,
+        updateUserPassword,
+        updateUserPfp,
+    }
 })

@@ -131,55 +131,55 @@ exports.deleteAccount = (req, res, next) =>{
 
 exports.updateUser = (req, res, next) =>{
     let password = req.body.password
-    let userId = req.body.id
+    let userId = req.session.user
     let img = null
     if(req.file){
-        let img = `/images/${req.file.originalname}`
+        img = `/images/${req.file.filename}`;
     }
     if(password){
         bcrypt.hash(password, 10)
         .then((hashedPass) => {
-        let newInfo = {password: hashedPass}
+            let newInfo = { password: hashedPass }
+            userModel.findByIdAndUpdate(userId, newInfo, {runValidators: true})
+            .then((user) =>{
+                if(user){
+                    res.status(200).json({ success: "Successfully updated your password" })
+                }
+                else{
+                    res.status(404).json({ invalid: "User could not be found" })
+                }
+            })
+            .catch(err=>{
+                if(err.name === 'ValidationError'){
+                    res.status(400).json({ invalid: err.message })
+                }
+                next(err)
+            }) 
+        })
+        .catch(err => next(err))
+    }
+    else {
+        let newInfo = {}
         if(img){
             newInfo.image = img
         }
         userModel.findByIdAndUpdate(userId, newInfo, {runValidators: true})
         .then((user) =>{
             if(user){
-                res.status(200).json({success: "User updated successfully"})
+                res.status(200).json({
+                    success: "Successfully updated your profile picture",
+                    image: img
+                })
             }
             else{
-                res.status(404).json({invalid: "User could not be found"})
+                res.status(404).json({ invalid: "User could not be found" })
             }
         })
         .catch(err=>{
             if(err.name === 'ValidationError'){
-                res.status(400).json({invalid: err.message})
+                res.status(400).json({ invalid: err.message })
             }
             next(err)
         }) 
-        })
-        .catch(err => next(err))
     }
-        else{
-            let newInfo = {}
-            if(img){
-                newInfo.image = img
-            }
-            userModel.findByIdAndUpdate(userId, newInfo, {runValidators: true})
-            .then((user) =>{
-                if(user){
-                    res.status(200).json({success: "User updated successfully"})
-                }
-                else{
-                    res.status(404).json({invalid: "User could not be found"})
-                }
-            })
-            .catch(err=>{
-                if(err.name === 'ValidationError'){
-                    res.status(400).json({invalid: err.message})
-                }
-                next(err)
-            }) 
-        }
 }
