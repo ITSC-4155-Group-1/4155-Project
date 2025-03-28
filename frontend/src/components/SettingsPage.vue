@@ -4,8 +4,7 @@
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
-    import { useRoute } from 'vue-router'
+    import { showSuccessToast } from '../utils/toast';
 
     const venueList = ref(venues);
     const showModal = ref(false);
@@ -13,7 +12,6 @@
     const updatePasswordDiv = ref(false);
     const user = parseUser();
     const userStore = useUserStore();
-    const route = useRoute();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -30,11 +28,14 @@
         showModal.value = false;
     };
 
-    const confirmDelete = () => {
-        alert("Account Deleted!"); 
-        closeModal();
-
+    const confirmDelete = async () => {
         // TODO: will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
+        const response = await userStore.deleteUser();
+        if (response.success) {
+            closeModal();
+        } else {
+            console.error("Failed to delete account:", response);
+        }
     };
 
     const setActiveSection = (section) => {

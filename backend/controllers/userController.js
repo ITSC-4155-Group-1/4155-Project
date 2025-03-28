@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const venueModel = require("../model/venueModel");
 const notificationModel = require("../model/notificationModel");
 const reviewModel = require("../model/reviewModel");
+const bookingModel = require("../model/bookingModel");
 
 exports.login = (req, res, next) => {
     let email = req.body.email;
@@ -87,13 +88,13 @@ exports.logout = (req, res, next) => {
 
 // Account deletion
 exports.deleteAccount = (req, res, next) =>{
-    let userId = req.body.id
+    let userId = req.session.user
     if (!req.session) {
         return res.status(400).json({ invalid: "No active session" });
     }
     Promise.all([userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}), reviewModel.deleteMany({reviewerId : userId})])
     .then((userData) => {
-        venueModel.find({host: userID})
+        venueModel.find({host: userId})
         .then((venues) =>{
             if(venues){
                 let venueIds = venues.filter(venue => venue.id)
@@ -108,7 +109,7 @@ exports.deleteAccount = (req, res, next) =>{
                             if (err) {
                                 return next(err);
                             } else {
-                                res.json({ success: "Successfully deleted account and removed session" });
+                                res.json({ success: "Successfully deleted account!" });
                             }
                         })
                     }

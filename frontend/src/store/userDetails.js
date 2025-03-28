@@ -109,5 +109,31 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    return { user, setUser, clearUser, login, logout, signup }
+    const deleteUser = async () => {
+        try {
+            const response = await axios.delete(
+                'http://localhost:3000/user', 
+                { withCredentials: true }
+            )
+
+            if (response.data.success) {
+                localStorage.setItem('showToast', JSON.stringify(
+                    {
+                        message: response.data.success,
+                        type: 'success'
+                    }
+                ));
+
+                clearUser()
+                await router.push('/')
+                location.reload()
+            }
+        } catch (error) {
+            showErrorToast('An unexpected error occurred. Please try again.')
+            console.error('Failed to delete user:', error.response?.data?.message || error)
+        }
+
+    }
+
+    return { user, setUser, clearUser, login, logout, signup, deleteUser }
 })
