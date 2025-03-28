@@ -5,7 +5,6 @@
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
     import { showSuccessToast, showErrorToast } from '../utils/toast';
-    import { useRoute } from 'vue-router'
 
     const venueList = ref(venues);
     const showModal = ref(false);
@@ -13,7 +12,6 @@
     const updatePasswordDiv = ref(false);
     const user = parseUser();
     const userStore = useUserStore();
-    const route = useRoute();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -30,11 +28,13 @@
         showModal.value = false;
     };
 
-    const confirmDelete = () => {
-        alert("Account Deleted!"); 
-        closeModal();
-
-        // TODO: will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
+    const confirmDelete = async () => {
+        const response = await userStore.deleteUser();
+        if (response.success) {
+            closeModal();
+        } else {
+            console.error("Failed to delete account:", response);
+        }
     };
 
     const setActiveSection = (section) => {
@@ -54,11 +54,23 @@
 
     const passwordsMatch = computed(() => newPassword.value === rePassword.value || rePassword.value === "");
 
+    // TODO: figure out why the toast is showing up twice
     const validatePasswords = () => {
         if (!passwordsMatch.value) {
             passwordError.value = "Passwords do not match.";
             return false;
+        } 
+        
+        if (!(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}$/.test(newPassword.value))) {
+            passwordError.value = "Password must contain at least 8 characters, including uppercase and lowercase letters, and a number.";
+            return false;
         }
+
+        if (newPassword.value.length < 8 || newPassword.value.length > 30) {
+            passwordError.value = "Password must be between 8 and 30 characters.";
+            return false;
+        }
+
         passwordError.value = "";
         return true;
     };
@@ -66,11 +78,10 @@
     const updatePassword = async () => {
         if (!validatePasswords()) return;
 
-        // TODO: backend call to update password
-        // if successful, display the success toast, else display the error toast
-        showSuccessToast("Successfully updated your password.");
-        updatePassword.value = false;
-        updatePasswordDiv.value = false;
+        const response = await userStore.updateUserPassword(newPassword.value);
+        if (response.success) {
+            updatePasswordDiv.value = false;
+        }
     }
 
     const changePfp = (e) => {
@@ -84,16 +95,17 @@
         newPfpPreview.value = URL.createObjectURL(file);
     }
 
-    const updatePfp = () => {
+    const updatePfp = async () => {
         if (!newPfp.value) {
-            console.error("update pfp failed:", newPfp);
+            showErrorToast("Failed to update your profile picture");
             return;
         }
 
-        // TODO: backend call to update pfp
-        // if successful, display the success toast, else display the error toast
-        showSuccessToast("Successfully updated your profile picture.");
-        changePfpModal.value = false;
+        const response = await userStore.updateUserPfp(newPfp.value);
+        if (response.success) {
+            changePfpModal.value = false;
+            location.reload()
+        } 
     }
 </script>
 

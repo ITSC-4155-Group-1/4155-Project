@@ -1,7 +1,5 @@
 
 exports.alreadyLoggedIn = (req, res, next) => {
-    console.log("Session Data: ", req.session); // Debugging
-
     if (req.session && req.session.user) {
         return next();
     } else {
