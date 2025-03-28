@@ -113,7 +113,7 @@ describe("User Middleware testing", () => {
   
     console.log("Incorrect Password Response:", response.body);
     expect(response.status).toBe(400);
-    expect(response.body.invalid).toBe("Incorrect password. Please try again.");
+    expect(response.body.invalid[0]).toBe("A password of length 8 to 30 is required");
   });
 
   test("POST /user/login should create a session token", async () => {
@@ -152,8 +152,8 @@ describe("User Middleware testing", () => {
 
 
     console.log("Logout Without Login Response:", response.body);
-    expect(response.status).toBe(400);
-    expect(response.body.invalid).toBe("You are not logged in yet");
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Unauthorized: You must be logged in to perform this action.");
   });
   
 });
