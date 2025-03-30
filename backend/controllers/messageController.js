@@ -1,23 +1,14 @@
-// const messageModel = require('../model/messageModel')
-// const userModel = require('../model/userModel')
-module.exports = (io) =>{
-  io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-    data = socket.handshake.query
-    const room = "test"
-    socket.join(room)
-    socket.on('message', (msg)=>{
-      io.to(room).emit('messageBack', `Message recieved!`)
-      io.to(room).emit('messageBack', `Hello, ${socket.id}, here is your message: ${msg}`)
+const messageModel = require('../model/messageModel')
+const userModel = require('../model/userModel')
+exports.getUsersToMessage = (req, res, next) =>{
+  messageModel.distinct('receiverId', {$and : [{senderId: req.session.user}]})
+  .then((users) => {
+    let userIds = users.filter(user => user._id)
+    userModel.find({_id : { $in: userIds }})
+    .then((messagedUsers) => {
+      return messagedUsers
     })
-    socket.on('disconnect', () => {
-      console.log('a user disconnected');
-    });
-    
+    .catch(err => next(err))
   })
-  // Function to send message
-  
-  // Function to disconnect
-  
-  
+  .catch(err => next(err))
 }
