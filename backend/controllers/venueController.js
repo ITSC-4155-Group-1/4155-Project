@@ -3,9 +3,17 @@ const venueModel = require('../model/venueModel')
 
 // View all venues
 exports.getVenues = (req, res, next) =>{
-    return venueModel.find()
+    venueModel.find()
+    .then((venues) =>{
+        if(venues){
+            res.status(200).json({ success: true, venues })
+        }
+        else{
+            res.json(200).json({ success: true, message: "No venues exist" })
+        }
+    })
+    .catch(err => next(err))
 }
-
 // Get my venues
 exports.viewMyVenues = (req, res, next) => {
     let id = req.body.id
@@ -13,7 +21,7 @@ exports.viewMyVenues = (req, res, next) => {
     venueModel.find({buyerId: id})
     .then((venues) =>{
         if(venues){
-            return venues
+            res.status(200).json({ success: true, venues })
         }
         else{
             next(new Error('No venues exist').status(404))
@@ -29,7 +37,7 @@ exports.getVenue = (req, res, next) => {
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
-            return venue
+            res.status(200).json({ success: true, venue })
         }
         else{
             next(new Error('Venue does not exist').status(404))
