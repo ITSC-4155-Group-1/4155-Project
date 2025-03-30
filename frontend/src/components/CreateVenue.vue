@@ -2,6 +2,7 @@
     import { ref, nextTick } from 'vue';
     import { showSuccessToast, showErrorToast } from '../utils/toast';
     import { useRouter } from 'vue-router';
+    import axios from 'axios';
 
     const form = ref({
         state: "",
@@ -116,11 +117,19 @@
         // TODO: make api call to create the venue
         // if successful, show the successful toast, else show the error toast
         try {
-            await router.push('/settings');
+            const response = await axios.post("http://localhost:3000/venue/", form.value, {
+                withCredentials: true
+            });
 
-            nextTick(() => {
-                showSuccessToast('Venue created successfully!');
-            })
+            if(response.data.success){
+                await router.push('/settings');
+
+                nextTick(() => {
+                    showSuccessToast('Venue created successfully!');
+                })
+            } else if(response.data.error){
+                showErrorToast('Failed to create venue. Please try again.');
+            }
         } catch (error) {
             showErrorToast('Failed to create venue. Please try again.');
         }
