@@ -12,11 +12,14 @@
 
     const { venue } = toRefs(props)
     const isFilled = ref(false);
-    const images = computed(() => venue.value.image ?? []);
+    const images = computed(() => venue.value.images ?? []);
+    const venueLocation = computed(
+        () => venue.value.state && venue.value.city ? `${venue.value.city}, ${venue.value.state}` : venue.value.location
+    );
     const router = useRouter();
     const route = useRoute();
     const user = parseUser();
-    const isHost = computed(() => venue.value.host_id === user?.firstName);
+    const isHost = computed(() => venue.value.host === user?.id);
     const isSettingsPage = computed(() => route.path === '/settings');
 
     const toggleIsFilled = () => {
@@ -32,13 +35,13 @@
 
     const goToVenue = (event) => {
         event.stopPropagation();
-        router.push(`/venues/${venue.value.venue_name}`)
+        router.push(`/venues/${venue.value.venueName}`)
     };
 
     const goToEditVenue = async (event) => {
         event.stopPropagation();
         localStorage.setItem('venueDetails', JSON.stringify(venue.value));
-        await router.push(`/edit-venue/${venue.value.venue_name}`);
+        await router.push(`/edit-venue/${venue.value.venueName}`);
 
         nextTick(() => {
             showWarningToast('Make sure to re-upload your images.', {
@@ -83,9 +86,9 @@
             </Carousel>
             <span class="badge position-absolute bottom-0 end-0 m-2 capacity">{{ venue.capacity }} people </span>
         </div>
-        <router-link :to="`/venues/${venue.venue_name}`" class="text-decoration-none">
+        <router-link :to="`/venues/${venue.venueName}`" class="text-decoration-none">
             <div class="mt-3 d-flex flex-column">
-                <h5 class="card-title">{{ venue.location }}</h5>
+                <h5 class="card-title">{{ venueLocation }}</h5>
                 <p class="card-text">6 Miles Away</p>  <!-- Hardcoded distance, will replace with Google API -->
                 <div class="d-flex justify-content-between">
                     <p class="card-text">${{ venue.price }} per day</p>

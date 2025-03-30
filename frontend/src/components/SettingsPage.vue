@@ -1,12 +1,13 @@
 <script setup>
-    import { ref, computed } from 'vue';
-    import { venues } from "../../../mockdata";
+    import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
+    import { showErrorToast } from '../utils/toast';
+    import axios from 'axios';
 
-    const venueList = ref(venues);
+    const venueList = ref([]);
+    const noVenuesFound = ref('');
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
@@ -19,6 +20,24 @@
     const newPfp = ref(null);
     const newPfpPreview = ref(null);
     const changePfpModal = ref(false);
+
+    const getAllVenues = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/venue');
+            if (response.data.success) {
+                venueList.value = response.data.venues;
+            } else if (response.data.success && response.data.message) {
+                noVenuesFound.value = response.data.message;
+            }
+        } catch (e) {
+            showErrorToast('Error fetching venues. Please try again later.');
+            console.error('Error fetching venues:', e);
+        }
+    }
+
+    onMounted(async () => {
+        await getAllVenues();
+    })
 
     const openModal = () => {
         showModal.value = true;
@@ -199,9 +218,10 @@
                         <div class="venue-list">
                             <div class="row">
                                 <div 
-                                    v-for="(venue, index) in venueList" 
-                                    :key="index + '_' + venue.venue_name" 
-                                    class="col-12 col-sm-4 col-md-4 col-lg-3 mb-4"
+                                    v-for="(venue, index) in venueList.filter(venue => 
+                                    venue.host === user?.id)" 
+                                    :key="index + '_' + venue.venueName" 
+                                    class="col-12 col-sm-4 col-md-4 col-lg-12 mb-4"
                                 >
                                     <VenueCard :venue="venue" />
                                 </div>

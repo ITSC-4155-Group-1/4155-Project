@@ -3,12 +3,21 @@ const venueModel = require('../model/venueModel')
 
 // View all venues
 exports.getVenues = (req, res, next) =>{
-    return venueModel.find()
+    venueModel.find()
+    .then((venues) =>{
+        if(venues){
+            res.status(200).json({ success: true, venues })
+        }
+        else{
+            res.json(200).json({ success: true, message: "No venues exist" })
+        }
+    })
+    .catch(err => next(err))
 }
 
 // Get my venues
 exports.viewMyVenues = (req, res, next) => {
-    let id = req.body.id
+    let id = req.session.user
 
     venueModel.find({buyerId: id})
     .then((venues) =>{
@@ -25,7 +34,7 @@ exports.viewMyVenues = (req, res, next) => {
 
 
 exports.getVenue = (req, res, next) => {
-    let id = req.body.id
+    let id = req.session.user
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
@@ -40,7 +49,7 @@ exports.getVenue = (req, res, next) => {
 
 
 exports.deleteVenue = (req, res, next) =>{
-    let venueId = req.body.id
+    let venueId = req.session.user
     Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId}), reviewModel.deleteMany({venueId: venueId})])
     .then((deletedItems) => {
         if(deletedItems){
