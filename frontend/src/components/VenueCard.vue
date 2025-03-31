@@ -12,7 +12,7 @@
 
     const { venue } = toRefs(props)
     const isFilled = ref(false);
-    const images = computed(() => venue.value.images ?? []);
+    const images = computed(() => venue.value.images ?? []); // broken at the moment because the images are not present in the images folder since i had to create mock images and directly inserted them in the database
     const venueLocation = computed(
         () => venue.value.state && venue.value.city ? `${venue.value.city}, ${venue.value.state}` : venue.value.location
     );
@@ -33,15 +33,17 @@
         }
     };
 
+    // TODO: broke
     const goToVenue = (event) => {
         event.stopPropagation();
-        router.push(`/venues/${venue.value.venueName}`)
+        router.push(`/venues/${venue.value._id}`)
     };
 
+    // TODO: also broke
     const goToEditVenue = async (event) => {
         event.stopPropagation();
-        localStorage.setItem('venueDetails', JSON.stringify(venue.value));
-        await router.push(`/edit-venue/${venue.value.venueName}`);
+        // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value._id}`);
 
         nextTick(() => {
             showWarningToast('Make sure to re-upload your images.', {

@@ -1,6 +1,4 @@
 import { createWebHistory, createRouter } from "vue-router";
-import { venues } from "../../mockdata";
-
 import LandingPage from "./components/LandingPage.vue";
 import SettingsPage from "./components/SettingsPage.vue";
 import VenueDetailsPage from "./components/VenueDetailsPage.vue";
@@ -11,6 +9,11 @@ import Messages from "./components/Messages.vue";
 import EditVenue from "./components/EditVenue.vue";
 import ErrorPage from "./components/ErrorPage.vue";
 import LeaveRating from "./components/LeaveRating.vue";
+import { useVenueStore } from "./store/venueStore";
+import { createPinia } from 'pinia'
+
+const pinia = createPinia();
+const venueStore = useVenueStore(pinia);
 
 const routes = [
     { 
@@ -28,8 +31,10 @@ const routes = [
         name: 'venue-details',
         component: VenueDetailsPage,
         beforeEnter(to) {
-            const id = to.params.id; // name of the venue
-            const exists = venues.some(venue => venue.venue_name === id);
+            const id = to.params.id; // objectId of the venue
+            const exists = venueStore.allVenues.some((venue) => {
+                return venue._id === id
+            })
             if (!exists) {
                 return { path: '/venue-not-found' }
             }
@@ -60,8 +65,8 @@ const routes = [
         name: 'edit-venue',
         component: EditVenue,
         beforeEnter(to) {
-            const id = to.params.id; // name of the venue
-            const exists = venues.some(venue => venue.venue_name === id);
+            const id = to.params.id; // objectId of the venue
+            const exists = venueStore.allVenues.some((venue) => venue._id === id)
             if (!exists) {
                 return { path: '/venue-not-found' }
             }
@@ -87,7 +92,10 @@ const router = createRouter({
     },
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+    if (venueStore.allVenues.length === 0) {
+        await venueStore.fetchAllVenues();
+    }
     sessionStorage.setItem('lastRoute', to.fullPath);
     next();
 });

@@ -4,7 +4,7 @@
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
     import { showErrorToast } from '../utils/toast';
-    import axios from 'axios';
+    import { useVenueStore } from '../store/venueStore';
 
     const venueList = ref([]);
     const noVenuesFound = ref('');
@@ -13,6 +13,7 @@
     const updatePasswordDiv = ref(false);
     const user = parseUser();
     const userStore = useUserStore();
+    const venueStore = useVenueStore();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -23,14 +24,13 @@
 
     const getAllVenues = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/venue');
-            if (response.data.success) {
-                venueList.value = response.data.venues;
-            } else if (response.data.success && response.data.message) {
-                noVenuesFound.value = response.data.message;
+            const response = await venueStore.fetchAllVenues();
+            if (response.success) {
+                venueList.value = response.venues;
+            } else {
+                noVenuesFound.value = 'No venues found';
             }
         } catch (e) {
-            showErrorToast('Error fetching venues. Please try again later.');
             console.error('Error fetching venues:', e);
         }
     }

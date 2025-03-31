@@ -1,13 +1,22 @@
 <script setup>
-    import { ref, nextTick, onUnmounted } from 'vue'
-    import { useRouter } from 'vue-router'
-    import axios from 'axios'
+    import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
+    import { useRouter, useRoute } from 'vue-router'
     import { showSuccessToast } from '../utils/toast.js';
+    import { useVenueStore } from '../store/venueStore.js';
 
-    const venue = JSON.parse(localStorage.getItem('venueDetails')) ? 
-                        ref(JSON.parse(localStorage.getItem('venueDetails'))) : ref({});
+    const venueStore = useVenueStore();
+    const venue = ref({});
     const router = useRouter();
+    const route = useRoute();
     const addressError = ref(false);
+
+    onMounted(async () => {
+        const id = route.params.id;
+        const venueData = await venueStore.getVenueById(id);
+        if (venueData) {
+            venue.value = venueData;
+        }
+    })
 
     const usAbbreviations = {
         "AL": "Alabama",
@@ -64,9 +73,9 @@
         "WY": "Wyoming"
     }
 
-    const usAbbreviatedToState = (state) => {
-        return usAbbreviations[state] ? usAbbreviations[state] : state;
-    }
+    // const usAbbreviatedToState = (state) => {
+    //     return usAbbreviations[state] ? usAbbreviations[state] : state;
+    // }
 
     const usStateToAbbreviation = (state) => {
         for (let key in usAbbreviations) {
@@ -78,19 +87,33 @@
     }
 
     const form = ref({
-        state: usAbbreviatedToState(venue.value.location.split(', ')[1]),
-        city: venue.value.location.split(', ')[0],
-        address: "1234 Country Place", // hardcoding cause I don't have an address in the mock data
-        zipCode: 12345,
-        venueName: venue.value.venue_name,
-        description: venue.value.venue_description,
-        price: venue.value.price,
-        availability: [
-            new Date(venue.value.availability_start_date),
-            new Date(venue.value.availability_end_date)
-        ],
-        capacity: venue.value.capacity,
+        state: '',
+        city: '',
+        address: '',
+        zipCode: 12345, // TODO: hardcoding cause I don't have an address in the mock data
+        venueName: '',
+        description: '',
+        price: 0,
+        availability: [],
+        capacity: 0,
         images: null, // idk if this'll be retrievable  
+    });
+
+    watch(() => venue.value, (newVenue) => {
+        if (newVenue.availability && newVenue.availability.length > 0) {
+            form.value.availability = [
+                new Date(newVenue.availability[0]),
+                new Date(newVenue.availability[1])
+            ];
+        }
+        form.value.state = newVenue.state;
+        form.value.city = newVenue.city;
+        form.value.address = newVenue.address;
+        // form.value.zipCode = newVenue.zipCode;
+        form.value.venueName = newVenue.venueName;
+        form.value.description = newVenue.description;
+        form.value.price = newVenue.price;
+        form.value.capacity = newVenue.capacity;
     });
 
     const handleFileUpload = (e) => {
@@ -189,9 +212,6 @@
         // TODO: make api call to update the venue
         // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
         try {
-            
-            
-            localStorage.removeItem('venueDetails');
             await router.push('/settings');
 
             nextTick(() => {
@@ -202,10 +222,6 @@
         }
 
     }
-
-    onUnmounted(() => {
-        localStorage.removeItem('venueDetails');
-    })
 </script>
 
 <template>

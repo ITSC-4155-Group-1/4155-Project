@@ -34,11 +34,11 @@ exports.viewMyVenues = (req, res, next) => {
 
 
 exports.getVenue = (req, res, next) => {
-    let id = req.session.user
+    let id = req.params.id // getting the id from the url not the body (not a post request)
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
-            return venue
+            res.status(200).json({ success: true, venue })
         }
         else{
             next(new Error('Venue does not exist').status(404))
@@ -49,7 +49,7 @@ exports.getVenue = (req, res, next) => {
 
 
 exports.deleteVenue = (req, res, next) =>{
-    let venueId = req.session.user
+    let venueId = req.body.id
     Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId}), reviewModel.deleteMany({venueId: venueId})])
     .then((deletedItems) => {
         if(deletedItems){

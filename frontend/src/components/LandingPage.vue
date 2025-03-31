@@ -1,23 +1,21 @@
 <script setup>
     import { ref, onMounted } from "vue"
     import VenueCard from "./VenueCard.vue"
-    import axios from "axios";
-    import { showErrorToast } from "@/utils/toast";
+    import { useVenueStore } from "../store/venueStore";
     
     const allVenues = ref([]);
     const mutableVenueList = ref([]);
     const noVenuesFound = ref('');
+    const venueStore = useVenueStore();
+
     const getAllVenues = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/venue');
-            if (response.data.success) {
-                mutableVenueList.value = response.data.venues;
-                allVenues.value = response.data.venues;
-            } else if (response.data.success && response.data.message) {
-                noVenuesFound.value = response.data.message;
+            const response = await venueStore.fetchAllVenues();
+            if (response.success) {
+                mutableVenueList.value = response.venues;
+                allVenues.value = response.venues;
             }
         } catch (e) {
-            showErrorToast('Error fetching venues. Please try again later.');
             console.error('Error fetching venues:', e);
         }
     }
