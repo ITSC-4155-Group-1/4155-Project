@@ -18,8 +18,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 
 createApp(App)
+    .use(pinia) // switched the order to initialize the stores before the router
     .use(router)
-    .use(pinia)
     .use(VueCookieNext)
     .use(Vue3Toastify,
         {

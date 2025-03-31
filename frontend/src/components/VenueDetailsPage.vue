@@ -1,16 +1,17 @@
 <script setup>
-    import { ref, computed, onMounted } from 'vue';
-    import { venues, reviews } from '../../../mockdata.js';
+    import { ref, computed, onMounted, watch } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
     import { showSuccessToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
+    import { useVenueStore } from '../store/venueStore';
 
     const router = useRouter();
     const cartStore = useCartStore();
     const user = parseUser();
+    const venueStore = useVenueStore();
 
     const route = useRoute();
     const venue = ref({});
@@ -23,8 +24,37 @@
     const isFilled = ref(false);
     const activeIndex = ref(0); // accordion active index
     const showMoreImages = ref(false);
+    const minDate = ref(null);
+    const maxDate = ref(null);
 
-    // TODO: will make a call to the backend to save the venue for the user
+    onMounted(async () => {
+        const venueId = route.params.id;
+        const venueData = await venueStore.getVenueById(venueId);
+        
+        if (venueData) {
+            venue.value = venueData;
+            // venueReviews.value = venueData.reviews; venues don't have reviews yet
+        }
+        console.log('here', venue.value)
+    })
+
+    onMounted(() => {
+        const cartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+        if (cartDetails) {
+            if (cartDetails.startDate && cartDetails.endDate) {
+                dateRange.value = [new Date(cartDetails.startDate), new Date(cartDetails.endDate)];
+            }
+            if (cartDetails.attendees) {
+                attendees.value = cartDetails.attendees;
+            }
+        }
+    });
+
+    watch(venue, (newVal) => {
+        console.log('Venue updated:', newVal);
+    });
+
+    // // TODO: will make a call to the backend to save the venue for the user
     const saveVenue = () => {
         isFilled.value = !isFilled.value;
         if (isFilled.value) {
@@ -37,14 +67,26 @@
         }
     };
 
-    const minDate = computed(() => {
-        const venueStartDate = new Date(venue.value.availability_start_date);
-        const today = new Date();
+    // const minDate = computed(() => {
+    //     const venueStartDate = new Date(venue.value.availability[0]);
+    //     const today = new Date();
 
-        return venueStartDate > today ? venueStartDate : today;
+    //     return venueStartDate > today ? venueStartDate : today;
+    // });
+    watch(() => venue.value.availability, (newAvailability) => {
+        if (newAvailability && newAvailability.length > 0) {
+            const venueStartDate = new Date(venue.value.availability[0]);
+            const today = new Date();
+
+            if (venueStartDate > today) {
+                minDate.value = venueStartDate;
+            } else {
+                minDate.value = today;
+            }
+        }
+
+        maxDate.value = new Date(venue.value.availability[1]);
     });
-
-    const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
 
     const collapsibleSections = ref([
         { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
@@ -54,29 +96,13 @@
         { title: "Location", content: "Exact venue location." }
     ]);
 
-    onMounted(() => {
-        const venueId = route.params.id;
-        const singularVenue = venues.find(v => v.venue_name === venueId)
-        venue.value = singularVenue;
-        venueReviews.value = reviews.filter(r => r.venue_name === singularVenue.venue_name);
-        
-        const cartDetails = JSON.parse(localStorage.getItem('cartDetails'));
-        if (cartDetails) {
-            if (cartDetails.startDate && cartDetails.endDate) {
-                dateRange.value = [new Date(cartDetails.startDate), new Date(cartDetails.endDate)];
-            }
-            if (cartDetails.attendees) {
-                attendees.value = cartDetails.attendees;
-            }
-        }
-    });
+    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    // const venueRating = computed(() => {
+    //     const totalReviews = venueReviews.value.length;
+    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
 
-    const venueRating = computed(() => {
-        const totalReviews = venueReviews.value.length;
-        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
-
-        return totalReviews > 0 ? totalStars / totalReviews : 0;
-    })
+    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
+    // })
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
@@ -86,7 +112,7 @@
 
         // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
         localStorage.setItem('cartDetails', JSON.stringify({
-            host: venue.value.host_id,
+            host: venue.value.host,
             venueName: venue.value.venue_name,
             venuePrice: venue.value.price,
             startDate: dateRange.value[0],
@@ -99,7 +125,7 @@
         }));
 
         cartStore.setCartDetails({
-            host: venue.value.host_id,
+            host: venue.value.host,
             venueName: venue.value.venue_name,
             venuePrice: venue.value.price,
             startDate: dateRange.value[0],
@@ -142,7 +168,7 @@
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
-            { label: '101-200', value: '101-200' },
+            { label: '101-199', value: '101-199' },
             { label: '200+', value: '200+' }
         ];
 
@@ -186,10 +212,10 @@
         <div class="w-100 d-flex justify-content-between align-items-center">
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
-                    {{ venue.venue_name }} 
-                    <span class="fs-5">(Hosted by {{ venue.host_id }})</span>
+                    {{ venue.venueName }} 
+                    <span class="fs-5">(Hosted by {{ venue.host }})</span>
                 </span>
-                <span class="venue-location">{{ venue.location }}</span>
+                <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
             <div class="share-save-container d-flex gap-3">
                 <span
@@ -217,7 +243,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="saveVenue"
-                    v-if="venue.host_id !== user?.firstName"
+                    v-if="venue.host !== user?.id"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -303,7 +329,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.name !== venue.host_id ? 'smaller-container' : ''"
+                :class="user?.id !== venue.host ? 'smaller-container' : ''"
             >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
@@ -428,7 +454,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.firstName !== venue.host_id"
+                v-if="user?.id !== venue.host"
             >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">
