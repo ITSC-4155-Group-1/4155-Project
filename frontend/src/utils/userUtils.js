@@ -13,6 +13,7 @@ export const parseUser = () => {
             firstName: user?.token?.firstName || 'Guest',
             lastName: user?.token?.lastName || 'User',
             pfp: user?.token?.image !== undefined ? user?.token?.image : '/images/profile_4.jpeg',
+            id: user?.token?.user || null,
         }
     } catch (e) {
         console.error("Error parsing user data", e)
