@@ -83,7 +83,10 @@
 
     watch(() => venue.value.availability, (newAvailability) => {
         if (newAvailability && newAvailability.length > 0) {
-            const venueStartDate = new Date(venue.value.availability[0]);
+            const offsetStartDate = new Date(venue.value.availability[0])
+            const venueStartDate = new Date(offsetStartDate);
+            venueStartDate.setDate(offsetStartDate.getDate() + 1);
+            
             const today = new Date();
 
             if (venueStartDate > today) {
@@ -92,7 +95,6 @@
                 minDate.value = today;
             }
         }
-
         maxDate.value = new Date(venue.value.availability[1]);
     });
 
@@ -318,7 +320,7 @@
                 </template>
             </div>
         </div>
-        <p v-else>No image available</p>
+        <p v-else class="d-flex align-items-center justify-content-center noImageAvailable">No images available</p>
 
         <div
             v-if="showMoreImages"
@@ -581,6 +583,12 @@
     .image-gallery {
         max-height: 56vh;
         overflow: hidden;
+    }
+
+    .noImageAvailable {
+        font-size: 20px;
+        color: var(--secondary);
+        height: 50vh;
     }
 
     .booking-modal {

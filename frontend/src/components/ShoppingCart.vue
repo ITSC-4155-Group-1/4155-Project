@@ -1,6 +1,6 @@
 <script setup>
-    import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
+    import { useRouter, onBeforeRouteLeave } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
     import { showErrorToast, showSuccessToast } from '../utils/toast';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
@@ -43,12 +43,15 @@
     const disabledDateRanges = cartStore.cartDetails.disabledDateRanges || localStorageCartDetails.disabledDateRanges;
     const minDate = cartStore.cartDetails.minDate || localStorageCartDetails.minDate;
     const maxDate = cartStore.cartDetails.maxDate || localStorageCartDetails.maxDate;
-    console.log(minDate, maxDate, disabledDateRanges)
     const total = ref(0);
     const dateModalToggled = ref(false);
     const newDatesError = ref("");
     const attendeesModalToggled = ref(false);
     const newAttendeesError = ref("");
+
+    onBeforeRouteLeave(() => {
+        localStorage.removeItem('cartDetails');
+    });
 
     
     const abbreviatedDates = computed(() => {
