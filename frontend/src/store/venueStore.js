@@ -32,5 +32,19 @@ export const useVenueStore = defineStore('venue', () => {
         }
     };
 
-    return { allVenues, fetchAllVenues, getVenueById };
+    const getBookingsForVenueById = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/booking/${id}`, {
+                withCredentials: true,
+            });
+            if (response.data.success) {
+                return response.data.bookings;
+            }
+        } catch (e) {
+            showErrorToast('Error fetching bookings. Please try again later.');
+            console.error('Error fetching bookings:', e);
+        }
+    };
+
+    return { allVenues, fetchAllVenues, getVenueById, getBookingsForVenueById }
 });
