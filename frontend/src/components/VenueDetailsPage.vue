@@ -26,6 +26,7 @@
     const showMoreImages = ref(false);
     const minDate = ref(null);
     const maxDate = ref(null);
+    const disabledDates = ref([]);
 
     onMounted(async () => {
         const venueId = route.params.id;
@@ -35,7 +36,24 @@
             venue.value = venueData;
             // venueReviews.value = venueData.reviews; venues don't have reviews yet
         }
-        console.log('here', venue.value)
+
+        // getting the bookings for the venues as well
+        const bookings = await venueStore.getBookingsForVenueById(venueId);
+        if (bookings && bookings.length > 0) {
+            let blockedDates = []
+            bookings.forEach((booking) => {
+                const startDate = new Date(booking.bookingStartDate);
+                const endDate = new Date(booking.bookingEndDate);
+
+                // all the dates between as well
+                const dateArray = [];
+                for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+                    dateArray.push(new Date(d));
+                }
+                blockedDates.push(...dateArray);
+            });
+            disabledDates.value = [...blockedDates];
+        }
     })
 
     onMounted(() => {
@@ -48,10 +66,6 @@
                 attendees.value = cartDetails.attendees;
             }
         }
-    });
-
-    watch(venue, (newVal) => {
-        console.log('Venue updated:', newVal);
     });
 
     // // TODO: will make a call to the backend to save the venue for the user
@@ -67,12 +81,6 @@
         }
     };
 
-    // const minDate = computed(() => {
-    //     const venueStartDate = new Date(venue.value.availability[0]);
-    //     const today = new Date();
-
-    //     return venueStartDate > today ? venueStartDate : today;
-    // });
     watch(() => venue.value.availability, (newAvailability) => {
         if (newAvailability && newAvailability.length > 0) {
             const venueStartDate = new Date(venue.value.availability[0]);
@@ -108,33 +116,40 @@
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
             alert("Please fill out all required fields.");
             return;
-        }
-
+        } 
         // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
         localStorage.setItem('cartDetails', JSON.stringify({
+            id: venue.value._id,
             host: venue.value.host,
-            venueName: venue.value.venue_name,
-            venuePrice: venue.value.price,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
             startDate: dateRange.value[0],
             endDate: dateRange.value[1],
             attendees: attendees.value,
             cleaningFee: cleaningFee,
             processing: processing,
-            image: venue.value.image.join(','),
-            capacity: venue.value.capacity
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value,
+            minDate: minDate.value,
+            maxDate: maxDate.value,
         }));
 
         cartStore.setCartDetails({
+            id: venue.value._id,
             host: venue.value.host,
-            venueName: venue.value.venue_name,
-            venuePrice: venue.value.price,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
             startDate: dateRange.value[0],
             endDate: dateRange.value[1],
             attendees: attendees.value,
             cleaningFee: cleaningFee,
             processing: processing,
-            image: venue.value.image.join(','),
-            capacity: venue.value.capacity
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value, 
+            minDate: minDate.value,
+            maxDate: maxDate.value,
         });
 
         router.push('/cart')
@@ -467,6 +482,7 @@
                             :min-date="minDate"
                             :max-date="maxDate"
                             :enable-time-picker="false"
+                            :disabled-dates="disabledDates"
                             required
                         />
                     </div>
