@@ -88,7 +88,7 @@
             </Carousel>
             <span class="badge position-absolute bottom-0 end-0 m-2 capacity">{{ venue.capacity }} people </span>
         </div>
-        <router-link :to="`/venues/${venue.venueName}`" class="text-decoration-none">
+        <router-link :to="`/venues/${venue._id}`" class="text-decoration-none">
             <div class="mt-3 d-flex flex-column">
                 <h5 class="card-title">{{ venueLocation }}</h5>
                 <p class="card-text">6 Miles Away</p>  <!-- Hardcoded distance, will replace with Google API -->
