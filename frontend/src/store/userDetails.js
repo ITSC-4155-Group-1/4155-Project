@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useCookie } from 'vue-cookie-next'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -44,8 +44,11 @@ export const useUserStore = defineStore('user', () => {
                     token: response.data.token,
                 });
 
-                showSuccessToast(response.data.success);
-
+                location.reload();
+                nextTick(() => {
+                    showSuccessToast(response.data.success);
+                })
+                
                 return { success: true, token: response.data.token, message: response.data.success };
             }
         } catch (error) {
