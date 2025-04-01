@@ -2,6 +2,7 @@
     import { ref, nextTick } from 'vue';
     import { showSuccessToast, showErrorToast } from '../utils/toast';
     import { useRouter } from 'vue-router';
+    import axios from 'axios';
 
     const form = ref({
         state: "",
@@ -116,11 +117,44 @@
         // TODO: make api call to create the venue
         // if successful, show the successful toast, else show the error toast
         try {
-            await router.push('/settings');
-
-            nextTick(() => {
-                showSuccessToast('Venue created successfully!');
+            const dates = [];
+            form.value.availability.forEach(date=>{
+                dates.push(new Date(date));
             })
+
+            const formData = new FormData();
+            
+            formData.append('state', form.value.state);
+            formData.append('city', form.value.city);
+            formData.append('address', form.value.address);
+            formData.append('zipCode', form.value.zipCode);
+            formData.append('venueName', form.value.venueName);
+            formData.append('description', form.value.description);
+            formData.append('price', form.value.price);
+            formData.append('capacity', form.value.capacity);
+            
+            form.value.images.forEach(image => {
+                formData.append('images', image);
+            });
+
+            dates.forEach(date => {
+                formData.append('availability', date);
+            });
+
+            const response = await axios.post("http://localhost:3000/venue/", formData, {
+                withCredentials: true,
+                headers: {'Content-Type': 'multipart/form-data'}
+            });
+
+            if(response.data.success){
+                await router.push('/settings');
+
+                nextTick(() => {
+                    showSuccessToast('Venue created successfully!');
+                })
+            } else if(response.data.error){
+                showErrorToast('Failed to create venue. Please try again.');
+            }
         } catch (error) {
             showErrorToast('Failed to create venue. Please try again.');
         }
