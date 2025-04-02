@@ -1,8 +1,9 @@
 <script setup>
-    import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
+    import { ref, nextTick, onMounted, watch } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
     import { showSuccessToast } from '../utils/toast.js';
     import { useVenueStore } from '../store/venueStore.js';
+    import he from 'he';
 
     const venueStore = useVenueStore();
     const venue = ref({});
@@ -73,10 +74,6 @@
         "WY": "Wyoming"
     }
 
-    // const usAbbreviatedToState = (state) => {
-    //     return usAbbreviations[state] ? usAbbreviations[state] : state;
-    // }
-
     const usStateToAbbreviation = (state) => {
         for (let key in usAbbreviations) {
             if (usAbbreviations[key] === state) {
@@ -106,12 +103,12 @@
                 new Date(newVenue.availability[1])
             ];
         }
-        form.value.state = newVenue.state;
-        form.value.city = newVenue.city;
-        form.value.address = newVenue.address;
+        form.value.state = he.decode(newVenue.state);
+        form.value.city = he.decode(newVenue.city);
+        form.value.address = he.decode(newVenue.address);
         // form.value.zipCode = newVenue.zipCode;
-        form.value.venueName = newVenue.venueName;
-        form.value.description = newVenue.description;
+        form.value.venueName = he.decode(newVenue.venueName);
+        form.value.description = he.decode(newVenue.description);
         form.value.price = newVenue.price;
         form.value.capacity = newVenue.capacity;
     });

@@ -1,10 +1,22 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
-import { showErrorToast } from '@/utils/toast';
+import { showErrorToast } from '../utils/toast';
 
 export const useVenueStore = defineStore('venue', () => {
     const allVenues = ref([]);
+
+    const successMessage = ref(localStorage.getItem('successMessage') || null);
+
+    const setSuccessMessage = (message) => {
+        successMessage.value = message;
+        localStorage.setItem('successMessage', message);
+    };
+
+    const clearSuccessMessage = () => {
+        successMessage.value = null;
+        localStorage.removeItem('successMessage');
+    };
 
     const fetchAllVenues = async () => {
         try {
@@ -46,5 +58,53 @@ export const useVenueStore = defineStore('venue', () => {
         }
     };
 
-    return { allVenues, fetchAllVenues, getVenueById, getBookingsForVenueById }
+    const createVenue = async (data) => {
+        const dates = [];
+        data.availability.forEach(date=>{
+            dates.push(new Date(date));
+        })
+
+        const formData = new FormData();
+        
+        formData.append('state', data.state);
+        formData.append('city', data.city);
+        formData.append('address', data.address);
+        formData.append('zipCode', data.zipCode);
+        formData.append('venueName', data.venueName);
+        formData.append('description', data.description);
+        formData.append('price', data.price);
+        formData.append('capacity', data.capacity);
+        data.images.forEach(image => {
+            formData.append('images', image);
+        });
+        dates.forEach(date => {
+            formData.append('availability', date);
+        });
+
+        try {
+            const response = await axios.post("http://localhost:3000/venue/", formData, {
+                withCredentials: true,
+                headers: {'Content-Type': 'multipart/form-data'}
+            });
+
+            if(response.data.success){
+                return true;
+            } else if(response.data.error){
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+    }
+
+    return {
+        successMessage,
+        setSuccessMessage,
+        clearSuccessMessage,
+        allVenues,
+        fetchAllVenues,
+        getVenueById,
+        getBookingsForVenueById,
+        createVenue
+    }
 });
