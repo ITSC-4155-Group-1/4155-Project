@@ -233,7 +233,6 @@
 
 <template>
     <div class="w-95 mx-auto">
-        <pre>{{ venue }}</pre>
         <div class="w-100 d-flex justify-content-between align-items-center">
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
