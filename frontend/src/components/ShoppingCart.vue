@@ -1,11 +1,12 @@
 <script setup>
     import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { useRouter, onBeforeRouteLeave } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
-    import { showSuccessToast } from '../utils/toast';
+    import { showErrorToast, showSuccessToast } from '../utils/toast';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
     import { parseUser } from '../utils/userUtils.js';
+    import axios from 'axios';
     
     const router = useRouter();
     const cartStore = useCartStore();
@@ -19,7 +20,7 @@
 
     const host = cartStore.cartDetails.host || localStorageCartDetails.host;
     const venueName = cartStore.cartDetails.venueName || localStorageCartDetails.venueName;
-    const venuePrice = cartStore.cartDetails.venuePrice || localStorageCartDetails.venuePrice;
+    const venuePrice = cartStore.cartDetails.price || localStorageCartDetails.price;
     const reserveDates = ref([
         cartStore.cartDetails.startDate || localStorageCartDetails.startDate,
         cartStore.cartDetails.endDate || localStorageCartDetails.endDate
@@ -29,13 +30,28 @@
     const newAttendees = ref('');
     const cleaningFee = cartStore.cartDetails.cleaningFee || localStorageCartDetails.cleaningFee;
     const taxes = cartStore.cartDetails.processing || localStorageCartDetails.processing;
-    const images = cartStore.cartDetails.image ?
-        cartStore.cartDetails.image.split(',') : localStorageCartDetails.image.split(',');
+    let images;
+    if (cartStore.cartDetails.images && cartStore.cartDetails.images.length > 1) {
+        images = cartStore.cartDetails.images.split(',');
+    } else if (!cartStore.cartDetails) {
+        images = localStorageCartDetails.images.split(',');
+    } else if (cartStore.cartDetails.images && cartStore.cartDetails.images.length < 2) {
+        images = cartStore.cartDetails.images;
+    } else {
+        images = localStorageCartDetails.images;
+    }
+    const disabledDateRanges = cartStore.cartDetails.disabledDateRanges || localStorageCartDetails.disabledDateRanges;
+    const minDate = cartStore.cartDetails.minDate || localStorageCartDetails.minDate;
+    const maxDate = cartStore.cartDetails.maxDate || localStorageCartDetails.maxDate;
     const total = ref(0);
     const dateModalToggled = ref(false);
     const newDatesError = ref("");
     const attendeesModalToggled = ref(false);
     const newAttendeesError = ref("");
+
+    onBeforeRouteLeave(() => {
+        localStorage.removeItem('cartDetails');
+    });
 
     
     const abbreviatedDates = computed(() => {
@@ -198,14 +214,33 @@
     });
 
     const book = async () => {
-        // TODO: send a request to the backend to book the venue
-        
-        // if successful, send to home page, remove the local storage item, and display success toast, else display error toast
-        localStorage.removeItem('cartDetails');
-        await router.push('/');
-        nextTick(() => {
-            showSuccessToast("Your venue booking has been successfully created!");
-        });
+        const information = {
+            id: cartStore.cartDetails.id || localStorageCartDetails.id,
+            bookingStartDate: new Date(reserveDates.value[0]).toISOString(),
+            bookingEndDate: new Date(reserveDates.value[1]).toISOString(),
+            numAttendees: attendees.value,
+        }
+
+        try {
+            const response = await axios.post('http://localhost:3000/booking', information, {
+                withCredentials: true
+            });
+            if (response.status === 200) {
+                localStorage.removeItem('cartDetails');
+                await router.push('/');
+                nextTick(() => {
+                    showSuccessToast("Your venue booking has been successfully created!");
+                });
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400 && error.response.data.invalid) {
+                showErrorToast(error.response.data.invalid);
+                console.error(error.response.data.invalid)
+            } else {
+                showErrorToast("An unexpected error occurred. Please try again later.");
+                console.error("Error while creating a booking: " + error);
+            }
+        }
     }
 
     const carouselConfig = {
@@ -363,8 +398,10 @@
                             type="date"
                             range
                             placeholder="mm/dd/yyyy - mm/dd/yyyy"
-                            :min-date="new Date()"
+                            :min-date="minDate"
+                            :max-date="maxDate"
                             :enable-time-picker="false"
+                            :disabled-dates="disabledDateRanges"
                         />
                         <div v-if="newDatesError">
                             <span class="text-danger">

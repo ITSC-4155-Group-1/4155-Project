@@ -22,7 +22,7 @@
             <button
                 type="submit"
                 class="btn custom-btn confirm mb-2"
-                @click="submitReview"
+                @click="goHome"
             >
                 Go Back Home
             </button>

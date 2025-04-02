@@ -16,7 +16,7 @@ exports.getVenues = (req, res, next) =>{
 }
 // Get my venues
 exports.viewMyVenues = (req, res, next) => {
-    let id = req.body.id
+    let id = req.session.user
 
     venueModel.find({buyerId: id})
     .then((venues) =>{
@@ -33,7 +33,7 @@ exports.viewMyVenues = (req, res, next) => {
 
 
 exports.getVenue = (req, res, next) => {
-    let id = req.body.id
+    let id = req.params.id // getting the id from the url not the body (not a post request)
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
@@ -84,10 +84,10 @@ exports.updateVenue = (req, res, next) =>{
 
 
 exports.createVenue = (req, res, next) => {
+    console.log(req.body);
     let venue = new venueModel(req.body)
     venue.host = req.session.user
     venue.images = req.files.map(file => `/images/${file.filename}`)
-    console.log(venue.images)
     venue.save()
     .then((venue) =>{
         res.status(200).json({"success": "Venue created successfully"})
