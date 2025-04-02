@@ -33,13 +33,19 @@
         }
     };
 
-    // TODO: broke
+    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    // const venueRating = computed(() => {
+    //     const totalReviews = venueReviews.value.length;
+    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+
+    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
+    // })
+
     const goToVenue = (event) => {
         event.stopPropagation();
         router.push(`/venues/${venue.value._id}`)
     };
 
-    // TODO: also broke
     const goToEditVenue = async (event) => {
         event.stopPropagation();
         // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
@@ -62,14 +68,14 @@
 <template>
     <div class="card border-0 background hover-effect p-2">
         <div class="image-container position-relative">
-            <span class="position-absolute top-0 start-0 rating p-2"> <!-- rating badge -->
+            <span class="position-absolute top-0 start-0 rating p-2" v-if="venue.rating"> <!-- rating badge --> <!-- this condition is also gonna change -->
                 <span> <!-- star icon -->
                     <svg width="23" height="23" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                         fill="none" stroke="#FFC107" stroke-width="1"/>
                     </svg>
                 </span>
-                {{ venue.rating }} / 5.0 
+                {{ venue.rating }} / 5.0 <!-- need to calculate the average, the average comes from the review stars -->
             </span>
             <Carousel v-bind="carouselConfig">
                 <Slide v-for="image in images" :key="image">
