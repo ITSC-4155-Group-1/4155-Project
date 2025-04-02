@@ -103,8 +103,15 @@
         { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
         { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
         { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
-        { title: "Location", content: "Exact venue location." }
     ]);
+
+    watch(() => venue.value.address, () => {
+        const newAddress = {
+            title: "Location",
+            content: `${venue.value.address}, ${venue.value.city}, ${venue.value.state}`
+        };
+        collapsibleSections.value.push(newAddress);
+    })
 
     // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
     // const venueRating = computed(() => {
@@ -280,17 +287,17 @@
         </div>
 
         <div class="d-flex gap-2 image-gallery"
-            v-if="venue.image && venue.image.length"
+            v-if="venue.images"
         >
             <div class="w-50">
                 <img
-                    :src="venue.image[0]" alt="Venue image"
+                    :src="venue.images[0]" alt="Venue image"
                     class="w-100 h-100 object-fit-cover d-flex align-items-center justify-content-center overflow-hidden rounded"
                 >
             </div>
             <div class="w-50 other-images-grid">
-                <template v-if="venue.image.length > 1">
-                    <div class="grid-item position-relative" v-for="(image, index) in venue.image.slice(1, 5)">
+                <template v-if="venue.images.length > 1">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.images.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
@@ -311,9 +318,9 @@
                         </div>
                     </div>
                 </template>
-                <template v-if="venue.image.length < 5">
+                <template v-if="venue.images.length < 5">
                     <div
-                        v-for="index in 5 - venue.image.length"
+                        v-for="index in 5 - venue.images.length"
                         :key="'placeholder-' + index"
                         class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
                     ></div>

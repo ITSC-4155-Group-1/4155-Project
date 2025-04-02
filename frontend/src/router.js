@@ -14,8 +14,6 @@ import { createPinia } from 'pinia'
 import { parseUser } from "./utils/userUtils.js";
 import { showErrorToast } from "./utils/toast";
 
-//import { useCookies } from 'vue-cookie-next';
-//const { cookies } = useCookies();
 const user = parseUser();
 const pinia = createPinia();
 const venueStore = useVenueStore(pinia);
@@ -37,11 +35,13 @@ const routes = [
         path: '/venues/:id',
         name: 'venue-details',
         component: VenueDetailsPage,
-        beforeEnter(to) {
+        beforeEnter: async (to) => {
+            if (venueStore.allVenues.length === 0) {
+                await venueStore.fetchAllVenues();
+            }
+
             const id = to.params.id; // objectId of the venue
-            const exists = venueStore.allVenues.some((venue) => {
-                return venue._id === id
-            })
+            const exists = venueStore.allVenues.some((venue) => venue._id === id)
             if (!exists) {
                 return { path: '/venue-not-found' }
             }
@@ -79,7 +79,11 @@ const routes = [
         path: '/edit-venue/:id',
         name: 'edit-venue',
         component: EditVenue,
-        beforeEnter(to) {
+        beforeEnter: async (to) => {
+            if (venueStore.allVenues.length === 0) {
+                await venueStore.fetchAllVenues();
+            }
+
             const id = to.params.id; // objectId of the venue
             const exists = venueStore.allVenues.some((venue) => venue._id === id)
             if (!exists) {
@@ -110,16 +114,18 @@ const router = createRouter({
     },
 });
 
-router.beforeEach((to, from, next) => {
-    //const isAuthenticated = cookies.get('authToken'); // Check if user is authenticated
-    //console.log(user);
+router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !user) {
-        // Show toast message and redirect to login modal
-        // localStorage.setItem('showToast', JSON.stringify({ message: 'You must be logged in to access this page.', type: 'error' }));
         showErrorToast("You must be logged in to access the features of this app.")
     } else {
-        next(); // Allow navigation if authenticated or not protected
+        next();
     }
+
+    if (venueStore.allVenues.length === 0) {
+        await venueStore.fetchAllVenues()
+    }
+    sessionStorage.setItem('lastRoute', to.fullPath)
+    next()
 });
 
 router.isReady().then(() => {

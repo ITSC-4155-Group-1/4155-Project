@@ -221,7 +221,7 @@
                                     v-for="(venue, index) in venueList.filter(venue => 
                                     venue.host === user?.id)" 
                                     :key="index + '_' + venue.venueName" 
-                                    class="col-12 col-sm-4 col-md-4 col-lg-12 mb-4"
+                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
                                 >
                                     <VenueCard :venue="venue" />
                                 </div>
@@ -488,10 +488,10 @@
         margin-top: 20px;
     }
 
-    .venue-list {
+    /* .venue-list {
         display: flex;
         gap: 10px;
-    }
+    } */
 
     .venue {
         width: 100%;
