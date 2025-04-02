@@ -110,7 +110,7 @@ const router = createRouter({
     },
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     //const isAuthenticated = cookies.get('authToken'); // Check if user is authenticated
     //console.log(user);
     if (to.meta.requiresAuth && !user) {
@@ -120,6 +120,12 @@ router.beforeEach((to, from, next) => {
     } else {
         next(); // Allow navigation if authenticated or not protected
     }
+    
+    if (venueStore.allVenues.length === 0) {
+        await venueStore.fetchAllVenues()
+    }
+    sessionStorage.setItem('lastRoute', to.fullPath)
+    next()
 });
 
 router.isReady().then(() => {
