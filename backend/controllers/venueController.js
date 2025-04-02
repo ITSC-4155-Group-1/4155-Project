@@ -86,7 +86,8 @@ exports.updateVenue = (req, res, next) =>{
 exports.createVenue = (req, res, next) => {
     let venue = new venueModel(req.body)
     venue.host = req.session.user
-    venue.images = req.files.map(file => `/images/${file.originalname}`)
+    venue.images = req.files.map(file => `/images/${file.filename}`)
+    console.log(venue.images)
     venue.save()
     .then((venue) =>{
         res.status(200).json({"success": "Venue created successfully"})
