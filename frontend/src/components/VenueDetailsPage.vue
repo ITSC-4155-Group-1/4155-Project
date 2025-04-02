@@ -28,14 +28,22 @@
     const minDate = ref(null);
     const maxDate = ref(null);
     const disabledDates = ref([]);
+    const hostFirstName = ref('');
+    const hostId = ref(null);
 
     onMounted(async () => {
         const venueId = route.params.id;
-        const venueData = await venueStore.getVenueById(venueId);
+        const [venueData, host] = await venueStore.getVenueById(venueId);
         
         if (venueData) {
             venue.value = venueData;
             // venueReviews.value = venueData.reviews; venues don't have reviews yet
+        }
+
+        if (host) {
+            console.log(host)
+            hostFirstName.value = host.firstName;
+            hostId.value = host._id;
         }
 
         // getting the bookings for the venues as well
@@ -212,6 +220,7 @@
             disabledDateRanges: disabledDates.value,
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         }));
 
         cartStore.setCartDetails({
@@ -229,6 +238,7 @@
             disabledDateRanges: disabledDates.value, 
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         });
 
         router.push('/cart')
@@ -307,7 +317,7 @@
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
                     {{ venue.venueName }} 
-                    <span class="fs-5">(Hosted by {{ venue.host }})</span>
+                    <span class="fs-5">(Hosted by {{ hostFirstName }})</span>
                 </span>
                 <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
@@ -548,7 +558,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.id !== venue.host"
+                v-if="user?.id !== hostId"
             >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">

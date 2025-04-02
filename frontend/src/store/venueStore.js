@@ -36,7 +36,7 @@ export const useVenueStore = defineStore('venue', () => {
         try {
             const response = await axios.get(`http://localhost:3000/venue/${id}`);
             if (response.data.success) {
-                return response.data.venue;
+                return [response.data.venue, response.data.host];
             }
         } catch (e) {
             showErrorToast('Error fetching venue. Please try again later.');

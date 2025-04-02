@@ -296,8 +296,6 @@
                             </p>
                         </blockquote>
                         <figcaption class="blockquote-footer d-flex align-items-center">
-                            <!-- TODO: needs to be the host's pfp -->
-                            <img class="figCaptionImg" :src="user?.pfp || '/images/profile_4.jpeg'" alt="host pfp" >
                             {{ host ? host : "Host" }}
                         </figcaption>
                     </figure>
