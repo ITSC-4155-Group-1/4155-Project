@@ -7,6 +7,7 @@
     import { showSuccessToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
+    import he from 'he';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -27,14 +28,22 @@
     const minDate = ref(null);
     const maxDate = ref(null);
     const disabledDates = ref([]);
+    const hostFirstName = ref('');
+    const hostId = ref(null);
 
     onMounted(async () => {
         const venueId = route.params.id;
-        const venueData = await venueStore.getVenueById(venueId);
+        const [venueData, host] = await venueStore.getVenueById(venueId);
         
         if (venueData) {
             venue.value = venueData;
             // venueReviews.value = venueData.reviews; venues don't have reviews yet
+        }
+
+        if (host) {
+            console.log(host)
+            hostFirstName.value = host.firstName;
+            hostId.value = host._id;
         }
 
         // getting the bookings for the venues as well
@@ -98,6 +107,75 @@
         maxDate.value = new Date(venue.value.availability[1]);
     });
 
+    watch(() => venue.value.venueName, () => {
+        const newTitle = he.decode(venue.value.venueName);
+        venue.value.venueName = newTitle;
+    })
+
+    const usAbbreviations = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District of Columbia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PA": "Pennsylvania",
+        "RI": "Rhode Island",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    const usStateToAbbreviation = (state) => {
+        for (let key in usAbbreviations) {
+            if (usAbbreviations[key] === state) {
+                return key;
+            }
+        }
+        return state;
+    }
+
     const collapsibleSections = ref([
         { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
         { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
@@ -108,7 +186,7 @@
     watch(() => venue.value.address, () => {
         const newAddress = {
             title: "Location",
-            content: `${venue.value.address}, ${venue.value.city}, ${venue.value.state}`
+            content: `${he.decode(venue.value.address)}, ${he.decode(venue.value.city)}, ${usStateToAbbreviation(he.decode(venue.value.state))}`
         };
         collapsibleSections.value.push(newAddress);
     })
@@ -142,6 +220,7 @@
             disabledDateRanges: disabledDates.value,
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         }));
 
         cartStore.setCartDetails({
@@ -159,6 +238,7 @@
             disabledDateRanges: disabledDates.value, 
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         });
 
         router.push('/cart')
@@ -237,7 +317,7 @@
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
                     {{ venue.venueName }} 
-                    <span class="fs-5">(Hosted by {{ venue.host }})</span>
+                    <span class="fs-5">(Hosted by {{ hostFirstName }})</span>
                 </span>
                 <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
@@ -478,7 +558,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.id !== venue.host"
+                v-if="user?.id !== hostId"
             >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">

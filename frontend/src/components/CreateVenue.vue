@@ -1,8 +1,8 @@
 <script setup>
-    import { ref, nextTick } from 'vue';
+    import { ref } from 'vue';
     import { showSuccessToast, showErrorToast } from '../utils/toast';
     import { useRouter } from 'vue-router';
-    import axios from 'axios';
+    import { useVenueStore } from '../store/venueStore';
 
     const form = ref({
         state: "",
@@ -18,6 +18,7 @@
     });
 
     const addressError = ref(false);
+    const venueStore = useVenueStore();
     const router = useRouter();
 
     const handleFileUpload = (e) => {
@@ -105,7 +106,7 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
     const createVenue = async () => {
@@ -114,51 +115,16 @@
             return;
         }
 
-        // TODO: make api call to create the venue
-        // if successful, show the successful toast, else show the error toast
-        try {
-            const dates = [];
-            form.value.availability.forEach(date=>{
-                dates.push(new Date(date));
-            })
-
-            const formData = new FormData();
-            
-            formData.append('state', form.value.state);
-            formData.append('city', form.value.city);
-            formData.append('address', form.value.address);
-            formData.append('zipCode', form.value.zipCode);
-            formData.append('venueName', form.value.venueName);
-            formData.append('description', form.value.description);
-            formData.append('price', form.value.price);
-            formData.append('capacity', form.value.capacity);
-            
-            form.value.images.forEach(image => {
-                formData.append('images', image);
-            });
-
-            dates.forEach(date => {
-                formData.append('availability', date);
-            });
-
-            const response = await axios.post("http://localhost:3000/venue/", formData, {
-                withCredentials: true,
-                headers: {'Content-Type': 'multipart/form-data'}
-            });
-
-            if(response.data.success){
-                await router.push('/settings');
-
-                nextTick(() => {
-                    showSuccessToast('Venue created successfully!');
-                })
-            } else if(response.data.error){
-                showErrorToast('Failed to create venue. Please try again.');
-            }
-        } catch (error) {
+        const success = await venueStore.createVenue(form.value);
+        if(success) {
+            venueStore.setSuccessMessage('Venue created successfully!');
+            await router.push('/settings');
+            location.reload();
+        } else {
             showErrorToast('Failed to create venue. Please try again.');
+            return;
         }
-    };
+    }
 </script>
 
 <template>

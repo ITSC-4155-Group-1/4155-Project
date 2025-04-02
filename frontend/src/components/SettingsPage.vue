@@ -5,6 +5,7 @@
     import { useUserStore } from '../store/userDetails';
     import { showErrorToast } from '../utils/toast';
     import { useVenueStore } from '../store/venueStore';
+    import { showSuccessToast } from '../utils/toast';
 
     const venueList = ref([]);
     const noVenuesFound = ref('');
@@ -37,6 +38,16 @@
 
     onMounted(async () => {
         await getAllVenues();
+    })
+
+    onMounted(() => {
+        const successMessage = localStorage.getItem('successMessage');
+        if (successMessage) {
+            showSuccessToast(successMessage);
+            setTimeout(() => {
+                venueStore.clearSuccessMessage();
+            }, 5000);
+        }
     })
 
     const openModal = () => {
