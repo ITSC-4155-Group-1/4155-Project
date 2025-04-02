@@ -6,7 +6,7 @@ const inputValidator = require('../middleware/validation')
 const bookingMiddleware = require('../middleware/bookingMiddleware')
 const exp_router = express.Router()
 
-exp_router.post('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bookingMiddleware.isBookingAvailable, inputValidator.bookingValidation, inputValidator.displayValidation, bookingController.createBooking)
+exp_router.post('/', validator.alreadyLoggedIn, bookingMiddleware.isBookingAvailable, inputValidator.bookingValidation, inputValidator.displayValidation, bookingController.createBooking)
 
 exp_router.delete('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bookingController.deleteBooking)
 
