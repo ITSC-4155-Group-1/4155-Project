@@ -4,7 +4,7 @@ const venueModel = require('../model/venueModel')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, '../frontend/public/images')
+      cb(null, '../frontend/dist/images')
     },
     filename: function (req, file, cb) {
       cb(null, `${Date.now()}-${file.originalname}`)
