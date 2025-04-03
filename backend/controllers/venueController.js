@@ -85,6 +85,7 @@ exports.createVenue = (req, res, next) => {
     })
     .catch((err) => {
         if(err.name == "ValidationError"){
+            console.log(err.errors)
             res.status(400).json({"invalid": "Unable to create venue"})
         }
         else{
