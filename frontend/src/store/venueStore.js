@@ -89,11 +89,29 @@ export const useVenueStore = defineStore('venue', () => {
 
             if(response.data.success){
                 return true;
-            } else if(response.data.error){
+            } else if(response.data.invalid){
+                console.log(response.data.invalid)
                 return false;
             }
         } catch (error) {
+            console.log(error.message)
             return false;
+        }
+    }
+
+    const deleteVenue = async (id) => {
+        try {
+            const response = await axios.delete(`http://localhost:3000/venue/`, {
+                data: { venueId: id },
+                withCredentials: true,
+            });
+            if (response.data.success) {
+                allVenues.value = allVenues.value.filter((venue) => venue._id !== id);
+                return true;
+            }
+        } catch (e) {
+            showErrorToast('Error deleting venue. Please try again later.');
+            console.error('Error deleting venue:', e.response.data);
         }
     }
 
@@ -105,6 +123,7 @@ export const useVenueStore = defineStore('venue', () => {
         fetchAllVenues,
         getVenueById,
         getBookingsForVenueById,
-        createVenue
+        createVenue,
+        deleteVenue,
     }
 });

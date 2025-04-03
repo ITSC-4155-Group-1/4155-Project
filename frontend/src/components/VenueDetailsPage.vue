@@ -1,10 +1,10 @@
 <script setup>
-    import { ref, computed, onMounted, watch } from 'vue';
+    import { ref, computed, onMounted, watch, nextTick } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { showSuccessToast, showWarningToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
     import he from 'he';
@@ -41,7 +41,6 @@
         }
 
         if (host) {
-            console.log(host)
             hostFirstName.value = host.firstName;
             hostId.value = host._id;
         }
@@ -244,6 +243,31 @@
         router.push('/cart')
     };
 
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value._id}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
+
+    const deleteVenue = async () => {
+        const id = route.params.id;
+        const success = await venueStore.deleteVenue(id);
+        if (success) {
+            await router.push('/');
+            nextTick(() => {
+                showSuccessToast('Venue deleted successfully.');
+            })
+        } else {
+            return;
+        }
+    }
+
     const calculateDays = computed(() => {
         if (dateRange.value && dateRange.value.length === 2) {
             const start = new Date(dateRange.value[0]);
@@ -317,7 +341,7 @@
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
                     {{ venue.venueName }} 
-                    <span class="fs-5">(Hosted by {{ hostFirstName }})</span>
+                    <span class="fs-5">(Hosted by {{ user?.id === hostId ? 'You' : hostFirstName }})</span>
                 </span>
                 <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
@@ -347,7 +371,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="saveVenue"
-                    v-if="venue.host !== user?.id"
+                    v-if="hostId !== user?.id && user"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -362,6 +386,27 @@
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                     Save
+                </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="goToEditVenue"
+                    v-if="hostId === user?.id && user"
+                >
+                    ✏️ Edit
+                </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="deleteVenue"
+                    v-if="hostId === user?.id && user"
+                >
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 7H19" stroke="red" stroke-width="2"/>
+                        <path d="M8 7V5C8 4.44772 8.44772 4 9 4H15C15.5523 4 16 4.44772 16 5V7" stroke="red" stroke-width="2"/>
+                        <rect x="6" y="7" width="12" height="14" stroke="red" stroke-width="2" fill="none"/>
+                        <line x1="10" y1="11" x2="10" y2="17" stroke="red" stroke-width="2"/>
+                        <line x1="14" y1="11" x2="14" y2="17" stroke="red" stroke-width="2"/>
+                    </svg>
+                    Delete
                 </span>
             </div>
         </div>
