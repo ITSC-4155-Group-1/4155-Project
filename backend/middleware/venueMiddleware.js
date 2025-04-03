@@ -4,7 +4,7 @@ const venueModel = require('../model/venueModel')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, '../frontend/dist/images')
+      cb(null, path.resolve(__dirname, '../../frontend/public/images'))
     },
     filename: function (req, file, cb) {
       cb(null, `${Date.now()}-${file.originalname}`)
@@ -26,7 +26,7 @@ exports.upload = multer({
 
 exports.isHost = (req, res, next) => {
   let hostId = req.session.user
-  let venueId = req.params.id
+  let { venueId } = req.body
   venueModel.findById(venueId)
   .then((venue) => {
       if(venue){
