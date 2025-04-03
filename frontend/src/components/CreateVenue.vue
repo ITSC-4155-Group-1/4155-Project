@@ -1,6 +1,6 @@
 <script setup>
     import { ref } from 'vue';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
+    import { showErrorToast } from '../utils/toast';
     import { useRouter } from 'vue-router';
     import { useVenueStore } from '../store/venueStore';
 
