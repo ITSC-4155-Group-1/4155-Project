@@ -20,22 +20,22 @@ module.exports = (io) =>{
       .catch(err => next(err))
     })
     
-  })
-  // Function to send message
-  socket.on('message', (data)=>{
-    //data.message: Str: The message the user sent
-    //data.senderId: Objectid
-    //data.receiverId: Objectid
-    message = new messageModel(data)
-    message.save()
-    .then((message) =>{
-      io.to(roomId).emit('messageToClient', data)
+    // Function to send message
+    socket.on('message', (data)=>{
+      //data.message: Str: The message the user sent
+      //data.senderId: Objectid
+      //data.receiverId: Objectid
+      message = new messageModel(data)
+      message.save()
+      .then((message) =>{
+        io.to(roomId).emit('messageToClient', data)
+      })
+      .catch(err => next(err))
     })
-    .catch(err => next(err))
+    socket.on('disconnect', () => {
+      console.log('disconnected');
+    });
   })
-  socket.on('disconnect', () => {
-    console.log('disconnected');
-  });
   
   // Function to disconnect
   

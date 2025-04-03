@@ -1,10 +1,23 @@
 <script setup>
-    import { ref, computed, reactive, watch, onMounted } from 'vue';
+    import { ref, computed, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
     import { parseUser } from "../utils/userUtils"
     import { messages } from "../../../mockdata"
+    import { io } from "socket.io-client"
 
     const allMessages = ref([...messages]) // stores all the messages (default and newly sent ones)
     const messagesData = ref([...messages]);
+    const socket = ref(null);
+
+    //id of current user and receiver 
+    onMounted(() => {
+        socket.value = io("http://localhost:5173");
+    });
+
+    onBeforeUnmount(() => {
+        console.log('{DISCONNECT_BLOCK}');
+        socket.value?.disconnect();
+    })
+
 
     // should default to the most recent person you messaged
     const messagingWho = ref(messages[0]?.from);

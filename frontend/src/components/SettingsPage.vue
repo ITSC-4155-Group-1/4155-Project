@@ -1,19 +1,19 @@
 <script setup>
-    import { ref, computed } from 'vue';
-    import { venues } from "../../../mockdata";
+    import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userDetails';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
-    import { useRoute } from 'vue-router'
+    import { showErrorToast } from '../utils/toast';
+    import { useVenueStore } from '../store/venueStore';
 
-    const venueList = ref(venues);
+    const venueList = ref([]);
+    const noVenuesFound = ref('');
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
     const user = parseUser();
     const userStore = useUserStore();
-    const route = useRoute();
+    const venueStore = useVenueStore();
 
     const newPassword = ref("");
     const rePassword = ref("");
@@ -21,6 +21,23 @@
     const newPfp = ref(null);
     const newPfpPreview = ref(null);
     const changePfpModal = ref(false);
+
+    const getAllVenues = async () => {
+        try {
+            const response = await venueStore.fetchAllVenues();
+            if (response.success) {
+                venueList.value = response.venues;
+            } else {
+                noVenuesFound.value = 'No venues found';
+            }
+        } catch (e) {
+            console.error('Error fetching venues:', e);
+        }
+    }
+
+    onMounted(async () => {
+        await getAllVenues();
+    })
 
     const openModal = () => {
         showModal.value = true;
@@ -30,11 +47,13 @@
         showModal.value = false;
     };
 
-    const confirmDelete = () => {
-        alert("Account Deleted!"); 
-        closeModal();
-
-        // will make a call to the user store and if successful, delete the account and display a success toast, else display a failure toast
+    const confirmDelete = async () => {
+        const response = await userStore.deleteUser();
+        if (response.success) {
+            closeModal();
+        } else {
+            console.error("Failed to delete account:", response);
+        }
     };
 
     const setActiveSection = (section) => {
@@ -54,11 +73,23 @@
 
     const passwordsMatch = computed(() => newPassword.value === rePassword.value || rePassword.value === "");
 
+    // TODO: figure out why the toast is showing up twice
     const validatePasswords = () => {
         if (!passwordsMatch.value) {
             passwordError.value = "Passwords do not match.";
             return false;
+        } 
+        
+        if (!(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}$/.test(newPassword.value))) {
+            passwordError.value = "Password must contain at least 8 characters, including uppercase and lowercase letters, and a number.";
+            return false;
         }
+
+        if (newPassword.value.length < 8 || newPassword.value.length > 30) {
+            passwordError.value = "Password must be between 8 and 30 characters.";
+            return false;
+        }
+
         passwordError.value = "";
         return true;
     };
@@ -66,11 +97,10 @@
     const updatePassword = async () => {
         if (!validatePasswords()) return;
 
-        // TODO: backend call to update password
-        // if successful, display the success toast, else display the error toast
-        showSuccessToast("Successfully updated your password.");
-        updatePassword.value = false;
-        updatePasswordDiv.value = false;
+        const response = await userStore.updateUserPassword(newPassword.value);
+        if (response.success) {
+            updatePasswordDiv.value = false;
+        }
     }
 
     const changePfp = (e) => {
@@ -84,16 +114,17 @@
         newPfpPreview.value = URL.createObjectURL(file);
     }
 
-    const updatePfp = () => {
+    const updatePfp = async () => {
         if (!newPfp.value) {
-            console.error("update pfp failed:", newPfp);
+            showErrorToast("Failed to update your profile picture");
             return;
         }
 
-        // TODO: backend call to update pfp
-        // if successful, display the success toast, else display the error toast
-        showSuccessToast("Successfully updated your profile picture.");
-        changePfpModal.value = false;
+        const response = await userStore.updateUserPfp(newPfp.value);
+        if (response.success) {
+            changePfpModal.value = false;
+            location.reload()
+        } 
     }
 </script>
 
@@ -187,9 +218,10 @@
                         <div class="venue-list">
                             <div class="row">
                                 <div 
-                                    v-for="(venue, index) in venueList" 
-                                    :key="index + '_' + venue.venue_name" 
-                                    class="col-12 col-sm-4 col-md-4 col-lg-3 mb-4"
+                                    v-for="(venue, index) in venueList.filter(venue => 
+                                    venue.host === user?.id)" 
+                                    :key="index + '_' + venue.venueName" 
+                                    class="col-12 col-sm-4 col-md-4 col-lg-12 mb-4"
                                 >
                                     <VenueCard :venue="venue" />
                                 </div>
