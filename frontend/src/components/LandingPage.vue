@@ -1,9 +1,29 @@
 <script setup>
-    import { venues } from "../../../mockdata";
-    import { ref } from "vue"
+    import { ref, onMounted } from "vue"
     import VenueCard from "./VenueCard.vue"
+    import { useVenueStore } from "../store/venueStore";
+    
+    const allVenues = ref([]);
+    const mutableVenueList = ref([]);
+    const noVenuesFound = ref('');
+    const venueStore = useVenueStore();
 
-    const venueList = ref(venues);
+    const getAllVenues = async () => {
+        try {
+            const response = await venueStore.fetchAllVenues();
+            if (response.success) {
+                mutableVenueList.value = response.venues;
+                allVenues.value = response.venues;
+            }
+        } catch (e) {
+            console.error('Error fetching venues:', e);
+        }
+    }
+    
+    onMounted(async () => {
+        await getAllVenues();
+    });
+
 
     const searchQuery = ref({
         location: '',
@@ -13,13 +33,14 @@
 
     // note to self: we're returning true either way because the queries can be empty (have fun deciphering this)
     const search = () => {
-        venueList.value = venues.filter(venue => {
+        mutableVenueList.value = allVenues.value?.filter(venue => {
+            const location = `${venue.city}, ${venue.state}`;
             const locationMatch = searchQuery.value.location 
-                ? venue.location.toLowerCase().includes(searchQuery.value.location.toLowerCase()) 
+                ? location.toLowerCase().includes(searchQuery.value.location.toLowerCase()) 
                 : true;
             
             const dateMatch = searchQuery.value.date
-                ? searchQuery.value.date >= venue.availability_start_date && searchQuery.value.date <= venue.availability_end_date
+                ? searchQuery.value.date >= new Date(venue.availability[0]) && searchQuery.value.date <= new Date(venue.availability[1])
                 : true;
 
             const attendeesMatch = searchQuery.value.attendees
@@ -34,7 +55,7 @@
         switch (groupSize) {
             case "small-group": return venueAttendees >= 1 && venueAttendees <= 40;
             case "medium-group": return venueAttendees >= 41 && venueAttendees <= 100;
-            case "large-group": return venueAttendees >= 101 && venueAttendees <= 200;
+            case "large-group": return venueAttendees >= 101 && venueAttendees <= 199;
             case "larger-group": return venueAttendees > 200;
             default: return true; // any size
         }
@@ -97,7 +118,7 @@
                             <option value="any">Any</option>
                             <option value="small-group">1 - 40 attendees</option>
                             <option value="medium-group">41 - 100 attendees</option>
-                            <option value="large-group">101 - 200 attendees</option>
+                            <option value="large-group">101 - 199 attendees</option>
                             <option value="larger-group">200+ attendees</option>
                         </select>
                     </div>
@@ -108,18 +129,23 @@
     </div>
     
     <div class="main-container">
-        <div class="row" v-if="venueList.length > 0">
+        <div class="row" v-if="mutableVenueList.length > 0">
             <div
-                v-for="(venue, index) in venueList" 
-                :key="index + '_' + venue.venue_name" 
+                v-for="(venue, index) in mutableVenueList" 
+                :key="index + '_' + venue.venueName" 
                 class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
             >
                 <VenueCard :venue="venue" />
             </div>
         </div>
+        <div v-else-if="noVenuesFound">
+            <div class="text-center p-5 m-5">
+                <h4>{{ noVenuesFound }}</h4>
+            </div>
+        </div>
         <div v-else>
             <div class="text-center p-5 m-5">
-                <h4>No venues found that match your search criteria.</h4>
+                <h4>No venues found. Please try again.</h4>
             </div>
         </div>
     </div>

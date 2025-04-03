@@ -15,8 +15,9 @@
 
     setTimeout(() => {
         notifList.value.splice(index, 1);
-        // TODO: Add code to remove notif from database
     }, 500);
+    
+    // TODO: Add code to remove notif from database
 };
 </script>
 
