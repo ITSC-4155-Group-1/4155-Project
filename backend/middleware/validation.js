@@ -36,9 +36,9 @@ exports.venueValidation = [
 ]
 
 exports.bookingValidation = [
-    body('bookingStartDate', 'Start date must be valid').trim().isDate(),
-    body('bookingEndDate', 'End date must be valid').trim().isDate(),
-    body('numAttendees', 'Number of attendees must be at least 1').isInt({min: 1, max: 10000000}),
+    body('bookingStartDate', 'Start date must be valid').trim().isISO8601().toDate(),
+    body('bookingEndDate', 'End date must be valid').trim().isISO8601().toDate(),
+    body('numAttendees', 'Number of attendees must be at least 1').notEmpty().trim().escape(),
 ]
 
 exports.displayValidation = (req, res, next) => {

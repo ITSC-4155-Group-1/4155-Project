@@ -3,40 +3,41 @@ const bcrypt = require("bcrypt");
 const venueModel = require("../model/venueModel");
 const notificationModel = require("../model/notificationModel");
 const reviewModel = require("../model/reviewModel");
+const bookingModel = require("../model/bookingModel");
 
 exports.login = (req, res, next) => {
-    let email = req.body.email;
-    let password = req.body.password;
+    let email = req.body.email
+    let password = req.body.password
     userModel.findOne({ email: email })
     .then((user) => {
         if (!user) {
             return res.status(400)
-            .json({ invalid: "Invalid email. Please try another one." });
+            .json({ invalid: "Invalid email. Please try another one." })
         } else {
             bcrypt.compare(password, user.password).then((result) => {
             if (result) {
-                req.session.user = user._id;
-                req.session.firstName = user.firstName;
-                req.session.lastName = user.lastName;
-                req.session.image = null;
-                res.json({ success: `Login successful`, token: req.session });
+                req.session.user = user._id
+                req.session.firstName = user.firstName
+                req.session.lastName = user.lastName
+                req.session.image = user.image
+                res.json({ success: `Login successful`, token: req.session })
             } else {
                 return res.status(400)
-                .json({ invalid: "Incorrect password. Please try again." });
+                .json({ invalid: "Incorrect password. Please try again." })
             }
-            });
+            })
         }
     })
-    .catch((err) => next(err));
-};
+    .catch((err) => next(err))
+}
 
 exports.signup = (req, res, next) => {
-    let { firstName, lastName, email, password } = req.body;
+    let { firstName, lastName, email, password } = req.body
 
     userModel.findOne({ email })
     .then((existingUser) => {
         if (existingUser) {
-            return res.status(400).json({ invalid: "Email is already in use" });
+            return res.status(400).json({ invalid: "Email is already in use" })
         }
         bcrypt.hash(password, 10)
         .then((hashedPass) => {
@@ -45,55 +46,55 @@ exports.signup = (req, res, next) => {
                 lastName,
                 email,
                 password: hashedPass,
-            });
+            })
 
             newUser.save()
             .then(() => {
                 res.status(201).json({
                     success: "Account created successfully, please login",
-                });
+                })
             })
             .catch((err) => {
                 if (err.code === 11000) {
-                    res.status(400).json({ invalid: "Email is already in use" });
+                    res.status(400).json({ invalid: "Email is already in use" })
                 } else if (err.name === "ValidationError") {
-                    res.status(400).json({ invalid: err.message });
+                    res.status(400).json({ invalid: err.message })
                 } else {
-                    next(err);
+                    next(err)
                 }
-            });
+            })
         })
         .catch((err) => {
-            next(err);
-        });
+            next(err)
+        })
     })
     .catch((err) => {
-        next(err);
-    });
-};
+        next(err)
+    })
+}
 
 exports.logout = (req, res, next) => {
     if (!req.session) {
-        return res.status(400).json({ invalid: "No active session" });
+        return res.status(400).json({ invalid: "No active session" })
     }
     req.session.destroy((err) => {
         if (err) {
-            return next(err);
+            return next(err)
         } else {
-            res.json({ success: "Successfully logged out of session" });
+            res.json({ success: "Successfully logged out of session" })
         }
-    });
-};
+    })
+}
 
 // Account deletion
 exports.deleteAccount = (req, res, next) =>{
-    let userId = req.body.id
+    let userId = req.session.user
     if (!req.session) {
-        return res.status(400).json({ invalid: "No active session" });
+        return res.status(400).json({ invalid: "No active session" })
     }
     Promise.all([userModel.findByIdAndDelete(userId), notificationModel.deleteMany({for: userId}), reviewModel.deleteMany({reviewerId : userId})])
     .then((userData) => {
-        venueModel.find({host: userID})
+        venueModel.find({host: userId})
         .then((venues) =>{
             if(venues){
                 let venueIds = venues.filter(venue => venue.id)
@@ -106,9 +107,9 @@ exports.deleteAccount = (req, res, next) =>{
                     if(deletedItems){
                         req.session.destroy((err) => {
                             if (err) {
-                                return next(err);
+                                return next(err)
                             } else {
-                                res.json({ success: "Successfully deleted account and removed session" });
+                                res.json({ success: "Successfully deleted account!" });
                             }
                         })
                     }
@@ -119,7 +120,7 @@ exports.deleteAccount = (req, res, next) =>{
                 .catch(err => next(err))
             }
             else{
-                res.json({ success: "Successfully deleted account and removed session" });
+                res.json({ success: "Successfully deleted account and removed session" })
             }
         })
         .catch(err => next(err))
@@ -130,24 +131,55 @@ exports.deleteAccount = (req, res, next) =>{
 
 exports.updateUser = (req, res, next) =>{
     let password = req.body.password
-    let img = req.files.map(file => `/images/${file.originalname}`)
-    bcrypt.hash(password, 10)
-    .then((hashedPass) => {
-    let userId = req.body.id
-    userModel.findByIdAndUpdate(userId, {password: hashedPass, image: img}, {runValidators: true})
-    .then((user) =>{
-        if(user){
-            res.status(200).json({success: "User updated successfully"})
+    let userId = req.session.user
+    let img = null
+    if(req.file){
+        img = `/images/${req.file.filename}`;
+    }
+    if(password){
+        bcrypt.hash(password, 10)
+        .then((hashedPass) => {
+            let newInfo = { password: hashedPass }
+            userModel.findByIdAndUpdate(userId, newInfo, {runValidators: true})
+            .then((user) =>{
+                if(user){
+                    res.status(200).json({ success: "Successfully updated your password" })
+                }
+                else{
+                    res.status(404).json({ invalid: "User could not be found" })
+                }
+            })
+            .catch(err=>{
+                if(err.name === 'ValidationError'){
+                    res.status(400).json({ invalid: err.message })
+                }
+                next(err)
+            }) 
+        })
+        .catch(err => next(err))
+    }
+    else {
+        let newInfo = {}
+        if(img){
+            newInfo.image = img
         }
-        else{
-            res.status(404).json({invalid: "User could not be found"})
-        }
-    })
-    .catch(err=>{
-        if(err.name === 'ValidationError'){
-            res.status(400).json({invalid: err.message})
-        }
-        next(err);
-    }) 
-    })
+        userModel.findByIdAndUpdate(userId, newInfo, {runValidators: true})
+        .then((user) =>{
+            if(user){
+                res.status(200).json({
+                    success: "Successfully updated your profile picture",
+                    image: img
+                })
+            }
+            else{
+                res.status(404).json({ invalid: "User could not be found" })
+            }
+        })
+        .catch(err=>{
+            if(err.name === 'ValidationError'){
+                res.status(400).json({ invalid: err.message })
+            }
+            next(err)
+        }) 
+    }
 }

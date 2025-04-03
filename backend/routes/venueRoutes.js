@@ -17,7 +17,7 @@ exp_router.get('/user', validator.alreadyLoggedIn, venueController.viewMyVenues)
 
 exp_router.get('/:id', venueController.getVenue)
 
-exp_router.post('/', upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.createVenue)
+exp_router.post('/', validator.alreadyLoggedIn, upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.createVenue)
 
 exp_router.put('/', validator.alreadyLoggedIn, venueMiddleware.isHost,  upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.updateVenue)
 
