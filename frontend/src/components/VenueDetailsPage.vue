@@ -7,6 +7,7 @@
     import { showSuccessToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
+    import he from 'he';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -27,14 +28,22 @@
     const minDate = ref(null);
     const maxDate = ref(null);
     const disabledDates = ref([]);
+    const hostFirstName = ref('');
+    const hostId = ref(null);
 
     onMounted(async () => {
         const venueId = route.params.id;
-        const venueData = await venueStore.getVenueById(venueId);
+        const [venueData, host] = await venueStore.getVenueById(venueId);
         
         if (venueData) {
             venue.value = venueData;
             // venueReviews.value = venueData.reviews; venues don't have reviews yet
+        }
+
+        if (host) {
+            console.log(host)
+            hostFirstName.value = host.firstName;
+            hostId.value = host._id;
         }
 
         // getting the bookings for the venues as well
@@ -83,7 +92,10 @@
 
     watch(() => venue.value.availability, (newAvailability) => {
         if (newAvailability && newAvailability.length > 0) {
-            const venueStartDate = new Date(venue.value.availability[0]);
+            const offsetStartDate = new Date(venue.value.availability[0])
+            const venueStartDate = new Date(offsetStartDate);
+            venueStartDate.setDate(offsetStartDate.getDate() + 1);
+            
             const today = new Date();
 
             if (venueStartDate > today) {
@@ -92,17 +104,92 @@
                 minDate.value = today;
             }
         }
-
         maxDate.value = new Date(venue.value.availability[1]);
     });
+
+    watch(() => venue.value.venueName, () => {
+        const newTitle = he.decode(venue.value.venueName);
+        venue.value.venueName = newTitle;
+    })
+
+    const usAbbreviations = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District of Columbia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PA": "Pennsylvania",
+        "RI": "Rhode Island",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    const usStateToAbbreviation = (state) => {
+        for (let key in usAbbreviations) {
+            if (usAbbreviations[key] === state) {
+                return key;
+            }
+        }
+        return state;
+    }
 
     const collapsibleSections = ref([
         { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
         { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
         { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
         { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
-        { title: "Location", content: "Exact venue location." }
     ]);
+
+    watch(() => venue.value.address, () => {
+        const newAddress = {
+            title: "Location",
+            content: `${he.decode(venue.value.address)}, ${he.decode(venue.value.city)}, ${usStateToAbbreviation(he.decode(venue.value.state))}`
+        };
+        collapsibleSections.value.push(newAddress);
+    })
 
     // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
     // const venueRating = computed(() => {
@@ -133,6 +220,7 @@
             disabledDateRanges: disabledDates.value,
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         }));
 
         cartStore.setCartDetails({
@@ -150,6 +238,7 @@
             disabledDateRanges: disabledDates.value, 
             minDate: minDate.value,
             maxDate: maxDate.value,
+            host: hostFirstName.value,
         });
 
         router.push('/cart')
@@ -228,7 +317,7 @@
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
                     {{ venue.venueName }} 
-                    <span class="fs-5">(Hosted by {{ venue.host }})</span>
+                    <span class="fs-5">(Hosted by {{ hostFirstName }})</span>
                 </span>
                 <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
@@ -278,17 +367,17 @@
         </div>
 
         <div class="d-flex gap-2 image-gallery"
-            v-if="venue.image && venue.image.length"
+            v-if="venue.images"
         >
             <div class="w-50">
                 <img
-                    :src="venue.image[0]" alt="Venue image"
+                    :src="venue.images[0]" alt="Venue image"
                     class="w-100 h-100 object-fit-cover d-flex align-items-center justify-content-center overflow-hidden rounded"
                 >
             </div>
             <div class="w-50 other-images-grid">
-                <template v-if="venue.image.length > 1">
-                    <div class="grid-item position-relative" v-for="(image, index) in venue.image.slice(1, 5)">
+                <template v-if="venue.images.length > 1">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.images.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
@@ -309,16 +398,16 @@
                         </div>
                     </div>
                 </template>
-                <template v-if="venue.image.length < 5">
+                <template v-if="venue.images.length < 5">
                     <div
-                        v-for="index in 5 - venue.image.length"
+                        v-for="index in 5 - venue.images.length"
                         :key="'placeholder-' + index"
                         class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
                     ></div>
                 </template>
             </div>
         </div>
-        <p v-else>No image available</p>
+        <p v-else class="d-flex align-items-center justify-content-center noImageAvailable">No images available</p>
 
         <div
             v-if="showMoreImages"
@@ -469,7 +558,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.id !== venue.host"
+                v-if="user?.id !== hostId"
             >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">
@@ -581,6 +670,12 @@
     .image-gallery {
         max-height: 56vh;
         overflow: hidden;
+    }
+
+    .noImageAvailable {
+        font-size: 20px;
+        color: var(--secondary);
+        height: 50vh;
     }
 
     .booking-modal {

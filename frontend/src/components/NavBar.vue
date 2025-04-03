@@ -82,7 +82,7 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        const savedToken = cookies.getCookie('authToken')
+        const savedToken = cookies.getCookie('authToken');
         if (savedToken) {
             toggleLoggedIn(savedToken);
         } else {

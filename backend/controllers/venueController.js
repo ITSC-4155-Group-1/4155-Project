@@ -1,4 +1,5 @@
 const bookingModel = require('../model/bookingModel')
+const userModel = require('../model/userModel')
 const venueModel = require('../model/venueModel')
 
 // View all venues
@@ -37,7 +38,11 @@ exports.getVenue = (req, res, next) => {
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
-            res.status(200).json({ success: true, venue })
+            userModel.findById(venue.host)
+            .then((host) => {
+                res.status(200).json({ success: true, venue, host })
+            })
+            .catch(err => next(err))
         }
         else{
             next(new Error('Venue does not exist').status(404))
