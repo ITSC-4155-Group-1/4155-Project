@@ -101,8 +101,7 @@ export const useVenueStore = defineStore('venue', () => {
 
     const deleteVenue = async (id) => {
         try {
-            const response = await axios.delete(`http://localhost:3000/venue/`, {
-                data: { venueId: id },
+            const response = await axios.delete(`http://localhost:3000/venue/${id}`, {
                 withCredentials: true,
             });
             if (response.data.success) {
@@ -112,6 +111,47 @@ export const useVenueStore = defineStore('venue', () => {
         } catch (e) {
             showErrorToast('Error deleting venue. Please try again later.');
             console.error('Error deleting venue:', e.response.data);
+        }
+    }
+
+    const editVenue = async(data, id) => {
+        const dates = [];
+        data.availability.forEach(date=>{
+            dates.push(new Date(date));
+        })
+
+        const formData = new FormData();
+        
+        formData.append('state', data.state);
+        formData.append('city', data.city);
+        formData.append('address', data.address);
+        formData.append('zipCode', data.zipCode);
+        formData.append('venueName', data.venueName);
+        formData.append('description', data.description);
+        formData.append('price', data.price);
+        formData.append('capacity', data.capacity);
+        data.images.forEach(image => {
+            formData.append('images', image);
+        });
+        dates.forEach(date => {
+            formData.append('availability', date);
+        });
+
+        try {
+            const response = await axios.put(`http://localhost:3000/venue/${id}`, formData, {
+                withCredentials: true,
+                headers: {'Content-Type': 'multipart/form-data'}
+            });
+
+            if(response.data.success){
+                return true;
+            } else if(response.data.invalid){
+                console.log(response.data.invalid)
+                return false;
+            }
+        } catch (error) {
+            console.log(error.message)
+            return false;
         }
     }
 
@@ -125,5 +165,6 @@ export const useVenueStore = defineStore('venue', () => {
         getBookingsForVenueById,
         createVenue,
         deleteVenue,
+        editVenue
     }
 });

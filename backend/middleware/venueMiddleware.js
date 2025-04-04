@@ -26,7 +26,7 @@ exports.upload = multer({
 
 exports.isHost = (req, res, next) => {
   let hostId = req.session.user
-  let { venueId } = req.body
+  let venueId = req.params.id
   venueModel.findById(venueId)
   .then((venue) => {
       if(venue){

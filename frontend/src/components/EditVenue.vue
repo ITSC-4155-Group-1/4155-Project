@@ -1,7 +1,7 @@
 <script setup>
     import { ref, nextTick, onMounted, watch } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { showErrorToast } from '../utils/toast.js';
     import { useVenueStore } from '../store/venueStore.js';
     import he from 'he';
 
@@ -10,9 +10,10 @@
     const router = useRouter();
     const route = useRoute();
     const addressError = ref(false);
+    let id;
 
     onMounted(async () => {
-        const id = route.params.id;
+        id = route.params.id;
         const venueData = await venueStore.getVenueById(id);
         if (venueData) {
             venue.value = venueData;
@@ -203,21 +204,20 @@
 
     const updateVenue = async () => {
         if (!validateForm()) {
+            showErrorToast('Missing required information.')
             return;
         }
 
-        // TODO: make api call to update the venue
         // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
-        try {
+        const success = await venueStore.editVenue(form.value, id);
+        if(success) {
+            venueStore.setSuccessMessage('Venue updated successfully!');
             await router.push('/settings');
-
-            nextTick(() => {
-                showSuccessToast('Venue updated successfully!');
-            });
-        } catch (e) {
-            showErrorToast('Failed to update venue');
+            location.reload();
+        } else {
+            showErrorToast('Failed to update venue. Please try again.')
+            return;
         }
-
     }
 </script>
 
