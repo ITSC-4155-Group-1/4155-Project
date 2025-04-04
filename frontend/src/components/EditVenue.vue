@@ -103,14 +103,14 @@
                 new Date(newVenue.availability[1])
             ];
         }
-        form.value.state = he.decode(newVenue.state);
-        form.value.city = he.decode(newVenue.city);
-        form.value.address = he.decode(newVenue.address);
-        // form.value.zipCode = newVenue.zipCode;
-        form.value.venueName = he.decode(newVenue.venueName);
-        form.value.description = he.decode(newVenue.description);
-        form.value.price = newVenue.price;
-        form.value.capacity = newVenue.capacity;
+        form.value.state = he.decode(newVenue[0].state);
+        form.value.city = he.decode(newVenue[0].city);
+        form.value.address = he.decode(newVenue[0].address);
+        // form.value.zipCode = newVenue[0].zipCode; // TODO: once the db is cleaned and every venue has a zip code, then we can uncomment this and fix line 90 as well
+        form.value.venueName = he.decode(newVenue[0].venueName);
+        form.value.description = he.decode(newVenue[0].description);
+        form.value.price = newVenue[0].price;
+        form.value.capacity = newVenue[0].capacity;
     });
 
     const handleFileUpload = (e) => {

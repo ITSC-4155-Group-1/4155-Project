@@ -1,10 +1,10 @@
 <script setup>
-    import { ref, computed, onMounted, watch } from 'vue';
+    import { ref, computed, onMounted, watch, nextTick } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { showSuccessToast, showWarningToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
     import he from 'he';
@@ -30,6 +30,7 @@
     const disabledDates = ref([]);
     const hostFirstName = ref('');
     const hostId = ref(null);
+    const deleteVenueModal = ref(false);
 
     onMounted(async () => {
         const venueId = route.params.id;
@@ -41,7 +42,6 @@
         }
 
         if (host) {
-            console.log(host)
             hostFirstName.value = host.firstName;
             hostId.value = host._id;
         }
@@ -244,6 +244,36 @@
         router.push('/cart')
     };
 
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value._id}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
+
+    const deleteVenue = async () => {
+        const id = route.params.id;
+        const success = await venueStore.deleteVenue(id);
+        if (success) {
+            deleteVenueModal.value = false;
+            await router.push('/');
+            nextTick(() => {
+                showSuccessToast('Venue deleted successfully.');
+            })
+        } else {
+            return;
+        }
+    }
+
+    const toggleDeleteVenueModal = () => {
+        deleteVenueModal.value = !deleteVenueModal.value;
+    }
+
     const calculateDays = computed(() => {
         if (dateRange.value && dateRange.value.length === 2) {
             const start = new Date(dateRange.value[0]);
@@ -317,7 +347,7 @@
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
                     {{ venue.venueName }} 
-                    <span class="fs-5">(Hosted by {{ hostFirstName }})</span>
+                    <span class="fs-5">(Hosted by {{ user?.id === hostId ? 'You' : hostFirstName }})</span>
                 </span>
                 <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
@@ -347,7 +377,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="saveVenue"
-                    v-if="venue.host !== user?.id"
+                    v-if="hostId !== user?.id && user"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -363,6 +393,55 @@
                     </svg>
                     Save
                 </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="goToEditVenue"
+                    v-if="hostId === user?.id && user"
+                >
+                    ✏️ Edit
+                </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="toggleDeleteVenueModal"
+                    v-if="hostId === user?.id && user"
+                >
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 7H19" stroke="red" stroke-width="2"/>
+                        <path d="M8 7V5C8 4.44772 8.44772 4 9 4H15C15.5523 4 16 4.44772 16 5V7" stroke="red" stroke-width="2"/>
+                        <rect x="6" y="7" width="12" height="14" stroke="red" stroke-width="2" fill="none"/>
+                        <line x1="10" y1="11" x2="10" y2="17" stroke="red" stroke-width="2"/>
+                        <line x1="14" y1="11" x2="14" y2="17" stroke="red" stroke-width="2"/>
+                    </svg>
+                    Delete
+                </span>
+            </div>
+        </div>
+
+        <div v-if="deleteVenueModal" class="overlay">
+            <div class="popup bg-light">
+                <button class="close-btn" @click="toggleDeleteVenueModal">
+                    &times;
+                </button>
+
+                <div>
+                    <h3>Do you wish to continue?</h3>
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn confirm"
+                            @click="deleteVenue"
+                        >
+                            Delete Venue
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn cancel"
+                            @click="toggleDeleteVenueModal"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -831,5 +910,63 @@
 
     .review-comment {
         font-size: 16px;
+    }
+
+    .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .popup {
+        position: relative;
+        width: 50%;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .custom-btn {
+        width: fit-content;
+        padding: 0.75rem 2rem;
+        color: white;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
+    
+    .confirm:hover {
+        color: white;
+        background-color: var(--highlight-dark-50);
+    }
+
+    .cancel {
+        color: white;
+        background-color: red;
+    }
+
+    .cancel:hover {
+        color: white;
+        background-color: darkred;
     }
 </style>

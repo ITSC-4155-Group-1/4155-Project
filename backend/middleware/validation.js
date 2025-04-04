@@ -18,6 +18,7 @@ exports.venueValidation = [
     body('state', 'State name is required').notEmpty().trim().escape(),
     body('city', 'City name is required').notEmpty().trim().escape(),
     body('address', 'Address is required').notEmpty().trim().escape(),
+    body('zipCode', 'Zip Code name is required').isInt({ min: 1 }),
     body('capacity', 'Capacity must be at least 1').isInt({min: 1}),
     body('price',).isInt({min: 1, max: 100000000}),
     body('availability').isArray().custom((dates) =>{
@@ -44,7 +45,6 @@ exports.displayValidation = (req, res, next) => {
         res.status(400).json({'invalid': validationErrors.array().map(err => err.msg)})
     }
     else{
-        console.log("pass")
         next()
     }
 }
