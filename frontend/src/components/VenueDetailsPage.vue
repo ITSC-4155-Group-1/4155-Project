@@ -882,7 +882,7 @@
 
     .show-more-images-container {
         background: rgba(0, 0, 0, 0.8);
-        z-index: 1050;
+        z-index: 100;
         left: 0;
     }
 
@@ -919,7 +919,7 @@
         align-items: center;
         justify-content: center;
         background-color: rgba(0,0,0,0.5);
-        z-index: 1000;
+        z-index: 1001;
     }
 
     .popup {
