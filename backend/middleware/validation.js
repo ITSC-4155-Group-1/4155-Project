@@ -45,7 +45,6 @@ exports.displayValidation = (req, res, next) => {
         res.status(400).json({'invalid': validationErrors.array().map(err => err.msg)})
     }
     else{
-        console.log("pass")
         next()
     }
 }
