@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, nextTick, onMounted, watch } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
     import { showErrorToast } from '../utils/toast.js';
     import { useVenueStore } from '../store/venueStore.js';
@@ -98,10 +98,11 @@
     });
 
     watch(() => venue.value, (newVenue) => {
-        if (newVenue.availability && newVenue.availability.length > 0) {
+        console.log(newVenue[0].availability);
+        if (newVenue[0].availability && newVenue[0].availability.length > 0) {
             form.value.availability = [
-                new Date(newVenue.availability[0]),
-                new Date(newVenue.availability[1])
+                new Date(newVenue[0].availability[0]),
+                new Date(newVenue[0].availability[1])
             ];
         }
         form.value.state = he.decode(newVenue[0].state);
@@ -199,7 +200,7 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
     const updateVenue = async () => {
@@ -208,7 +209,6 @@
             return;
         }
 
-        // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
         const success = await venueStore.editVenue(form.value, id);
         if(success) {
             venueStore.setSuccessMessage('Venue updated successfully!');

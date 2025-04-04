@@ -2,7 +2,7 @@
     import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
-    import { useUserStore } from '../store/userDetails';
+    import { useUserStore } from '../store/userStore';
     import { showErrorToast } from '../utils/toast';
     import { useVenueStore } from '../store/venueStore';
     import { showSuccessToast } from '../utils/toast';

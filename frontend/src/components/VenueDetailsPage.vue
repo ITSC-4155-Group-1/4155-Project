@@ -494,7 +494,7 @@
         >
             <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
             <Carousel v-bind="carouselConfig">
-                <Slide v-for="image in venue.image" :key="image">
+                <Slide v-for="image in venue.images" :key="image">
                     <img
                         :src="image"
                         alt="Venue Images"
@@ -919,7 +919,7 @@
         align-items: center;
         justify-content: center;
         background-color: rgba(0,0,0,0.5);
-        z-index: 1000;
+        z-index: 1001;
     }
 
     .popup {

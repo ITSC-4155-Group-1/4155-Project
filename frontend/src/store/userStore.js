@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useCookie } from 'vue-cookie-next'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -7,14 +7,26 @@ import { showSuccessToast, showErrorToast } from '../utils/toast'
 
 
 export const useUserStore = defineStore('user', () => {
+    const router = useRouter();
+    const cookies = useCookie();
+    
+    const successMessage = ref(localStorage.getItem('loginSuccessMessage') || null);
+    
+    const setSuccessMessage = (message) => {
+        successMessage.value = message;
+        localStorage.setItem('loginSuccessMessage', message)
+    };
+    
+    const clearSuccessMessage = () => {
+        successMessage.value = null;
+        localStorage.removeItem('loginSuccessMessage')
+    };
+    
     const user = ref({
         email: '',
         token: null,
     });
     
-    const router = useRouter();
-    const cookies = useCookie();
-
     const setUser = (userData) => {
         user.value.email = userData.email;
         user.value.token = userData.token;
@@ -45,9 +57,6 @@ export const useUserStore = defineStore('user', () => {
                 });
 
                 location.reload();
-                nextTick(() => {
-                    showSuccessToast(response.data.success);
-                })
                 
                 return { success: true, token: response.data.token, message: response.data.success };
             }
@@ -213,5 +222,7 @@ export const useUserStore = defineStore('user', () => {
         deleteUser,
         updateUserPassword,
         updateUserPfp,
+        setSuccessMessage,
+        clearSuccessMessage,
     }
 })
