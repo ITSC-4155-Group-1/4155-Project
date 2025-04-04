@@ -494,7 +494,7 @@
         >
             <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
             <Carousel v-bind="carouselConfig">
-                <Slide v-for="image in venue.image" :key="image">
+                <Slide v-for="image in venue.images" :key="image">
                     <img
                         :src="image"
                         alt="Venue Images"
@@ -882,7 +882,7 @@
 
     .show-more-images-container {
         background: rgba(0, 0, 0, 0.8);
-        z-index: 100;
+        z-index: 1050;
         left: 0;
     }
 
