@@ -68,10 +68,11 @@ exports.deleteVenue = (req, res, next) =>{
 }
 
 exports.updateVenue = (req, res, next) => {
-    let venue = new venueModel(req.body)
+    let venue = req.body
+    venue.images = req.files.map(file => `/images/${file.filename}`)
     let venueId = req.params.id
-    venue.venueId = venueId
-    venueModel.findByIdAndUpdate(venueId, venue, {runValidators: true})
+    console.log(venue);
+    venueModel.findByIdAndUpdate(venueId, venue, {runValidators: true, new: true})
     .then((venue) =>{
         if(venue){
             res.status(200).json({success: "Venue updated successfully"})
