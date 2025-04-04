@@ -14,6 +14,7 @@
     const login = async () => {
         const response = await userStore.login(user.value);
         if (response.success) {
+            userStore.setSuccessMessage(response.message);
             emit('setLoggedIn', response.token);
             emit('closeModal');
         }
