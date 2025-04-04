@@ -28,8 +28,7 @@ const routes = [
         path: '/settings',
         name: 'settings',
         component: SettingsPage,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/venues/:id',
@@ -51,29 +50,25 @@ const routes = [
         path: '/venues/new',
         name: 'venue-new',
         component: CreateVenue,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/cart',
         name: 'cart',
         component: ShoppingCart,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/notifications',
         name: 'notifications',
         component: NotifPage,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/messages',
         name: 'messages',
         component: Messages,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     },
     {
         path: '/edit-venue/:id',
@@ -96,8 +91,7 @@ const routes = [
         path: '/review',
         name: 'review-venue',
         component: LeaveRating,
-        meta: {
-            requiresAuth: true }
+        meta: { requiresAuth: true }
     }, // TODO: path will be '/review:/id later, and will need to add the error handling for this as well, will pretty much be copy and paste
     {
         path: '/:pathMatch(.*)*',
@@ -116,7 +110,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !user) {
-        showErrorToast("You must be logged in to access the features of this app.")
+        showErrorToast("You must be logged in to access the features of this app.");
+        return;
     } else {
         next();
     }
