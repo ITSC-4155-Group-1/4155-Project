@@ -12,14 +12,34 @@ const socketIo = require('socket.io')
 // const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
 const messageController = require('./controllers/messageController')
+const messageListener = require('./controllers/messageListener')
+const path = require('path')
 
 const port = 3000
 const app = express()
 const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
+
+
+// Database connect checking environment variable so tests can run
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(url)
+    .then(() => {
+      app.listen(port, () => {
+        console.log("Server is running!");
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+}
+
 const server = http.createServer(app)
 const io = socketIo(server);
-messageController(io)
+messageListener(io)
 
+
+// exporting for testing
+module.exports = app;
 // Session creation and routing
 app.use(cors({
   origin: "http://localhost:5173",
@@ -28,6 +48,8 @@ app.use(cors({
 app.use(morgan('tiny'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
+app.use(express.static(path.join(__dirname, "../frontend/dist")))
+
 
 app.use(
   session({
@@ -55,6 +77,10 @@ app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
 app.use('/favorites', favoritesRoutes);
 //app.use('/messages', messageRoutes);
+
+app.get('/', (req, res) =>{
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
+})
 
 // Basic error handling
 app.use((req, res, next) => {
