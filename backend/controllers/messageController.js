@@ -14,32 +14,40 @@ exports.getUsersToMessage = (req, res, next) =>{
 }
 
 exports.createRoom = (io) =>{
+  let roomId = ''
+  let currUser = ''
+  let reciever = ''
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-    // data = socket.handshake.query
-    const room = "test"
     //data is an object containing:
     //receiver: Str
+    //currUser: Str
     socket.on("joinRoom", (data) => {
-      let currUser = req.session.user
-      let roomId = [currUser, reciever].sort()
+      currUser = data.currUser
+      receiver = data.receiver
+      roomId = [currUser, reciever].sort()
       roomId = roomId[0].concat(roomId[1])
       socket.join(roomId)
       Promise.all([userModel.findById(currUser), userModel.findById(reciever), messageModel.find({senderId: currUser, receiverId: reciever})])
       .then((usersAndMessages) =>{
-        [sender, reciever, messages] = usersAndMessages
+        io.to(roomId).emit("Load data", usersAndMessages)
       })
+      .catch(err => next(err))
     })
+    // Function to send message
+    socket.on('message', (msg)=>{
+      let message = new message({senderId: msg.sender, recieverId: msg.receiver, message: message})
+      message.save()
+      .then((message) =>{
+        io.to(roomId).emit('messageBack', msg)
+      })
+      .catch(err => next(err))
+    })
+    socket.on('disconnect', () => {
+      console.log('a user disconnected');
+    });
     
   })
-  // Function to send message
-  socket.on('message', (msg)=>{
-    io.to(room).emit('messageBack', `Message recieved!`)
-    io.to(room).emit('messageBack', `Hello, ${socket.id}, here is your message: ${msg}`)
-  })
-  socket.on('disconnect', () => {
-    console.log('a user disconnected');
-  });
   
   // Function to disconnect
   

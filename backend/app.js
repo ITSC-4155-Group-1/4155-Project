@@ -97,3 +97,13 @@ app.use((err, req, res, next) => {
   res.status = err.status
   res.json({"error": {"status": res.status, "message": err.message}})
 })
+
+mongoose.connect(url)
+.then(() =>{
+  server.listen(port, () => {
+    console.log("Server is running!")
+  })
+})
+.catch((err) => {
+    console.log(err.message)
+})
