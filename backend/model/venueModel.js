@@ -8,6 +8,7 @@ const venueSchema = new Schema({
     state: {type: String, required: [true, 'Venue location is required']},
     city: {type: String, required: [true, 'Venue location is required']},
     address: {type: String, required: [true, 'Venue location is required']},
+    zipCode: {type: Number, required: [true, 'Venue location is required']},
     price: {type: Number, required: [true, 'Venue price is required'], minValue: [0.01, 'Price must be at least $0.01']},
     availability_start_date: {type: Date, required: [true, 'Venue availability start date is required']},
     availability_end_date: {type: Date, required: [true, 'Venue availability end date is required']},

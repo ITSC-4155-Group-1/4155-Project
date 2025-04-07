@@ -1,17 +1,19 @@
 <script setup>
-    import { ref, nextTick, onUnmounted, onMounted, watch } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { showErrorToast } from '../utils/toast.js';
     import { useVenueStore } from '../store/venueStore.js';
+    import he from 'he';
 
     const venueStore = useVenueStore();
     const venue = ref({});
     const router = useRouter();
     const route = useRoute();
     const addressError = ref(false);
+    let id;
 
     onMounted(async () => {
-        const id = route.params.id;
+        id = route.params.id;
         const venueData = await venueStore.getVenueById(id);
         if (venueData) {
             venue.value = venueData;
@@ -73,10 +75,6 @@
         "WY": "Wyoming"
     }
 
-    // const usAbbreviatedToState = (state) => {
-    //     return usAbbreviations[state] ? usAbbreviations[state] : state;
-    // }
-
     const usStateToAbbreviation = (state) => {
         for (let key in usAbbreviations) {
             if (usAbbreviations[key] === state) {
@@ -100,20 +98,21 @@
     });
 
     watch(() => venue.value, (newVenue) => {
-        if (newVenue.availability && newVenue.availability.length > 0) {
+        console.log(newVenue[0].availability);
+        if (newVenue[0].availability && newVenue[0].availability.length > 0) {
             form.value.availability = [
-                new Date(newVenue.availability[0]),
-                new Date(newVenue.availability[1])
+                new Date(newVenue[0].availability[0]),
+                new Date(newVenue[0].availability[1])
             ];
         }
-        form.value.state = newVenue.state;
-        form.value.city = newVenue.city;
-        form.value.address = newVenue.address;
-        // form.value.zipCode = newVenue.zipCode;
-        form.value.venueName = newVenue.venueName;
-        form.value.description = newVenue.description;
-        form.value.price = newVenue.price;
-        form.value.capacity = newVenue.capacity;
+        form.value.state = he.decode(newVenue[0].state);
+        form.value.city = he.decode(newVenue[0].city);
+        form.value.address = he.decode(newVenue[0].address);
+        // form.value.zipCode = newVenue[0].zipCode; // TODO: once the db is cleaned and every venue has a zip code, then we can uncomment this and fix line 90 as well
+        form.value.venueName = he.decode(newVenue[0].venueName);
+        form.value.description = he.decode(newVenue[0].description);
+        form.value.price = newVenue[0].price;
+        form.value.capacity = newVenue[0].capacity;
     });
 
     const handleFileUpload = (e) => {
@@ -201,26 +200,24 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
     const updateVenue = async () => {
         if (!validateForm()) {
+            showErrorToast('Missing required information.')
             return;
         }
 
-        // TODO: make api call to update the venue
-        // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
-        try {
+        const success = await venueStore.editVenue(form.value, id);
+        if(success) {
+            venueStore.setSuccessMessage('Venue updated successfully!');
             await router.push('/settings');
-
-            nextTick(() => {
-                showSuccessToast('Venue updated successfully!');
-            });
-        } catch (e) {
-            showErrorToast('Failed to update venue');
+            location.reload();
+        } else {
+            showErrorToast('Failed to update venue. Please try again.')
+            return;
         }
-
     }
 </script>
 

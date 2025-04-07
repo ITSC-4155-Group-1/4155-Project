@@ -2,9 +2,10 @@
     import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
     import { parseUser } from "../utils/userUtils"
-    import { useUserStore } from '../store/userDetails';
+    import { useUserStore } from '../store/userStore';
     import { showErrorToast } from '../utils/toast';
     import { useVenueStore } from '../store/venueStore';
+    import { showSuccessToast } from '../utils/toast';
 
     const venueList = ref([]);
     const noVenuesFound = ref('');
@@ -37,6 +38,16 @@
 
     onMounted(async () => {
         await getAllVenues();
+    })
+
+    onMounted(() => {
+        const successMessage = localStorage.getItem('successMessage');
+        if (successMessage) {
+            showSuccessToast(successMessage);
+            setTimeout(() => {
+                venueStore.clearSuccessMessage();
+            }, 5000);
+        }
     })
 
     const openModal = () => {
@@ -221,7 +232,7 @@
                                     v-for="(venue, index) in venueList.filter(venue => 
                                     venue.host === user?.id)" 
                                     :key="index + '_' + venue.venueName" 
-                                    class="col-12 col-sm-4 col-md-4 col-lg-12 mb-4"
+                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
                                 >
                                     <VenueCard :venue="venue" />
                                 </div>
@@ -488,10 +499,10 @@
         margin-top: 20px;
     }
 
-    .venue-list {
+    /* .venue-list {
         display: flex;
         gap: 10px;
-    }
+    } */
 
     .venue {
         width: 100%;

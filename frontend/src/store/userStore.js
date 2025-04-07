@@ -7,14 +7,26 @@ import { showSuccessToast, showErrorToast } from '../utils/toast'
 
 
 export const useUserStore = defineStore('user', () => {
+    const router = useRouter();
+    const cookies = useCookie();
+    
+    const successMessage = ref(localStorage.getItem('loginSuccessMessage') || null);
+    
+    const setSuccessMessage = (message) => {
+        successMessage.value = message;
+        localStorage.setItem('loginSuccessMessage', message)
+    };
+    
+    const clearSuccessMessage = () => {
+        successMessage.value = null;
+        localStorage.removeItem('loginSuccessMessage')
+    };
+    
     const user = ref({
         email: '',
         token: null,
     });
     
-    const router = useRouter();
-    const cookies = useCookie();
-
     const setUser = (userData) => {
         user.value.email = userData.email;
         user.value.token = userData.token;
@@ -44,8 +56,8 @@ export const useUserStore = defineStore('user', () => {
                     token: response.data.token,
                 });
 
-                showSuccessToast(response.data.success);
-
+                location.reload();
+                
                 return { success: true, token: response.data.token, message: response.data.success };
             }
         } catch (error) {
@@ -210,5 +222,7 @@ export const useUserStore = defineStore('user', () => {
         deleteUser,
         updateUserPassword,
         updateUserPfp,
+        setSuccessMessage,
+        clearSuccessMessage,
     }
 })

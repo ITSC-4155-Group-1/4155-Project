@@ -2,10 +2,11 @@
     import NavBar from "./components/NavBar.vue";
     import FooterComponent from "./components/FooterComponent.vue";
     import { ref, onMounted } from 'vue';
-    import { useRouter } from 'vue-router';
     import { showSuccessToast, showErrorToast } from './utils/toast';
+    import { useUserStore } from './store/userStore';
 
     const navHeight = ref(86);
+    const userStore = useUserStore();
 
     onMounted(() => {
         const navbar = document.querySelector('.navbar');
@@ -13,7 +14,7 @@
             navHeight.value = navbar.offsetHeight;
         }
 
-      const storedToast = localStorage.getItem('showToast');
+        const storedToast = localStorage.getItem('showToast');
         if (storedToast) {
             const { message, type } = JSON.parse(storedToast);
             if (type === 'success') {
@@ -22,6 +23,14 @@
                 showErrorToast(message);
             }
             localStorage.removeItem('showToast');
+        }
+
+        const successMessage = localStorage.getItem('loginSuccessMessage');
+        if (successMessage) {
+            showSuccessToast(successMessage);
+            setTimeout(() => {
+              userStore.clearSuccessMessage();
+            }, 5000)
         }
     });
 </script>
