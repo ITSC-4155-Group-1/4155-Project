@@ -155,6 +155,64 @@ export const useVenueStore = defineStore('venue', () => {
         }
     }
 
+    const favoriteAVenue = async (venueId) => {
+        try {
+            const response = await axios.post(`http://localhost:3000/favorites/`, { venueId }, {
+                withCredentials: true,
+            });
+            console.log(response.data)
+
+            if (response.status === 401) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 403) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 500) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.data.success) {
+                return {status: true, message: response.data.message};
+            }
+        } catch (e) {
+            showErrorToast('Error favoriting venue. Please try again later.');
+            console.error('Error favoriting venue:', e);
+        }
+    }
+
+    const unfavoriteAVenue = async (id) => {
+        try {
+            const response = await axios.delete(`http://localhost:3000/favorites/`, {
+                withCredentials: true,
+                venueId: id
+            });
+
+            console.log(response.data)
+
+            if (response.status === 401) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 400) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 403) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.data.success) {
+                return {status: true, message: response.data.message};
+            }
+        } catch (e) {
+            showErrorToast('Error unfavoriting venue. Please try again later.');
+            console.error('Error unfavoriting venue:', e);
+        }
+    }
+
     return {
         successMessage,
         setSuccessMessage,
@@ -165,6 +223,8 @@ export const useVenueStore = defineStore('venue', () => {
         getBookingsForVenueById,
         createVenue,
         deleteVenue,
-        editVenue
+        editVenue,
+        favoriteAVenue,
+        unfavoriteAVenue
     }
 });
