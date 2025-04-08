@@ -15,6 +15,27 @@ exports.getFavorites = async (req, res) => {
     }
 };
 
+// gets a specific favorite by id tied to the user
+exports.getFavoriteById = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(200).json({ isFavorited: false })
+        }
+
+        const venueId = req.params.id;
+
+        const favorite = await Favorites.findOne({ user: userId, venue: venueId });
+        if (!favorite) {
+            return res.status(200).json({ isFavorited: false });
+        }
+
+        res.status(200).json({ isFavorited: true });
+    } catch(error) {
+        res.status(500).json({ error: 'Failed to retrieve favorite' });
+    }
+}
+
 //Add to favorites
 exports.addToFavorites = async (req, res) => {
     try {
