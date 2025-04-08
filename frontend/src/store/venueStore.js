@@ -208,6 +208,26 @@ export const useVenueStore = defineStore('venue', () => {
         }
     }
 
+    const isVenueFavorited = async (venueId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/favorites/${venueId}`, {
+                withCredentials: true,
+            });
+
+            // venue is not favorited
+            if (response.status === 200 && !response.data.isFavorited) {
+                return false;
+            }
+
+            // venue is favorited
+            if (response.status === 200 && response.data.isFavorited) {
+                return true;
+            }
+        } catch (error) {
+            showErrorToast('Error checking favorite status. Please try again later.');
+        }
+    }
+
     return {
         successMessage,
         setSuccessMessage,
@@ -220,6 +240,7 @@ export const useVenueStore = defineStore('venue', () => {
         deleteVenue,
         editVenue,
         favoriteAVenue,
-        unfavoriteAVenue
+        unfavoriteAVenue,
+        isVenueFavorited
     }
 });

@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, computed, toRefs, nextTick } from 'vue';
+    import { ref, computed, toRefs, nextTick, onMounted } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import { useRouter, useRoute } from 'vue-router'
     import 'vue3-carousel/carousel.css'
@@ -25,6 +25,15 @@
     
     const isHost = computed(() => venue.value.host === user?.id);
     const isSettingsPage = computed(() => route.path === '/settings');
+
+    onMounted(async () => {
+        const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
+        if (isFavorited) {
+            isFilled.value = true;
+        } else {
+            isFilled.value = false;
+        }
+    });
 
     const toggleIsFilled = async () => {
         if (isFilled.value === false) {
@@ -134,7 +143,7 @@
                 </div>
             </div>
         </router-link>
-        <span class="icons position-absolute bottom-0 end-0 m-3" v-if="!isHost">
+        <span class="icons position-absolute bottom-0 end-0 m-3" v-if="!isHost && user">
             <svg
                 @click="toggleIsFilled()"
                 :fill="isFilled ? '#FF4081' : 'none'"
