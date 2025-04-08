@@ -15,13 +15,13 @@
     onMounted(() => {
         socket.value = io("http://localhost:5173");
         const { username, room } = route.query || {};
-            if(!username || !room ){
-                router.push('/');
-            }
+            // if(!username || !room ){
+            //     router.push('/');
+            // }
         socket.value.emit("joinRoom", {
-                currUser: user?._id,   
-                reciever: messagingWho.value
-            });
+            currUser: user?._id,   
+            reciever: messagingWho.value
+        });
         socket.value.on("messageToClient", (data) => {
             const receivedMsg = {
                 from: data.senderName, 
