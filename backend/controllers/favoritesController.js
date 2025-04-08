@@ -22,7 +22,6 @@ exports.addToFavorites = async (req, res) => {
         const userId = req.session.user;
 
         const newFavorite = new Favorites({ user: userId, venue: venueId });
-        console.log(newFavorite);
         if (newFavorite.user === userId) {
             return res.status(403).json({ error: 'Unable to favorite your own venue.' });
         }
