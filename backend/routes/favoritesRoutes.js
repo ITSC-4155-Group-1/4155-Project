@@ -6,6 +6,7 @@ const exp_router = express.Router();
 
 // Ensure the user is logged in to view or manage shoppingCart
 exp_router.get('/', validator.alreadyLoggedIn, favoritesController.getFavorites);
+exp_router.get('/:id', favoritesController.getFavoriteById);
 exp_router.post('/', validator.alreadyLoggedIn, favoritesController.addToFavorites);
 exp_router.delete('/', validator.alreadyLoggedIn, favoritesController.removeFromFavorites);
 

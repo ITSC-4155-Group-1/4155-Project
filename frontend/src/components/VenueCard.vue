@@ -1,9 +1,9 @@
 <script setup>
-    import { ref, computed, toRefs, nextTick } from 'vue';
+    import { ref, computed, toRefs, nextTick, onMounted } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import { useRouter, useRoute } from 'vue-router'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast, showWarningToast } from '../utils/toast';
+    import { showErrorToast, showSuccessToast, showWarningToast } from '../utils/toast';
     import { parseUser } from '../utils/userUtils'
     import { useVenueStore } from '../store/venueStore';
 
@@ -13,7 +13,7 @@
 
     const { venue } = toRefs(props)
     const isFilled = ref(false);
-    const images = computed(() => venue.value.images ?? []); // broken at the moment because the images are not present in the images folder since i had to create mock images and directly inserted them in the database
+    const images = computed(() => venue.value.images ?? []);
     const venueLocation = computed(
         () => venue.value.state && venue.value.city ? `${venue.value.city}, ${venue.value.state}` : venue.value.location
     );
@@ -26,14 +26,34 @@
     const isHost = computed(() => venue.value.host === user?.id);
     const isSettingsPage = computed(() => route.path === '/settings');
 
-    const toggleIsFilled = () => {
-        // TODO: will make a backend call to favorite it
-        // if successful, favorite it and display success toast, else display error toast
-        isFilled.value = !isFilled.value;
-        if (isFilled.value) {
-            showSuccessToast('Successfully favorited this venue.');
+    onMounted(async () => {
+        const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
+        if (isFavorited) {
+            isFilled.value = true;
         } else {
-            showSuccessToast('Successfully unfavorited this venue.');
+            isFilled.value = false;
+        }
+    });
+
+    const toggleIsFilled = async () => {
+        if (isFilled.value === false) {
+            const response = await venueStore.favoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = false;
+                showErrorToast(response.message)
+            }
+        } else {
+            const response = await venueStore.unfavoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = true;
+                showErrorToast(response.message)
+            }
         }
     };
 
@@ -123,7 +143,7 @@
                 </div>
             </div>
         </router-link>
-        <span class="icons position-absolute bottom-0 end-0 m-3" v-if="!isHost">
+        <span class="icons position-absolute bottom-0 end-0 m-3" v-if="!isHost && user">
             <svg
                 @click="toggleIsFilled()"
                 :fill="isFilled ? '#FF4081' : 'none'"

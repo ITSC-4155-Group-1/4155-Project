@@ -155,6 +155,79 @@ export const useVenueStore = defineStore('venue', () => {
         }
     }
 
+    const favoriteAVenue = async (venueId) => {
+        try {
+            const response = await axios.post(`http://localhost:3000/favorites/`, { venueId }, {
+                withCredentials: true,
+            });
+
+            if (response.status === 401) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 403) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 500) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 201) {
+                return {status: true, message: response.data.message};
+            }
+        } catch (e) {
+            showErrorToast('Error favoriting venue. Please try again later.');
+        }
+    }
+
+    const unfavoriteAVenue = async (venueId) => {
+        try {
+            const response = await axios.delete(`http://localhost:3000/favorites/`, {
+                withCredentials: true,
+                data: { venueId },
+            });
+
+            if (response.status === 401) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 400) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 403) {
+                return { status: false, message: response.data.error };
+            }
+
+            if (response.status === 200) {
+                return {status: true, message: response.data.message};
+            }
+        } catch (e) {
+            showErrorToast('Error unfavoriting venue. Please try again later.');
+        }
+    }
+
+    const isVenueFavorited = async (venueId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/favorites/${venueId}`, {
+                withCredentials: true,
+            });
+
+            // venue is not favorited
+            if (response.status === 200 && !response.data.isFavorited) {
+                return false;
+            }
+
+            // venue is favorited
+            if (response.status === 200 && response.data.isFavorited) {
+                return true;
+            }
+        } catch (error) {
+            showErrorToast('Error checking favorite status. Please try again later.');
+        }
+    }
+
     return {
         successMessage,
         setSuccessMessage,
@@ -165,6 +238,9 @@ export const useVenueStore = defineStore('venue', () => {
         getBookingsForVenueById,
         createVenue,
         deleteVenue,
-        editVenue
+        editVenue,
+        favoriteAVenue,
+        unfavoriteAVenue,
+        isVenueFavorited
     }
 });

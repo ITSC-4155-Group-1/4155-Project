@@ -63,6 +63,15 @@
             });
             disabledDates.value = [...blockedDates];
         }
+
+        // checking if the venue is favorited already
+        const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
+        if (isFavorited) {
+            isFilled.value = true;
+        } else {
+            isFilled.value = false;
+        }
+        console.log(isFavorited)
     })
 
     onMounted(() => {
@@ -77,16 +86,25 @@
         }
     });
 
-    // // TODO: will make a call to the backend to save the venue for the user
-    const saveVenue = () => {
-        isFilled.value = !isFilled.value;
-        if (isFilled.value) {
-            showSuccessToast(
-                'Successfully favorited this venue.',
-                'successId',
-            );
+    const saveVenue = async () => {
+        if (isFilled.value === false) {
+            const response = await venueStore.favoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = false;
+                showErrorToast(response.message)
+            }
         } else {
-            showSuccessToast('Successfully unfavorited this venue.');
+            const response = await venueStore.unfavoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = true;
+                showErrorToast(response.message)
+            }
         }
     };
 

@@ -15,26 +15,42 @@ exports.getFavorites = async (req, res) => {
     }
 };
 
+// gets a specific favorite by id tied to the user
+exports.getFavoriteById = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(200).json({ isFavorited: false })
+        }
+
+        const venueId = req.params.id;
+
+        const favorite = await Favorites.findOne({ user: userId, venue: venueId });
+        if (!favorite) {
+            return res.status(200).json({ isFavorited: false });
+        }
+
+        res.status(200).json({ isFavorited: true });
+    } catch(error) {
+        res.status(500).json({ error: 'Failed to retrieve favorite' });
+    }
+}
+
 //Add to favorites
 exports.addToFavorites = async (req, res) => {
     try {
         const { venueId } = req.body;
         const userId = req.session.user;
-        if (!userId) {
-            return res.status(401).json({ error: 'User not authenticated' });
+
+        const newFavorite = new Favorites({ user: userId, venue: venueId });
+        if (newFavorite.user === userId) {
+            return res.status(403).json({ error: 'Unable to favorite your own venue.' });
         }
+        await newFavorite.save();
 
-        const existingItem = await Favorites.findOne({ user: userId, venue: venueId });
-        if (existingItem) {
-            return res.status(400).json({ error: 'Venue already in cart' });
-        }
-
-        const newCartItem = new Favorites({ user: userId, venue: venueId });
-        await newCartItem.save();
-
-        res.status(201).json({ message: 'Venue added to shopping cart' });
+        res.status(201).json({ message: 'Venue added to your favorites.' });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to add item to cart' });
+        res.status(500).json({ error: 'Failed to add the venue to your favorites' });
     }
 };
 
@@ -43,18 +59,19 @@ exports.removeFromFavorites = async (req, res) => {
     try {
         const { venueId } = req.body;
         const userId = req.session.user;
-        if (!userId) {
-            return res.status(401).json({ error: 'User not authenticated' });
-        }
 
         const deletedItem = await Favorites.findOneAndDelete({ user: userId, venue: venueId });
 
         if (!deletedItem) {
-            return res.status(404).json({ error: 'Venue not found in cart' });
+            return res.status(400).json({ error: 'Venue must be favorited first.' });
         }
 
-        res.status(200).json({ message: 'Venue removed from shopping cart' });
+        if (deletedItem.user === userId) {
+            return res.status(403).json({ error: 'Unable to unfavorite your own venue.' });
+        }
+
+        res.status(200).json({ message: 'Venue removed from your favorites.' });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to remove item from cart' });
+        res.status(500).json({ error: 'Failed to remove venue from your favorites' });
     }
 };
