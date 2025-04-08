@@ -84,7 +84,6 @@
 
     const passwordsMatch = computed(() => newPassword.value === rePassword.value || rePassword.value === "");
 
-    // TODO: figure out why the toast is showing up twice
     const validatePasswords = () => {
         if (!passwordsMatch.value) {
             passwordError.value = "Passwords do not match.";
@@ -109,6 +108,7 @@
         if (!validatePasswords()) return;
 
         const response = await userStore.updateUserPassword(newPassword.value);
+        console.log(response)
         if (response.success) {
             updatePasswordDiv.value = false;
         }
@@ -217,7 +217,7 @@
                                     <p v-if="passwordError" class="text-danger mt-1">{{ passwordError }}</p>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="rounded custom-btn confirm" @click="updatePassword">Confirm</button>
+                                    <button type="submit" class="rounded custom-btn confirm">Confirm</button>
                                     <button type="submit" class="rounded custom-btn cancel" @click="toggleUpdatePasswordDiv">Cancel</button>
                                 </div>
                             </form>
