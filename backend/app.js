@@ -21,17 +21,17 @@ const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb
 
 
 // Database connect checking environment variable so tests can run
-if (process.env.NODE_ENV !== 'test') {
-  mongoose.connect(url)
-    .then(() => {
-      app.listen(port, () => {
-        console.log("Server is running!");
-      });
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-}
+  // if (process.env.NODE_ENV !== 'test') {
+  //   mongoose.connect(url)
+  //     .then(() => {
+  //       app.listen(port, () => {
+  //         console.log("Server is running!");
+  //       });
+  //     })
+  //     .catch((err) => {
+  //       console.log(err.message);
+  //     });
+  // }
 
 const server = http.createServer(app)
 const io = socketIo(server);
