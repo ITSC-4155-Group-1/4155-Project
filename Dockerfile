@@ -1,38 +1,37 @@
 # syntax=docker/dockerfile:1
 
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
-
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
-
+# Set the Node.js version as a build argument
 ARG NODE_VERSION=20.17.0
 
+# Use the official Node.js Alpine image
 FROM node:${NODE_VERSION}-alpine
 
-# Use production node environment by default.
-ENV NODE_ENV production
-
-
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.npm to speed up subsequent builds.
-# Leverage a bind mounts to package.json and package-lock.json to avoid having to copy them into
-# into this layer.
+# Set the default environment to production
+ENV NODE_ENV=production
+
+# Create directories for backend and frontend
 RUN mkdir -p /usr/src/app/backend /usr/src/app/frontend
+
+# Copy package.json files for both backend and frontend to install dependencies
 COPY backend/package*.json ./backend
 COPY frontend/package*.json ./frontend
 
-# Install dependencies for both backend and frontend, with --no-optional flag to avoid optional deps
+# Install backend dependencies
 RUN cd backend && npm install
-RUN cd frontend && npm install
-# Copy the rest of the source files into the image.
+
+# Install frontend dependencies
+RUN cd frontend && npm install --include=dev
+# Copy the rest of the source files into the image
 COPY . .
+
+# Build the frontend using npm (Make sure Vite is available here)
 RUN cd frontend && npm run build
 
-# Expose the port that the application listens on.
+# Expose the port the backend will run on
 EXPOSE 3000
 
-# Run the application.
+# Set the default command to run the backend
 CMD ["node", "backend/app.js"]
