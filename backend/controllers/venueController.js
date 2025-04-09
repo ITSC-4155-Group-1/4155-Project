@@ -23,7 +23,11 @@ exports.viewMyVenues = (req, res, next) => {
     venueModel.find({buyerId: id})
     .then((venues) =>{
         if(venues){
+<<<<<<< HEAD
+            return res.status(200).json({ success: true, venues })
+=======
             res.status(200).json({ success: true, venues })
+>>>>>>> 25a4bfcb3fb5b6a0adc7f0a98cae6bde8ced7e32
         }
         else{
             res.status(404).json({ success: false, message: "No venues exist" })
@@ -96,7 +100,15 @@ exports.createVenue = (req, res, next) => {
     venue.images = req.files.map(file => `/images/${file.filename}`)
     venue.save()
     .then((venue) =>{
+<<<<<<< HEAD
+        res.status(200).json({
+            success: "Venue created successfully",
+            venue: venue  // Include the full created venue object (including _id)
+        });
+        
+=======
         res.status(200).json({ success: "Venue created successfully" })
+>>>>>>> 25a4bfcb3fb5b6a0adc7f0a98cae6bde8ced7e32
     })
     .catch((err) => {
         if(err.name == "ValidationError"){

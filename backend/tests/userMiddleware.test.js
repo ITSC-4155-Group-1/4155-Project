@@ -1,33 +1,12 @@
 const request = require("supertest");
-const mongoose = require("mongoose");
-const app = require("../app");
-
-let server;
-const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data";
-
-
-
-// Test Server \._./
-beforeAll(async () => {
-  await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
-  server = app.listen(4000, () => {
-    console.log("Test server running on port 4000");
-  });
-});
-
-
-afterAll(async () => {
-  await mongoose.connection.close();
-  await server.close();
-});
-
 
 // DESCRIBE \._./
+const BASE_URL = "http:localhost:3000";
 describe("User Middleware testing", () => {
   const randomString = Math.random().toString(36).substring(2, 15); 
   const email = `${randomString}@example.com`; 
   test("POST /user/signup should allow valid input", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/signup")
       .send({
         firstName: "Jane",
@@ -44,7 +23,7 @@ describe("User Middleware testing", () => {
 
 
   test("POST /user/signup should require all fields", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/signup")
       .send({
         firstName: "Jane",
@@ -61,7 +40,7 @@ describe("User Middleware testing", () => {
 
 
   test("POST /user/signup should not allow duplicate emails", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/signup")
       .send({
         firstName: "Jane",
@@ -76,7 +55,7 @@ describe("User Middleware testing", () => {
   });
 
   test("POST /user/signup should require a password", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/signup")
       .send({
         firstName: "Jane",
@@ -91,7 +70,7 @@ describe("User Middleware testing", () => {
 
 
   test("POST /user/login should reject invalid email", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/login")
       .send({
         email: "nonexistent@example.com",
@@ -104,7 +83,7 @@ describe("User Middleware testing", () => {
   });
   
   test("POST /user/login should reject incorrect password", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/login")
       .send({
         email: email,
@@ -117,7 +96,7 @@ describe("User Middleware testing", () => {
   });
 
   test("POST /user/login should create a session token", async () => {
-    const response = await request(app)
+    const response = await request(BASE_URL)
       .post("/user/login")
       .send({
         email: email,
@@ -134,7 +113,7 @@ describe("User Middleware testing", () => {
 
   test("POST /user/logout should destroy session", async () => {
     // maintains session
-    const agent = request.agent(app);
+    const agent = request.agent(BASE_URL);
 
     await agent.post("/user/login").send({
       email: email,
@@ -148,7 +127,7 @@ describe("User Middleware testing", () => {
 
 
   test("GET /user/logout should return an error when not logged in", async () => {
-    const response = await request(app).get("/user/logout");
+    const response = await request(BASE_URL).get("/user/logout");
 
 
     console.log("Logout Without Login Response:", response.body);
