@@ -1,7 +1,8 @@
 <script setup>
-    import { ref, nextTick } from 'vue';
-    import { showSuccessToast, showErrorToast } from '../utils/toast';
+    import { ref } from 'vue';
+    import { showErrorToast } from '../utils/toast';
     import { useRouter } from 'vue-router';
+    import { useVenueStore } from '../store/venueStore';
 
     const form = ref({
         state: "",
@@ -17,6 +18,7 @@
     });
 
     const addressError = ref(false);
+    const venueStore = useVenueStore();
     const router = useRouter();
 
     const handleFileUpload = (e) => {
@@ -104,7 +106,7 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
     const createVenue = async () => {
@@ -113,18 +115,16 @@
             return;
         }
 
-        // TODO: make api call to create the venue
-        // if successful, show the successful toast, else show the error toast
-        try {
+        const success = await venueStore.createVenue(form.value);
+        if(success) {
+            venueStore.setSuccessMessage('Venue created successfully!');
             await router.push('/settings');
-
-            nextTick(() => {
-                showSuccessToast('Venue created successfully!');
-            })
-        } catch (error) {
+            location.reload();
+        } else {
             showErrorToast('Failed to create venue. Please try again.');
+            return;
         }
-    };
+    }
 </script>
 
 <template>

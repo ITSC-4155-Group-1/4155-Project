@@ -25,15 +25,15 @@ describe("Venue Middleware Testing", () => {
       const response = await agent.post("/venue")
           .field("venueName", "Test Venue")
           .field("description", "A great test venue")
-          .field("host", "65123abcde4567890f123461")  // Ensure the host field is included
+          .field("host", "65123abcde4567890f123461")
           .field("state", "Test State")
           .field("city", "Test City")
           .field("address", "123 Test St")
-          .field("price", "100")  // If your backend expects a number, it might parse this automatically
+          .field("price", "100") 
           .field("availability[]", "2025-05-01T00:00:00.000Z")
           .field("availability[]", "2025-07-01T00:00:00.000Z")
           .field("capacity", "200")
-          .attach("images", "./tests/fancy-test-venue.jpg");  // Attach the file
+          .attach("images", "./tests/fancy-test-venue.jpg");
   
       console.log("Response:", response.body);
       expect(response.status).toBe(200);

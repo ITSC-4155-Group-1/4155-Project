@@ -1,6 +1,6 @@
 <script setup>
     import { ref } from 'vue';
-    import { useUserStore } from '../store/userDetails';
+    import { useUserStore } from '../store/userStore';
 
     const userStore = useUserStore();
 
@@ -14,6 +14,7 @@
     const login = async () => {
         const response = await userStore.login(user.value);
         if (response.success) {
+            userStore.setSuccessMessage(response.message);
             emit('setLoggedIn', response.token);
             emit('closeModal');
         }

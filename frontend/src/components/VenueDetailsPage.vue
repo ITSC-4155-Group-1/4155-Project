@@ -1,16 +1,18 @@
 <script setup>
-    import { ref, computed, onMounted } from 'vue';
-    import { venues, reviews } from '../../../mockdata.js';
+    import { ref, computed, onMounted, watch, nextTick } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { showSuccessToast, showWarningToast } from '../utils/toast.js';
     import { parseUser } from '../utils/userUtils.js'
+    import { useVenueStore } from '../store/venueStore';
+    import he from 'he';
 
     const router = useRouter();
     const cartStore = useCartStore();
     const user = parseUser();
+    const venueStore = useVenueStore();
 
     const route = useRoute();
     const venue = ref({});
@@ -23,43 +25,56 @@
     const isFilled = ref(false);
     const activeIndex = ref(0); // accordion active index
     const showMoreImages = ref(false);
+    const minDate = ref(null);
+    const maxDate = ref(null);
+    const disabledDates = ref([]);
+    const hostFirstName = ref('');
+    const hostId = ref(null);
+    const deleteVenueModal = ref(false);
 
-    // TODO: will make a call to the backend to save the venue for the user
-    const saveVenue = () => {
-        isFilled.value = !isFilled.value;
-        if (isFilled.value) {
-            showSuccessToast(
-                'Successfully favorited this venue.',
-                'successId',
-            );
-        } else {
-            showSuccessToast('Successfully unfavorited this venue.');
+    onMounted(async () => {
+        const venueId = route.params.id;
+        const [venueData, host] = await venueStore.getVenueById(venueId);
+        
+        if (venueData) {
+            venue.value = venueData;
+            // venueReviews.value = venueData.reviews; venues don't have reviews yet
         }
-    };
 
-    const minDate = computed(() => {
-        const venueStartDate = new Date(venue.value.availability_start_date);
-        const today = new Date();
+        if (host) {
+            hostFirstName.value = host.firstName;
+            hostId.value = host._id;
+        }
 
-        return venueStartDate > today ? venueStartDate : today;
-    });
+        // getting the bookings for the venues as well
+        const bookings = await venueStore.getBookingsForVenueById(venueId);
+        if (bookings && bookings.length > 0) {
+            let blockedDates = []
+            bookings.forEach((booking) => {
+                const startDate = new Date(booking.bookingStartDate);
+                const endDate = new Date(booking.bookingEndDate);
 
-    const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
+                // all the dates between as well
+                const dateArray = [];
+                for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+                    dateArray.push(new Date(d));
+                }
+                blockedDates.push(...dateArray);
+            });
+            disabledDates.value = [...blockedDates];
+        }
 
-    const collapsibleSections = ref([
-        { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
-        { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
-        { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
-        { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
-        { title: "Location", content: "Exact venue location." }
-    ]);
+        // checking if the venue is favorited already
+        const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
+        if (isFavorited) {
+            isFilled.value = true;
+        } else {
+            isFilled.value = false;
+        }
+        console.log(isFavorited)
+    })
 
     onMounted(() => {
-        const venueId = route.params.id;
-        const singularVenue = venues.find(v => v.venue_name === venueId)
-        venue.value = singularVenue;
-        venueReviews.value = reviews.filter(r => r.venue_name === singularVenue.venue_name);
-        
         const cartDetails = JSON.parse(localStorage.getItem('cartDetails'));
         if (cartDetails) {
             if (cartDetails.startDate && cartDetails.endDate) {
@@ -71,48 +86,211 @@
         }
     });
 
-    const venueRating = computed(() => {
-        const totalReviews = venueReviews.value.length;
-        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+    const saveVenue = async () => {
+        if (isFilled.value === false) {
+            const response = await venueStore.favoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = false;
+                showErrorToast(response.message)
+            }
+        } else {
+            const response = await venueStore.unfavoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = true;
+                showErrorToast(response.message)
+            }
+        }
+    };
 
-        return totalReviews > 0 ? totalStars / totalReviews : 0;
+    watch(() => venue.value.availability, (newAvailability) => {
+        if (newAvailability && newAvailability.length > 0) {
+            const offsetStartDate = new Date(venue.value.availability[0])
+            const venueStartDate = new Date(offsetStartDate);
+            venueStartDate.setDate(offsetStartDate.getDate() + 1);
+            
+            const today = new Date();
+
+            if (venueStartDate > today) {
+                minDate.value = venueStartDate;
+            } else {
+                minDate.value = today;
+            }
+        }
+        maxDate.value = new Date(venue.value.availability[1]);
+    });
+
+    watch(() => venue.value.venueName, () => {
+        const newTitle = he.decode(venue.value.venueName);
+        venue.value.venueName = newTitle;
     })
+
+    const usAbbreviations = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District of Columbia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PA": "Pennsylvania",
+        "RI": "Rhode Island",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    const usStateToAbbreviation = (state) => {
+        for (let key in usAbbreviations) {
+            if (usAbbreviations[key] === state) {
+                return key;
+            }
+        }
+        return state;
+    }
+
+    const collapsibleSections = ref([
+        { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
+        { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
+        { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
+        { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
+    ]);
+
+    watch(() => venue.value.address, () => {
+        const newAddress = {
+            title: "Location",
+            content: `${he.decode(venue.value.address)}, ${he.decode(venue.value.city)}, ${usStateToAbbreviation(he.decode(venue.value.state))}`
+        };
+        collapsibleSections.value.push(newAddress);
+    })
+
+    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    // const venueRating = computed(() => {
+    //     const totalReviews = venueReviews.value.length;
+    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+
+    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
+    // })
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
             alert("Please fill out all required fields.");
             return;
-        }
-
+        } 
         // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
         localStorage.setItem('cartDetails', JSON.stringify({
-            host: venue.value.host_id,
-            venueName: venue.value.venue_name,
-            venuePrice: venue.value.price,
+            id: venue.value._id,
+            host: venue.value.host,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
             startDate: dateRange.value[0],
             endDate: dateRange.value[1],
             attendees: attendees.value,
             cleaningFee: cleaningFee,
             processing: processing,
-            image: venue.value.image.join(','),
-            capacity: venue.value.capacity
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value,
+            minDate: minDate.value,
+            maxDate: maxDate.value,
+            host: hostFirstName.value,
         }));
 
         cartStore.setCartDetails({
-            host: venue.value.host_id,
-            venueName: venue.value.venue_name,
-            venuePrice: venue.value.price,
+            id: venue.value._id,
+            host: venue.value.host,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
             startDate: dateRange.value[0],
             endDate: dateRange.value[1],
             attendees: attendees.value,
             cleaningFee: cleaningFee,
             processing: processing,
-            image: venue.value.image.join(','),
-            capacity: venue.value.capacity
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value, 
+            minDate: minDate.value,
+            maxDate: maxDate.value,
+            host: hostFirstName.value,
         });
 
         router.push('/cart')
     };
+
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value._id}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
+
+    const deleteVenue = async () => {
+        const id = route.params.id;
+        const success = await venueStore.deleteVenue(id);
+        if (success) {
+            deleteVenueModal.value = false;
+            await router.push('/');
+            nextTick(() => {
+                showSuccessToast('Venue deleted successfully.');
+            })
+        } else {
+            return;
+        }
+    }
+
+    const toggleDeleteVenueModal = () => {
+        deleteVenueModal.value = !deleteVenueModal.value;
+    }
 
     const calculateDays = computed(() => {
         if (dateRange.value && dateRange.value.length === 2) {
@@ -142,7 +320,7 @@
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
-            { label: '101-200', value: '101-200' },
+            { label: '101-199', value: '101-199' },
             { label: '200+', value: '200+' }
         ];
 
@@ -186,10 +364,10 @@
         <div class="w-100 d-flex justify-content-between align-items-center">
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
-                    {{ venue.venue_name }} 
-                    <span class="fs-5">(Hosted by {{ venue.host_id }})</span>
+                    {{ venue.venueName }} 
+                    <span class="fs-5">(Hosted by {{ user?.id === hostId ? 'You' : hostFirstName }})</span>
                 </span>
-                <span class="venue-location">{{ venue.location }}</span>
+                <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
             <div class="share-save-container d-flex gap-3">
                 <span
@@ -217,7 +395,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="saveVenue"
-                    v-if="venue.host_id !== user?.firstName"
+                    v-if="hostId !== user?.id && user"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -233,21 +411,70 @@
                     </svg>
                     Save
                 </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="goToEditVenue"
+                    v-if="hostId === user?.id && user"
+                >
+                    ✏️ Edit
+                </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="toggleDeleteVenueModal"
+                    v-if="hostId === user?.id && user"
+                >
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 7H19" stroke="red" stroke-width="2"/>
+                        <path d="M8 7V5C8 4.44772 8.44772 4 9 4H15C15.5523 4 16 4.44772 16 5V7" stroke="red" stroke-width="2"/>
+                        <rect x="6" y="7" width="12" height="14" stroke="red" stroke-width="2" fill="none"/>
+                        <line x1="10" y1="11" x2="10" y2="17" stroke="red" stroke-width="2"/>
+                        <line x1="14" y1="11" x2="14" y2="17" stroke="red" stroke-width="2"/>
+                    </svg>
+                    Delete
+                </span>
+            </div>
+        </div>
+
+        <div v-if="deleteVenueModal" class="overlay">
+            <div class="popup bg-light">
+                <button class="close-btn" @click="toggleDeleteVenueModal">
+                    &times;
+                </button>
+
+                <div>
+                    <h3>Do you wish to continue?</h3>
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn confirm"
+                            @click="deleteVenue"
+                        >
+                            Delete Venue
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn cancel"
+                            @click="toggleDeleteVenueModal"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="d-flex gap-2 image-gallery"
-            v-if="venue.image && venue.image.length"
+            v-if="venue.images"
         >
             <div class="w-50">
                 <img
-                    :src="venue.image[0]" alt="Venue image"
+                    :src="venue.images[0]" alt="Venue image"
                     class="w-100 h-100 object-fit-cover d-flex align-items-center justify-content-center overflow-hidden rounded"
                 >
             </div>
             <div class="w-50 other-images-grid">
-                <template v-if="venue.image.length > 1">
-                    <div class="grid-item position-relative" v-for="(image, index) in venue.image.slice(1, 5)">
+                <template v-if="venue.images.length > 1">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.images.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
@@ -268,16 +495,16 @@
                         </div>
                     </div>
                 </template>
-                <template v-if="venue.image.length < 5">
+                <template v-if="venue.images.length < 5">
                     <div
-                        v-for="index in 5 - venue.image.length"
+                        v-for="index in 5 - venue.images.length"
                         :key="'placeholder-' + index"
                         class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
                     ></div>
                 </template>
             </div>
         </div>
-        <p v-else>No image available</p>
+        <p v-else class="d-flex align-items-center justify-content-center noImageAvailable">No images available</p>
 
         <div
             v-if="showMoreImages"
@@ -285,7 +512,7 @@
         >
             <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
             <Carousel v-bind="carouselConfig">
-                <Slide v-for="image in venue.image" :key="image">
+                <Slide v-for="image in venue.images" :key="image">
                     <img
                         :src="image"
                         alt="Venue Images"
@@ -303,7 +530,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.name !== venue.host_id ? 'smaller-container' : ''"
+                :class="user?.id !== venue.host ? 'smaller-container' : ''"
             >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
@@ -428,7 +655,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.firstName !== venue.host_id"
+                v-if="user?.id !== hostId"
             >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">
@@ -441,6 +668,7 @@
                             :min-date="minDate"
                             :max-date="maxDate"
                             :enable-time-picker="false"
+                            :disabled-dates="disabledDates"
                             required
                         />
                     </div>
@@ -539,6 +767,12 @@
     .image-gallery {
         max-height: 56vh;
         overflow: hidden;
+    }
+
+    .noImageAvailable {
+        font-size: 20px;
+        color: var(--secondary);
+        height: 50vh;
     }
 
     .booking-modal {
@@ -694,5 +928,63 @@
 
     .review-comment {
         font-size: 16px;
+    }
+
+    .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1001;
+    }
+
+    .popup {
+        position: relative;
+        width: 50%;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .custom-btn {
+        width: fit-content;
+        padding: 0.75rem 2rem;
+        color: white;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
+    
+    .confirm:hover {
+        color: white;
+        background-color: var(--highlight-dark-50);
+    }
+
+    .cancel {
+        color: white;
+        background-color: red;
+    }
+
+    .cancel:hover {
+        color: white;
+        background-color: darkred;
     }
 </style>

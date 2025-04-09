@@ -1,13 +1,24 @@
 <script setup>
-    import { ref, nextTick, onUnmounted } from 'vue'
-    import { useRouter } from 'vue-router'
-    import axios from 'axios'
-    import { showSuccessToast } from '../utils/toast.js';
+    import { ref, onMounted, watch } from 'vue'
+    import { useRouter, useRoute } from 'vue-router'
+    import { showErrorToast } from '../utils/toast.js';
+    import { useVenueStore } from '../store/venueStore.js';
+    import he from 'he';
 
-    const venue = JSON.parse(localStorage.getItem('venueDetails')) ? 
-                        ref(JSON.parse(localStorage.getItem('venueDetails'))) : ref({});
+    const venueStore = useVenueStore();
+    const venue = ref({});
     const router = useRouter();
+    const route = useRoute();
     const addressError = ref(false);
+    let id;
+
+    onMounted(async () => {
+        id = route.params.id;
+        const venueData = await venueStore.getVenueById(id);
+        if (venueData) {
+            venue.value = venueData;
+        }
+    })
 
     const usAbbreviations = {
         "AL": "Alabama",
@@ -64,10 +75,6 @@
         "WY": "Wyoming"
     }
 
-    const usAbbreviatedToState = (state) => {
-        return usAbbreviations[state] ? usAbbreviations[state] : state;
-    }
-
     const usStateToAbbreviation = (state) => {
         for (let key in usAbbreviations) {
             if (usAbbreviations[key] === state) {
@@ -78,19 +85,34 @@
     }
 
     const form = ref({
-        state: usAbbreviatedToState(venue.value.location.split(', ')[1]),
-        city: venue.value.location.split(', ')[0],
-        address: "1234 Country Place", // hardcoding cause I don't have an address in the mock data
-        zipCode: 12345,
-        venueName: venue.value.venue_name,
-        description: venue.value.venue_description,
-        price: venue.value.price,
-        availability: [
-            new Date(venue.value.availability_start_date),
-            new Date(venue.value.availability_end_date)
-        ],
-        capacity: venue.value.capacity,
+        state: '',
+        city: '',
+        address: '',
+        zipCode: 12345, // TODO: hardcoding cause I don't have an address in the mock data
+        venueName: '',
+        description: '',
+        price: 0,
+        availability: [],
+        capacity: 0,
         images: null, // idk if this'll be retrievable  
+    });
+
+    watch(() => venue.value, (newVenue) => {
+        console.log(newVenue[0].availability);
+        if (newVenue[0].availability && newVenue[0].availability.length > 0) {
+            form.value.availability = [
+                new Date(newVenue[0].availability[0]),
+                new Date(newVenue[0].availability[1])
+            ];
+        }
+        form.value.state = he.decode(newVenue[0].state);
+        form.value.city = he.decode(newVenue[0].city);
+        form.value.address = he.decode(newVenue[0].address);
+        // form.value.zipCode = newVenue[0].zipCode; // TODO: once the db is cleaned and every venue has a zip code, then we can uncomment this and fix line 90 as well
+        form.value.venueName = he.decode(newVenue[0].venueName);
+        form.value.description = he.decode(newVenue[0].description);
+        form.value.price = newVenue[0].price;
+        form.value.capacity = newVenue[0].capacity;
     });
 
     const handleFileUpload = (e) => {
@@ -178,34 +200,25 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
     const updateVenue = async () => {
         if (!validateForm()) {
+            showErrorToast('Missing required information.')
             return;
         }
 
-        // TODO: make api call to update the venue
-        // if successful, update the venue, redirect to ____ (settings page for now) and display success toast, else show the error toast
-        try {
-            
-            
-            localStorage.removeItem('venueDetails');
+        const success = await venueStore.editVenue(form.value, id);
+        if(success) {
+            venueStore.setSuccessMessage('Venue updated successfully!');
             await router.push('/settings');
-
-            nextTick(() => {
-                showSuccessToast('Venue updated successfully!');
-            });
-        } catch (e) {
-            showErrorToast('Failed to update venue');
+            location.reload();
+        } else {
+            showErrorToast('Failed to update venue. Please try again.')
+            return;
         }
-
     }
-
-    onUnmounted(() => {
-        localStorage.removeItem('venueDetails');
-    })
 </script>
 
 <template>
