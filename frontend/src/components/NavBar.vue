@@ -25,10 +25,8 @@
         isNavCollapsed.value = true;
     };
 
-    const expandedHeight = '100vh';
-
     const navStyle = computed(() => ({
-        height: isNavCollapsed.value ? '0' : expandedHeight,
+        height: isNavCollapsed.value ? '0' : '100vh',
         overflow: 'hidden',
         transition: 'height 0.3s ease-in-out'
     }));
@@ -84,29 +82,15 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        const savedToken = cookies.getCookie('authToken')
+        const savedToken = cookies.getCookie('authToken');
         if (savedToken) {
             toggleLoggedIn(savedToken);
         } else {
             toggleLoggedIn(null);
         }
     });
-
-    const displayErrorBanner = (message) => {
-        errorMessage.value = message;
-        showErrorBanner.value = true;
-        setTimeout(() => {
-            showErrorBanner.value = false;
-        }, 2000);
-    };
-
-    const displaySuccessBanner = (message) => {
-        successMessage.value = message;
-        showSuccessBanner.value = true;
-        setTimeout(() => {
-            showSuccessBanner.value = false;
-        }, 1000);
-    };
+    //     showSuccessToast(message);
+    // };
 
     const toggleLoggedIn = (token) => {
         if (token) {

@@ -18,6 +18,7 @@ exports.venueValidation = [
     body('state', 'State name is required').notEmpty().trim().escape(),
     body('city', 'City name is required').notEmpty().trim().escape(),
     body('address', 'Address is required').notEmpty().trim().escape(),
+    body('zipCode', 'Zip Code name is required').isInt({ min: 1 }),
     body('capacity', 'Capacity must be at least 1').isInt({min: 1}),
     body('price',).isInt({min: 1, max: 100000000}),
     body('availability').isArray().custom((dates) =>{
@@ -32,9 +33,9 @@ exports.venueValidation = [
 ]
 
 exports.bookingValidation = [
-    body('bookingStartDate', 'Start date must be valid').trim().isDate(),
-    body('bookingEndDate', 'End date must be valid').trim().isDate(),
-    body('numAttendees', 'Number of attendees must be at least 1').isInt({min: 1, max: 10000000}),
+    body('bookingStartDate', 'Start date must be valid').trim().isISO8601().toDate(),
+    body('bookingEndDate', 'End date must be valid').trim().isISO8601().toDate(),
+    body('numAttendees', 'Number of attendees must be at least 1').notEmpty().trim().escape(),
 ]
 
 exports.displayValidation = (req, res, next) => {
@@ -44,7 +45,6 @@ exports.displayValidation = (req, res, next) => {
         res.status(400).json({'invalid': validationErrors.array().map(err => err.msg)})
     }
     else{
-        console.log("pass")
         next()
     }
 }

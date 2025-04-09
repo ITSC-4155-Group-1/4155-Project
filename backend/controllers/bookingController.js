@@ -3,15 +3,11 @@ const venueModel = require('../model/venueModel')
 
 // View all bookings as host
 exports.viewVenueBookings = (req, res, next) =>{
-    let id = req.body.id
-
+    let id = req.params.id
     bookingModel.find({venueId: id})
     .then((bookings) =>{
         if(bookings){
-            return bookings
-        }
-        else{
-            next(new Error('Booking does not exist').status(404))
+            res.status(200).json({ success: true, bookings });
         }
     })
     .catch(err => next(err))
@@ -24,9 +20,6 @@ exports.viewMyBookings = (req, res, next) => {
     .then((bookings) =>{
         if(bookings){
             return bookings
-        }
-        else{
-            next(new Error('No bookings exist').status(404))
         }
     })
     .catch(err => next(err))
@@ -49,8 +42,12 @@ exports.viewMyBookings = (req, res, next) => {
 
 exports.createBooking = (req, res, next) => {
     let venueId = req.body.id
+    let userId = req.session.user
+
     let booking = new bookingModel(req.body)
     booking.venueId = venueId
+    booking.buyerId = userId
+
     booking.save()
     .then((booking) =>{
         res.status(200).json({success: "Booking added successfully"})
@@ -69,9 +66,6 @@ exports.deleteBooking = (req, res, next) =>{
         if(booking){
             res.status(200).json({success: "Booking deleted successfully"})
         }
-        else{
-            next(new Error('Booking does not exist').status(404))
-        }
     })
     .catch(err => next(err))
 }
@@ -81,7 +75,7 @@ exports.updateBooking = (req, res, next) =>{
     let booking = new bookingModel(req.body)
     let bookingId = req.body.id
     booking.venueId = venueId
-    booking.findByIdAndUpdate(bookingId, booking, {runValidators: true})
+    bookingModel.findByIdAndUpdate(bookingId, booking, {runValidators: true})
     .then((booking) =>{
         if(booking){
             res.status(200).json({success: "Booking updated successfully"})

@@ -1,8 +1,9 @@
 <script setup>
     import { ref, computed } from 'vue';
-    import axios from "axios";
+    import { useUserStore } from "../store/userStore";
 
     const emit = defineEmits(["closeModal", "switchToLogin"]);
+    const userStore = useUserStore();
 
     const rePassword = ref("");
     const passwordError = ref("");
@@ -28,9 +29,17 @@
     const signup = async () => {
         if (!validatePasswords()) return;
 
+        const response = await userStore.signup(newUser.value);
+        if (response.success) {
+            setTimeout(() => {
+                emit("closeModal");
+                emit("switchToLogin")
+            });
+        }
+
         try {
             const response = await axios.post("http://localhost:3000/user/signup", newUser.value, {
-                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
             });
 
             if (response.data.success) {
@@ -117,6 +126,9 @@
                             pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
                             title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
                         >
+                        <div class="form-text">
+                            Must contain at least 8 characters, including uppercase and lowercase letters, and numbers.
+                        </div>
                     </div>
                     <div class="form-element">
                         <label for="password">Re-type Password</label>
@@ -161,11 +173,12 @@
         margin: auto;
         background: rgb(235, 235, 235);
         border-radius: 10px;
-        padding: 4rem 1rem;
+        padding: 2.5rem 1rem;
         position: relative;
         border: 1px solid black;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
         z-index: 1000;
+        width: 75%;
     }
 
     .popup .close-btn {

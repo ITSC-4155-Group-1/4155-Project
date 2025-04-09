@@ -6,6 +6,8 @@ const MongoStore = require('connect-mongo')
 const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
+const favoritesRoutes = require('./routes/favoritesRoutes');
+//const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
 const path = require('path')
 
@@ -13,21 +15,9 @@ const port = 3000
 const app = express()
 const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
-// Serve static files from the Vue build directory
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-
-// Database connect
-mongoose.connect(url)
-.then(() =>{
-  app.listen(port, () => {
-    console.log("Server is running!")
-  })
-})
-.catch((err) => {
-    console.log(err.message)
-})
-
+// exporting for testing
+module.exports = app;
 // Session creation and routing
 app.use(cors({
     origin: "http://localhost:3000",
@@ -36,7 +26,7 @@ app.use(cors({
 app.use(morgan('tiny'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
-
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.use(
   session({
     secret: "6yA'1%iO%sCn(|1q0<Ex1bf654",
@@ -68,7 +58,18 @@ app.use('/test', (req, res) => {
 app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
+app.use('/favorites', favoritesRoutes);
 
+//app.use('/messages', messageRoutes);
+mongoose.connect(url)
+.then(() =>{
+  app.listen(port, () => {
+    console.log("Server is running!")
+  })
+})
+.catch((err) => {
+    console.log(err.message)
+})
 // Basic error handling
 app.use((req, res, next) => {
     let err = new Error("Unable to locate route")

@@ -1,30 +1,57 @@
 <script setup>
-    import { ref, computed, watch, onUnmounted } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
+    import { useRouter, onBeforeRouteLeave } from 'vue-router';
     import { useCartStore } from '../store/cartStore'
-
+    import { showErrorToast, showSuccessToast } from '../utils/toast';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
+    import { parseUser } from '../utils/userUtils.js';
+    import axios from 'axios';
+    
     const router = useRouter();
     const cartStore = useCartStore();
+    const user = parseUser();
 
     const goBack = () => {
         router.back();
     }
 
-    const host = cartStore.cartDetails.host;
-    const venueName = cartStore.cartDetails.venueName;
-    const venuePrice = cartStore.cartDetails.venuePrice;
-    const reserveDates = ref([cartStore.cartDetails.startDate, cartStore.cartDetails.endDate]);
+    const localStorageCartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+
+    const host = cartStore.cartDetails.host || localStorageCartDetails.host;
+    const venueName = cartStore.cartDetails.venueName || localStorageCartDetails.venueName;
+    const venuePrice = cartStore.cartDetails.price || localStorageCartDetails.price;
+    const reserveDates = ref([
+        cartStore.cartDetails.startDate || localStorageCartDetails.startDate,
+        cartStore.cartDetails.endDate || localStorageCartDetails.endDate
+    ]);
     const newReserveDates = ref(null);
-    const attendees = ref(cartStore.cartDetails.attendees);
+    const attendees = ref(cartStore.cartDetails.attendees || localStorageCartDetails.attendees);
     const newAttendees = ref('');
-    const cleaningFee = cartStore.cartDetails.cleaningFee;
-    const taxes = cartStore.cartDetails.processing;;
-    const images = cartStore.cartDetails.image ? cartStore.cartDetails.image.split(',') : [];
+    const cleaningFee = cartStore.cartDetails.cleaningFee || localStorageCartDetails.cleaningFee;
+    const taxes = cartStore.cartDetails.processing || localStorageCartDetails.processing;
+    let images;
+    if (cartStore.cartDetails.images && cartStore.cartDetails.images.length > 1) {
+        images = cartStore.cartDetails.images.split(',');
+    } else if (!cartStore.cartDetails) {
+        images = localStorageCartDetails.images.split(',');
+    } else if (cartStore.cartDetails.images && cartStore.cartDetails.images.length < 2) {
+        images = cartStore.cartDetails.images;
+    } else {
+        images = localStorageCartDetails.images;
+    }
+    const disabledDateRanges = cartStore.cartDetails.disabledDateRanges || localStorageCartDetails.disabledDateRanges;
+    const minDate = cartStore.cartDetails.minDate || localStorageCartDetails.minDate;
+    const maxDate = cartStore.cartDetails.maxDate || localStorageCartDetails.maxDate;
     const total = ref(0);
     const dateModalToggled = ref(false);
     const newDatesError = ref("");
     const attendeesModalToggled = ref(false);
     const newAttendeesError = ref("");
+
+    onBeforeRouteLeave(() => {
+        localStorage.removeItem('cartDetails');
+    });
 
     
     const abbreviatedDates = computed(() => {
@@ -74,7 +101,7 @@
     });
 
     const validAttendeeOptions = computed(() => {
-        const capacity = cartStore.cartDetails.capacity;
+        const capacity = cartStore.cartDetails.capacity || localStorageCartDetails.capacity;
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
@@ -123,9 +150,15 @@
             return;
         }
 
+        // updating the local storage cart details
+        localStorageCartDetails.startDate = new Date(newReserveDates.value[0]).toISOString();
+        localStorageCartDetails.endDate = new Date(newReserveDates.value[1]).toISOString();
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
+
         newDatesError.value = "";
         reserveDates.value = [...newReserveDates.value];
         dateModalToggled.value = false;
+        showSuccessToast('Successfully updated the dates.');
     }
 
     const changeAttendees = () => {
@@ -142,9 +175,13 @@
             return;
         }
 
+        localStorageCartDetails.attendees = newAttendees.value;
+        localStorage.setItem('cartDetails', JSON.stringify(localStorageCartDetails));
+
         newAttendeesError.value = "";
         attendees.value = newAttendees.value;
         attendeesModalToggled.value = false;
+        showSuccessToast('Successfully updated the number of attendees.');
     }
 
     watch(dateModalToggled, (isOpen) => {
@@ -176,9 +213,40 @@
         document.body.style.paddingRight = '';
     });
 
-    const book = () => {
-        // send a request to the backend to book the venue
-        console.log("Booking venue...");
+    const book = async () => {
+        const information = {
+            id: cartStore.cartDetails.id || localStorageCartDetails.id,
+            bookingStartDate: new Date(reserveDates.value[0]).toISOString(),
+            bookingEndDate: new Date(reserveDates.value[1]).toISOString(),
+            numAttendees: attendees.value,
+        }
+
+        try {
+            const response = await axios.post('http://localhost:3000/booking', information, {
+                withCredentials: true
+            });
+            if (response.status === 200) {
+                localStorage.removeItem('cartDetails');
+                await router.push('/');
+                nextTick(() => {
+                    showSuccessToast("Your venue booking has been successfully created!");
+                });
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400 && error.response.data.invalid) {
+                showErrorToast(error.response.data.invalid);
+                console.error(error.response.data.invalid)
+            } else {
+                showErrorToast("An unexpected error occurred. Please try again later.");
+                console.error("Error while creating a booking: " + error);
+            }
+        }
+    }
+
+    const carouselConfig = {
+        height: 600,
+        itemsToShow: 1,
+        wrapAround: true,
     }
 </script>
 
@@ -205,7 +273,20 @@
         <div class="d-flex gap-5 justify-content-between mb-3">
             <div class="d-flex flex-column w-75 gap-4">
                 <div class="img-container">
-                    <img :src="images[0]" alt="venue image">
+                    <Carousel v-bind="carouselConfig">
+                        <Slide v-for="image in images" :key="image">
+                            <img
+                                :src="image"
+                                alt="Venue Images"
+                                loading="lazy"
+                                class="object-fit-cover rounded"
+                            >
+                        </Slide>
+                        
+                        <template #addons>
+                            <Navigation class="mx-2" />
+                        </template>
+                    </Carousel>
                 </div>
                 <div class="d-flex flex-column">
                     <figure class="mb-0">
@@ -215,22 +296,6 @@
                             </p>
                         </blockquote>
                         <figcaption class="blockquote-footer d-flex align-items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="gray"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="ms-2 me-1"
-                            > <!-- svg will change to the person's pfp -->
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="8" r="3" />
-                                <path d="M8 18v-2a4 4 0 0 1 8 0v2" />
-                            </svg>
                             {{ host ? host : "Host" }}
                         </figcaption>
                     </figure>
@@ -248,13 +313,19 @@
                         </li>
                         <li>Last but not least, enjoy!</li>
                     </ol>
-                    <hr class="short-border">
+                    <hr class="short-border" v-if="user?.firstName !== host">
                 </div>
-                <div class="d-flex flex-column">
+                <div class="d-flex flex-column" v-if="user?.firstName !== host">
                     <p>
                         By selecting the button below, I agree to the Host's Venue Rules and Ground rules for attendees, and that Gatherly can charge my payment method if I'm responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request
                     </p>
-                    <button type="submit" class="btn custom-btn confirm" @click="book">Book</button>
+                    <button
+                        type="submit"
+                        class="btn custom-btn confirm"
+                        @click="book"
+                    >
+                        Book
+                    </button>
                 </div>
             </div>
             <div class="d-flex flex-column border border-1 border-black rounded-3 p-4 w-25 your-trip">
@@ -325,8 +396,10 @@
                             type="date"
                             range
                             placeholder="mm/dd/yyyy - mm/dd/yyyy"
-                            :min-date="new Date()"
+                            :min-date="minDate"
+                            :max-date="maxDate"
                             :enable-time-picker="false"
+                            :disabled-dates="disabledDateRanges"
                         />
                         <div v-if="newDatesError">
                             <span class="text-danger">
@@ -421,8 +494,15 @@
         cursor: pointer;
     }
 
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        margin: 0 auto;
+    }
+
     .img-container {
         height: 600px;
+        width: 100%;
         overflow: hidden;
         border-radius: 17px;
     }
@@ -430,11 +510,17 @@
     .img-container img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
     }
 
     .blockquote p {
         font-size: 1rem;
+    }
+
+    .figCaptionImg {
+        height: 35px;
+        width: 35px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
     }
 
     .short-border {

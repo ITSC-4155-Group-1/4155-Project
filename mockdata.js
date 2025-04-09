@@ -4,7 +4,7 @@ export const venues = [
     {
         "venue_name": "Beach Resort",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_2", 
+        "host_id": "snat6", 
         "location": "Miami, FL",
         "price": 2500,
         "availability_start_date": new Date("2025, 3, 1"),
@@ -16,19 +16,28 @@ export const venues = [
     {
         "venue_name": "Mountain Lodge",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_3", 
-        "location": "Asheville, NC",
+        "host_id": "snat6", 
+        "location": "Charlotte, NC",
         "price": 1800,
         "availability_start_date": new Date("2025, 4, 5"),
         "availability_end_date": new Date("2025, 11, 20"),
         "capacity": 150,
-        "image": ["/images/mountain-lodge.jpg", "/images/Mountain_Lodge.jpeg", "/images/Mountain_Lodge_1.jpeg"],
+        "image": [
+            "/images/mountain-lodge.jpg",
+            "/images/Mountain_Lodge.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg",
+            "/images/Mountain_Lodge_1.jpeg"
+        ],
         "rating": 4.6
     },
     {
         "venue_name": "City Conference Center",
         "venue_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec aliquam nibh, at lobortis risus. Aliquam accumsan felis in orci consequat imperdiet. Proin ut sapien orci. Praesent aliquam pulvinar purus, in maximus felis iaculis vitae. Nam et fringilla purus. Proin ornare ipsum interdum maximus imperdiet. Donec vel quam at ex.",
-        "host_id": "user_4", 
+        "host_id": "snat6", 
         "location": "New York, NY",
         "price": 4500,
         "availability_start_date": new Date("2025, 2, 15"),
@@ -136,42 +145,101 @@ export const users = [
 //Messages:
 export const messages = [
     {
+        "from": "Santiago",
         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        "timestamp": new Date("October 13, 2024 11:13:00")
+        "timestamp": new Date("October 13, 2024 11:13:00"),
+        "opened": false
     },
     {
+        "from": "Larry",
+        "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "timestamp": new Date("October 13, 2024 11:14:00"),
+        "opened": true
+    },
+    {
+        "from": "Santiago",
         "message": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        "timestamp": new Date("November 5, 2024 14:23:00")
+        "timestamp": new Date("October 13, 2024 14:23:00"),
+        "opened": false
     },
     {
+        "from": "Denny",
         "message": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-        "timestamp": new Date("December 1, 2024 09:05:00")
+        "timestamp": new Date("September 1, 2024 09:05:00"),
+        "opened": true,
     },
     {
+        "from": "\\-.-/",
         "message": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-        "timestamp": new Date("January 15, 2025 16:40:00")
+        "timestamp": new Date("September 1, 2025 16:40:00"),
+        "opened": true,
     },
     {
+        "from": "Lil guy",
         "message": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        "timestamp": new Date("February 3, 2025 10:17:00")
+        "timestamp": new Date("October 15, 2025 10:17:00"),
+        "opened": false,
     }
 ]
 
 //Notifications
 export const notifications = [
     {
-        "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+        "notification": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "read": false,
+        "for": "snat6"
     },
     {
-        "notification": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        "notification": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "read": false,
+        "for": "snat6"
     },
     {
-        "notification": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "notification": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "read": false,
+        "for": "snat5"
     },
     {
-        "notification": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "notification": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "read": false,
+        "for": "Larry"
     },
     {
-        "notification": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        "notification": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "read": false,
+        "for": "Lil Guy"
     }
+]
+
+export const reviews = [
+    {
+        "rating": 5,
+        "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "user_id": "snat6",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 4,
+        "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "user_id": "snat5",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 1,
+        "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "user_id": "snat5",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 3,
+        "comment": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "user_id": "Larry",
+        "venue_name": "Mountain Lodge"
+    },
+    {
+        "rating": 2,
+        "comment": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "user_id": "Lil Guy",
+        "venue_name": "Mountain Lodge"
+    },
 ]

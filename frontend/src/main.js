@@ -11,12 +11,21 @@ const pinia = createPinia()
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 
+import Vue3Toastify from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 
 createApp(App)
+    .use(pinia) // switched the order to initialize the stores before the router
     .use(router)
-    .use(pinia)
     .use(VueCookieNext)
+    .use(Vue3Toastify,
+        {
+            autoClose: 5000,
+            limit: 2, // puts additional toasts in a queue
+        }
+    )
     .component('VueDatePicker', VueDatePicker)
     .mount('#app')

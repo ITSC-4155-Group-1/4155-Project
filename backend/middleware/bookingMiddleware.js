@@ -7,10 +7,13 @@ exports.isBookingAvailable = (req, res, next) =>{
     .then((bookingsAndVenue) => {
         if(bookingsAndVenue[1]){
             let startDate = new Date(req.body.bookingStartDate)
+            startDate.setHours(0, 0, 0, 0)
             let endDate = new Date(req.body.bookingEndDate)
+            endDate.setHours(0, 0, 0, 0)
+
             let currentBookings = bookingsAndVenue[0]
             let venue = bookingsAndVenue[1][0]
-            let withinAvailability = venue.availability[0] < startDate && venue.availability[1] > endDate
+            let withinAvailability = new Date(venue.availability[0]) <= startDate && new Date(venue.availability[1]) >= endDate
             let hasNoOverlap = currentBookings.filter(booking => {
                 return booking.bookingEndDate >= startDate && booking.bookingStartDate <= endDate
             })

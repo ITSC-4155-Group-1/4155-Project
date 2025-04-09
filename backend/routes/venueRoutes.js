@@ -15,11 +15,13 @@ exp_router.get('/', venueController.getVenues)
 //Display all venues owned by user
 exp_router.get('/user', validator.alreadyLoggedIn, venueController.viewMyVenues)
 
+exp_router.get('/:id', venueController.getVenue)
+
 exp_router.post('/', validator.alreadyLoggedIn, upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.createVenue)
 
-exp_router.put('/', validator.alreadyLoggedIn, venueMiddleware.isHost,  upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.updateVenue)
+exp_router.put('/:id', validator.alreadyLoggedIn, venueMiddleware.isHost,  upload.array('images'), inputValidator.venueValidation, inputValidator.displayValidation, venueController.updateVenue)
 
-exp_router.delete('/', validator.alreadyLoggedIn, venueMiddleware.isHost, venueController.deleteVenue)
+exp_router.delete('/:id', validator.alreadyLoggedIn, venueMiddleware.isHost, venueController.deleteVenue)
 // exp_router.use('/favorites')
 
 module.exports = exp_router

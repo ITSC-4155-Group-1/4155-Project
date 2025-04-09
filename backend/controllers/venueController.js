@@ -1,22 +1,36 @@
 const bookingModel = require('../model/bookingModel')
+const userModel = require('../model/userModel')
 const venueModel = require('../model/venueModel')
+const reviewModel = require('../model/reviewModel')
 
 // View all venues
 exports.getVenues = (req, res, next) =>{
-    return venueModel.find()
+    venueModel.find()
+    .then((venues) =>{
+        if(venues){
+            res.status(200).json({ success: true, venues })
+        }
+        else{
+            res.json(200).json({ success: true, message: "No venues exist" })
+        }
+    })
+    .catch(err => next(err))
 }
-
 // Get my venues
 exports.viewMyVenues = (req, res, next) => {
-    let id = req.body.id
+    let id = req.session.user
 
     venueModel.find({buyerId: id})
     .then((venues) =>{
         if(venues){
-            return venues
+<<<<<<< HEAD
+            return res.status(200).json({ success: true, venues })
+=======
+            res.status(200).json({ success: true, venues })
+>>>>>>> 25a4bfcb3fb5b6a0adc7f0a98cae6bde8ced7e32
         }
         else{
-            next(new Error('No venues exist').status(404))
+            res.status(404).json({ success: false, message: "No venues exist" })
         }
     })
     .catch(err => next(err))
@@ -25,14 +39,18 @@ exports.viewMyVenues = (req, res, next) => {
 
 
 exports.getVenue = (req, res, next) => {
-    let id = req.body.id
+    let id = req.params.id // getting the id from the url not the body (not a post request)
     venueModel.findById(id)
     .then((venue) =>{
         if(venue){
-            return venue
+            userModel.findById(venue.host)
+            .then((host) => {
+                res.status(200).json({ success: true, venue, host })
+            })
+            .catch(err => next(err))
         }
         else{
-            next(new Error('Venue does not exist').status(404))
+            res.status(404).json({ success: false, message: "Venue does not exist" })
         }
     })
     .catch(err => next(err))
@@ -40,24 +58,25 @@ exports.getVenue = (req, res, next) => {
 
 
 exports.deleteVenue = (req, res, next) =>{
-    let venueId = req.body.id
-    Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId})])
+    let venueId = req.params.id
+    Promise.all([venueModel.findByIdAndDelete(venueId), bookingModel.deleteMany({venueId: venueId}), reviewModel.deleteMany({venueId: venueId})])
     .then((deletedItems) => {
         if(deletedItems){
-            res.status(200).json({success: "venue deleted successfully"})
+            res.status(200).json({success: "Venue deleted successfully"})
         }
         else{
-            next(new Error('venue does not exist').status(404))
+            res.status(404).json({ success: false, message: "Venue does not exist" })
         }
     })
     .catch(err => next(err))
 }
 
-exports.updateVenue = (req, res, next) =>{
-    let venue = new venueModel(req.body)
-    let venueId = req.body.id
-    venue.venueId = venueId
-    venue.findByIdAndUpdate(venueId, venue, {runValidators: true})
+exports.updateVenue = (req, res, next) => {
+    let venue = req.body
+    venue.images = req.files.map(file => `/images/${file.filename}`)
+    let venueId = req.params.id
+    console.log(venue);
+    venueModel.findByIdAndUpdate(venueId, venue, {runValidators: true, new: true})
     .then((venue) =>{
         if(venue){
             res.status(200).json({success: "Venue updated successfully"})
@@ -78,14 +97,22 @@ exports.updateVenue = (req, res, next) =>{
 exports.createVenue = (req, res, next) => {
     let venue = new venueModel(req.body)
     venue.host = req.session.user
-    venue.images = req.files.map(file => `/images/${file.originalname}`)
+    venue.images = req.files.map(file => `/images/${file.filename}`)
     venue.save()
     .then((venue) =>{
-        res.status(200).json({"success": "Venue created successfully"})
+<<<<<<< HEAD
+        res.status(200).json({
+            success: "Venue created successfully",
+            venue: venue  // Include the full created venue object (including _id)
+        });
+        
+=======
+        res.status(200).json({ success: "Venue created successfully" })
+>>>>>>> 25a4bfcb3fb5b6a0adc7f0a98cae6bde8ced7e32
     })
     .catch((err) => {
         if(err.name == "ValidationError"){
-            res.status(400).json({"invalid": "Unable to create venue"})
+            res.status(400).json({ invalid: "Unable to create venue" })
         }
         else{
             next(err)

@@ -1,5 +1,8 @@
 <script setup>
     import { ref } from 'vue';
+    import { showErrorToast } from '../utils/toast';
+    import { useRouter } from 'vue-router';
+    import { useVenueStore } from '../store/venueStore';
 
     const form = ref({
         state: "",
@@ -13,7 +16,10 @@
         capacity: 0,
         images: null,
     });
+
     const addressError = ref(false);
+    const venueStore = useVenueStore();
+    const router = useRouter();
 
     const handleFileUpload = (e) => {
         const files = e.target.files;
@@ -100,19 +106,25 @@
         errors.value.availability = form.value.availability[0] == null || form.value.availability[1] == null;
         errors.value.images = !form.value.images || form.value.images.length === 0;
 
-        return !Object.values(errors.value).includes(true); // true if all error values are true
+        return !Object.values(errors.value).includes(true); // true if any error values are true
     }
 
-    const createVenue = () => {
+    const createVenue = async () => {
         if (!validateForm()) {
-            // alert("Please fill in all required fields");
-            console.log(form.value)
+            showErrorToast('Missing required information.')
             return;
         }
 
-        // make api call to create the venue
-        console.log(form.value)
-    };
+        const success = await venueStore.createVenue(form.value);
+        if(success) {
+            venueStore.setSuccessMessage('Venue created successfully!');
+            await router.push('/settings');
+            location.reload();
+        } else {
+            showErrorToast('Failed to create venue. Please try again.');
+            return;
+        }
+    }
 </script>
 
 <template>
@@ -201,8 +213,8 @@
                             class="form-control"
                             id="zip_code"
                             name="zip_code"
-                            min="5"
-                            max="9"
+                            minlength="5"
+                            maxlength="9"
                             aria-describedby="zip_code"
                             placeholder="12345"
                             pattern="[0-9]{5}"

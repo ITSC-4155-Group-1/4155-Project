@@ -1,68 +1,296 @@
 <script setup>
-    import { ref, computed, onMounted } from 'vue';
-    import { venues } from '../../../mockdata.js';
+    import { ref, computed, onMounted, watch, nextTick } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
     import { useCartStore } from '../store/cartStore';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
+    import { showSuccessToast, showWarningToast } from '../utils/toast.js';
+    import { parseUser } from '../utils/userUtils.js'
+    import { useVenueStore } from '../store/venueStore';
+    import he from 'he';
 
     const router = useRouter();
     const cartStore = useCartStore();
+    const user = parseUser();
+    const venueStore = useVenueStore();
 
     const route = useRoute();
     const venue = ref({});
+    const venueReviews = ref([]);
     const dateRange = ref(null);
     const attendees = ref('');
     const cleaningFee = 200;
     const processing = 50;
     const total = ref(0);
     const isFilled = ref(false);
+    const activeIndex = ref(0); // accordion active index
+    const showMoreImages = ref(false);
+    const minDate = ref(null);
+    const maxDate = ref(null);
+    const disabledDates = ref([]);
+    const hostFirstName = ref('');
+    const hostId = ref(null);
+    const deleteVenueModal = ref(false);
 
-    // will make a call to the backend to save the venue for the user
-    const saveVenue = () => {
-        isFilled.value = !isFilled.value;
+    onMounted(async () => {
+        const venueId = route.params.id;
+        const [venueData, host] = await venueStore.getVenueById(venueId);
+        
+        if (venueData) {
+            venue.value = venueData;
+            // venueReviews.value = venueData.reviews; venues don't have reviews yet
+        }
+
+        if (host) {
+            hostFirstName.value = host.firstName;
+            hostId.value = host._id;
+        }
+
+        // getting the bookings for the venues as well
+        const bookings = await venueStore.getBookingsForVenueById(venueId);
+        if (bookings && bookings.length > 0) {
+            let blockedDates = []
+            bookings.forEach((booking) => {
+                const startDate = new Date(booking.bookingStartDate);
+                const endDate = new Date(booking.bookingEndDate);
+
+                // all the dates between as well
+                const dateArray = [];
+                for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+                    dateArray.push(new Date(d));
+                }
+                blockedDates.push(...dateArray);
+            });
+            disabledDates.value = [...blockedDates];
+        }
+
+        // checking if the venue is favorited already
+        const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
+        if (isFavorited) {
+            isFilled.value = true;
+        } else {
+            isFilled.value = false;
+        }
+        console.log(isFavorited)
+    })
+
+    onMounted(() => {
+        const cartDetails = JSON.parse(localStorage.getItem('cartDetails'));
+        if (cartDetails) {
+            if (cartDetails.startDate && cartDetails.endDate) {
+                dateRange.value = [new Date(cartDetails.startDate), new Date(cartDetails.endDate)];
+            }
+            if (cartDetails.attendees) {
+                attendees.value = cartDetails.attendees;
+            }
+        }
+    });
+
+    const saveVenue = async () => {
+        if (isFilled.value === false) {
+            const response = await venueStore.favoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = false;
+                showErrorToast(response.message)
+            }
+        } else {
+            const response = await venueStore.unfavoriteAVenue(venue.value._id);
+            if (response) {
+                isFilled.value = !isFilled.value;
+                showSuccessToast(response.message);
+            } else {
+                isFilled.value = true;
+                showErrorToast(response.message)
+            }
+        }
     };
 
-    const minDate = computed(() => {
-        const venueStartDate = new Date(venue.value.availability_start_date);
-        const today = new Date();
+    watch(() => venue.value.availability, (newAvailability) => {
+        if (newAvailability && newAvailability.length > 0) {
+            const offsetStartDate = new Date(venue.value.availability[0])
+            const venueStartDate = new Date(offsetStartDate);
+            venueStartDate.setDate(offsetStartDate.getDate() + 1);
+            
+            const today = new Date();
 
-        return venueStartDate > today ? venueStartDate : today;
+            if (venueStartDate > today) {
+                minDate.value = venueStartDate;
+            } else {
+                minDate.value = today;
+            }
+        }
+        maxDate.value = new Date(venue.value.availability[1]);
     });
-    const maxDate = computed(() => venue.value.availability_end_date ? new Date(venue.value.availability_end_date) : null);
+
+    watch(() => venue.value.venueName, () => {
+        const newTitle = he.decode(venue.value.venueName);
+        venue.value.venueName = newTitle;
+    })
+
+    const usAbbreviations = {
+        "AL": "Alabama",
+        "AK": "Alaska",
+        "AS": "American Samoa",
+        "AZ": "Arizona",
+        "AR": "Arkansas",
+        "CA": "California",
+        "CO": "Colorado",
+        "CT": "Connecticut",
+        "DE": "Delaware",
+        "DC": "District of Columbia",
+        "FL": "Florida",
+        "GA": "Georgia",
+        "GU": "Guam",
+        "HI": "Hawaii",
+        "ID": "Idaho",
+        "IL": "Illinois",
+        "IN": "Indiana",
+        "IA": "Iowa",
+        "KS": "Kansas",
+        "KY": "Kentucky",
+        "LA": "Louisiana",
+        "ME": "Maine",
+        "MD": "Maryland",
+        "MA": "Massachusetts",
+        "MI": "Michigan",
+        "MN": "Minnesota",
+        "MS": "Mississippi",
+        "MO": "Missouri",
+        "MT": "Montana",
+        "NE": "Nebraska",
+        "NV": "Nevada",
+        "NH": "New Hampshire",
+        "NJ": "New Jersey",
+        "NM": "New Mexico",
+        "NY": "New York",
+        "NC": "North Carolina",
+        "ND": "North Dakota",
+        "OH": "Ohio",
+        "OK": "Oklahoma",
+        "OR": "Oregon",
+        "PA": "Pennsylvania",
+        "RI": "Rhode Island",
+        "SD": "South Dakota",
+        "TN": "Tennessee",
+        "TX": "Texas",
+        "UT": "Utah",
+        "VT": "Vermont",
+        "VA": "Virginia",
+        "WA": "Washington",
+        "WV": "West Virginia",
+        "WI": "Wisconsin",
+        "WY": "Wyoming"
+    }
+
+    const usStateToAbbreviation = (state) => {
+        for (let key in usAbbreviations) {
+            if (usAbbreviations[key] === state) {
+                return key;
+            }
+        }
+        return state;
+    }
 
     const collapsibleSections = ref([
         { title: "Parking", content: "Ample parking space is available on-site. Parking is free for the first 2 hours, after which a small fee is applied." },
         { title: "Host Rules", content: "Hosts must ensure that guests follow safety protocols. No loud music after 10 PM. Alcohol consumption is allowed in designated areas only." },
         { title: "Cancellation Policy", content: "Cancellations made 14 days prior to the event date will receive a full refund. After that, a 50% refund will be issued if cancelled within 7 days." },
         { title: "Operational Hours", content: "The venue operates from 9 AM to 11 PM daily. Special hours may apply for holidays or special events." },
-        { title: "Location", content: "Exact venue location." }
     ]);
 
-    onMounted(() => {
-        const venueId = route.params.id;
-        venue.value = venues.find(v => v.venue_name === venueId);
-    });
+    watch(() => venue.value.address, () => {
+        const newAddress = {
+            title: "Location",
+            content: `${he.decode(venue.value.address)}, ${he.decode(venue.value.city)}, ${usStateToAbbreviation(he.decode(venue.value.state))}`
+        };
+        collapsibleSections.value.push(newAddress);
+    })
+
+    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    // const venueRating = computed(() => {
+    //     const totalReviews = venueReviews.value.length;
+    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
+
+    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
+    // })
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
             alert("Please fill out all required fields.");
             return;
-        }
-
-        cartStore.setCartDetails({
-            host: venue.value.host_id,
-            venueName: venue.value.venue_name,
-            venuePrice: venue.value.price,
+        } 
+        // also going to store the details in local storage to ensure that when the user refreshes the cart page, the details don't disappear
+        localStorage.setItem('cartDetails', JSON.stringify({
+            id: venue.value._id,
+            host: venue.value.host,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
             startDate: dateRange.value[0],
             endDate: dateRange.value[1],
             attendees: attendees.value,
             cleaningFee: cleaningFee,
             processing: processing,
-            image: venue.value.image.join(','),
-            capacity: venue.value.capacity
-        })
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value,
+            minDate: minDate.value,
+            maxDate: maxDate.value,
+            host: hostFirstName.value,
+        }));
+
+        cartStore.setCartDetails({
+            id: venue.value._id,
+            host: venue.value.host,
+            venueName: venue.value.venueName,
+            price: venue.value.price,
+            startDate: dateRange.value[0],
+            endDate: dateRange.value[1],
+            attendees: attendees.value,
+            cleaningFee: cleaningFee,
+            processing: processing,
+            images: venue.value.images.length > 1 ? venue.value.images.join(',') : venue.value.images,
+            capacity: venue.value.capacity,
+            disabledDateRanges: disabledDates.value, 
+            minDate: minDate.value,
+            maxDate: maxDate.value,
+            host: hostFirstName.value,
+        });
 
         router.push('/cart')
     };
+
+    const goToEditVenue = async (event) => {
+        event.stopPropagation();
+        // localStorage.setItem('venueDetails', JSON.stringify(venue.value));
+        await router.push(`/edit-venue/${venue.value._id}`);
+
+        nextTick(() => {
+            showWarningToast('Make sure to re-upload your images.', {
+                autoClose: 15000
+            });
+        });
+    }
+
+    const deleteVenue = async () => {
+        const id = route.params.id;
+        const success = await venueStore.deleteVenue(id);
+        if (success) {
+            deleteVenueModal.value = false;
+            await router.push('/');
+            nextTick(() => {
+                showSuccessToast('Venue deleted successfully.');
+            })
+        } else {
+            return;
+        }
+    }
+
+    const toggleDeleteVenueModal = () => {
+        deleteVenueModal.value = !deleteVenueModal.value;
+    }
 
     const calculateDays = computed(() => {
         if (dateRange.value && dateRange.value.length === 2) {
@@ -92,7 +320,7 @@
         const options = [
             { label: '1-40', value: '1-40' },
             { label: '41-100', value: '41-100' },
-            { label: '101-200', value: '101-200' },
+            { label: '101-199', value: '101-199' },
             { label: '200+', value: '200+' }
         ];
 
@@ -114,6 +342,21 @@
 
         return validOptions;
     });
+
+    const toggleAccordion = (index) => {
+        activeIndex.value = activeIndex.value === index ? null : index;
+    };
+
+    const toggleShowMoreImages = () => {
+        showMoreImages.value = !showMoreImages.value;
+        document.body.style.overflow = showMoreImages.value ? 'hidden' : 'auto';
+    };
+
+    const carouselConfig = {
+        height: 700,
+        itemsToShow: 1,
+        wrapAround: true,
+    }
 </script>
 
 <template>
@@ -121,10 +364,10 @@
         <div class="w-100 d-flex justify-content-between align-items-center">
             <div class="venue-name-location mb-1">
                 <span class="fs-2 venue-name">
-                    {{ venue.venue_name }} 
-                    <span class="fs-5">(Hosted by {{ venue.host_id }})</span>
+                    {{ venue.venueName }} 
+                    <span class="fs-5">(Hosted by {{ user?.id === hostId ? 'You' : hostFirstName }})</span>
                 </span>
-                <span class="venue-location">{{ venue.location }}</span>
+                <span class="venue-location">{{ venue.city }}, {{ venue.state }}</span>
             </div>
             <div class="share-save-container d-flex gap-3">
                 <span
@@ -151,7 +394,8 @@
                 </span>
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
-                    @click="saveVenue()"
+                    @click="saveVenue"
+                    v-if="hostId !== user?.id && user"
                 >
                     <svg
                         :fill="isFilled ? '#FF4081' : 'none'"
@@ -167,39 +411,129 @@
                     </svg>
                     Save
                 </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="goToEditVenue"
+                    v-if="hostId === user?.id && user"
+                >
+                    ✏️ Edit
+                </span>
+                <span 
+                    class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
+                    @click="toggleDeleteVenueModal"
+                    v-if="hostId === user?.id && user"
+                >
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 7H19" stroke="red" stroke-width="2"/>
+                        <path d="M8 7V5C8 4.44772 8.44772 4 9 4H15C15.5523 4 16 4.44772 16 5V7" stroke="red" stroke-width="2"/>
+                        <rect x="6" y="7" width="12" height="14" stroke="red" stroke-width="2" fill="none"/>
+                        <line x1="10" y1="11" x2="10" y2="17" stroke="red" stroke-width="2"/>
+                        <line x1="14" y1="11" x2="14" y2="17" stroke="red" stroke-width="2"/>
+                    </svg>
+                    Delete
+                </span>
             </div>
         </div>
+
+        <div v-if="deleteVenueModal" class="overlay">
+            <div class="popup bg-light">
+                <button class="close-btn" @click="toggleDeleteVenueModal">
+                    &times;
+                </button>
+
+                <div>
+                    <h3>Do you wish to continue?</h3>
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn confirm"
+                            @click="deleteVenue"
+                        >
+                            Delete Venue
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn w-50 mt-3 custom-btn cancel"
+                            @click="toggleDeleteVenueModal"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex gap-2 image-gallery"
-            v-if="venue.image && venue.image.length"
+            v-if="venue.images"
         >
             <div class="w-50">
                 <img
-                    :src="venue.image[0]" alt="Venue image"
+                    :src="venue.images[0]" alt="Venue image"
                     class="w-100 h-100 object-fit-cover d-flex align-items-center justify-content-center overflow-hidden rounded"
                 >
             </div>
             <div class="w-50 other-images-grid">
-                <template v-if="venue.image.length > 1">
-                    <div class="grid-item" v-for="(image, index) in venue.image.slice(1, 5)">
+                <template v-if="venue.images.length > 1">
+                    <div class="grid-item position-relative" v-for="(image, index) in venue.images.slice(1, 5)">
                         <img  
                             :key="index" 
                             :src="image" 
                             alt="Venue image" 
-                            class=" rounded"
+                            class="rounded"
+                            :class="{ 'show-more-images-overlay' : index === 3 }"
                         >
+                        <div 
+                            v-if="index === 3"
+                            class="black-overlay position-absolute top-0 left-0 w-100 h-100 d-flex justify-content-center align-items-center"
+                        >
+                            <button
+                                class="show-more-images-btn border-0 px-1 py-2 rounded bg-transparent text-light"
+                                @click="toggleShowMoreImages"
+                            >
+                                Show More &#8594;
+                            </button>
+                        </div>
                     </div>
                 </template>
-                <template v-if="venue.image.length < 5">
-                    <div v-for="index in 5 - venue.image.length" :key="'placeholder-' + index" class="placeholder-box rounded"></div>
+                <template v-if="venue.images.length < 5">
+                    <div
+                        v-for="index in 5 - venue.images.length"
+                        :key="'placeholder-' + index"
+                        class="placeholder-box d-flex justify-content-center align-items-center rounded w-100 h-100 border-2"
+                    ></div>
                 </template>
             </div>
         </div>
-        <p v-else>No image available</p>
+        <p v-else class="d-flex align-items-center justify-content-center noImageAvailable">No images available</p>
+
+        <div
+            v-if="showMoreImages"
+            class="show-more-images-container mx-auto position-fixed top-0  w-100 h-100 d-flex justify-content-center align-items-center"
+        >
+            <button class="close-show-more-images-container" @click="toggleShowMoreImages">&#10005;</button>
+            <Carousel v-bind="carouselConfig">
+                <Slide v-for="image in venue.images" :key="image">
+                    <img
+                        :src="image"
+                        alt="Venue Images"
+                        loading="lazy"
+                        class="w-80 h-100 object-fit-cover rounded"
+                    >
+                </Slide>
+                
+                <template #addons>
+                    <Navigation class="mx-4" />
+                </template>
+            </Carousel>
+        </div>
 
         <div class="d-flex justify-space-around gap-5">
-            <div class="w-65 my-2">
+            <div
+                class="w-65 my-2"
+                :class="user?.id !== venue.host ? 'smaller-container' : ''"
+            >
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <div v-if="venue.rating">
+                    <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
                             <svg
                                 width="23"
@@ -210,11 +544,16 @@
                                 <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                                     fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
                             </svg>
-                            {{ venue.rating }} / 5.0 
+                            {{ venueRating.toFixed(1) }} / 5.0 
                         </span>
                     </div>
+                    <div v-else>
+                        <span class="fs-5 fw-medium rating">No Reviews</span>
+                    </div>
 
-                    <div v-if="venue.capacity">
+                    <div
+                        v-if="venue.capacity"
+                    >
                         <span class="fs-5 fw-medium d-flex align-items-center gap-1">
                             <svg
                                 width="23"
@@ -234,39 +573,90 @@
                 </div>
     
                 <h5>About the space</h5>
-                <p class="fs-6">{{ venue.venue_description }}</p>
+                <p>{{ venue.venue_description }}</p>
                 
                 <!-- Collapsible Sections -->
-                <div class="accordionContainer" v-for="(section, index) in collapsibleSections" :key="index">
-                    <div class="accordion" :id="'accordionExample' + index">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" :id="'heading' + index">
-                                <button 
-                                    class="accordion-button custom-accordion-button collapsed fs-5"
-                                    type="button" 
-                                    :data-bs-toggle="'collapse'" 
-                                    :data-bs-target="'#collapse' + index" 
-                                    :aria-expanded="false"
-                                    :aria-controls="'collapse' + index">
+                <div class="accordionContainer">
+                    <div class="accordion" id="venueAccordion">
+                        <div v-for="(section, index) in collapsibleSections" :key="index" class="accordion-item custom-accordion-box">
+                            <h2 class="accordion-header" :id="'heading-' + index">
+                                <button
+                                    class="accordion-button custom-accordion-button"
+                                    :class="{ 'collapsed': activeIndex !== index }"
+                                    type="button"
+                                    @click="toggleAccordion(index)"
+                                    :aria-expanded="activeIndex === index"
+                                    :aria-controls="'collapse-' + index"
+                                >
                                     {{ section.title }}
+                                    <span class="ms-auto">
+                                        <i :class="activeIndex === index ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+                                    </span>
                                 </button>
                             </h2>
-                            <div 
-                                :id="'collapse' + index" 
+                            <div
+                                :id="'collapse-' + index"
                                 class="accordion-collapse collapse"
-                                :class="{'show': index === 0}"
-                                :data-bs-parent="'#accordionExample' + index">
-                                <div class="accordion-body">
+                                :class="{ 'show': activeIndex === index }"
+                                :aria-labelledby="'heading-' + index"
+                                data-bs-parent="#venueAccordion"
+                            >
+                                <div class="accordion-body px-2">
                                     {{ section.content }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="reviews mt-4" v-if="venueReviews.length > 0">
+                    <h5 class="mb-3">
+                        {{ venueReviews.length > 1 ? 'Reviews' : 'Review' }}
+                        ({{ venueReviews.length }})
+                    </h5>
+                    <div
+                        class="review-container" v-for="review in venueReviews"
+                        :key="review.comment + '_' + review.user_id"
+                    >
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <img
+                                        src="/images/profile_4.jpeg"
+                                        alt="profile pic"
+                                        class="rounded-circle object-fit-cover"
+                                        width="35"
+                                    >
+                                    <span class="reviewer">{{ review.user_id }}</span>
+                                </div>
+                                <div>
+                                    <span class="rating fs-5 fw-bolder">
+                                        <svg
+                                            width="23"
+                                            height="23"
+                                            viewBox="0 0 15 15"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
+                                                fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
+                                        </svg>
+                                        {{ review.rating.toFixed(1) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="review-comment">{{ review.comment }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Booking Form Container -->
-            <div class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light">
+            <div
+                class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
+                v-if="user?.id !== hostId"
+            >
                 <form @submit.prevent="submitBooking">
                     <div class="mb-4">
                         <label for="dateRange" class="form-label fw-medium fs-5">Select Dates:</label>
@@ -278,8 +668,8 @@
                             :min-date="minDate"
                             :max-date="maxDate"
                             :enable-time-picker="false"
+                            :disabled-dates="disabledDates"
                             required
-                            class="date-picker-input"
                         />
                     </div>
     
@@ -357,6 +747,10 @@
         width: 95%;
     }
 
+    .w-80 {
+        width: 80%;
+    }
+
     .w-65 {
         width: 65%;
     }
@@ -365,9 +759,20 @@
         width: 35%;
     }
 
+    .smaller-container {
+        width: 95%;
+        margin: 4px 0;
+    }
+
     .image-gallery {
         max-height: 56vh;
         overflow: hidden;
+    }
+
+    .noImageAvailable {
+        font-size: 20px;
+        color: var(--secondary);
+        height: 50vh;
     }
 
     .booking-modal {
@@ -393,7 +798,7 @@
 
     .venue-location {
         font-size: 20px;
-        color: #757575;
+        color: var(--secondary);
     }
 
     .other-images-grid {
@@ -404,28 +809,36 @@
         gap: 5px;
     }
 
-    .grid-item {
-        position: relative;
-    }
-
     .grid-item img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Ensures the image covers the cell while maintaining aspect ratio */
+        object-fit: cover;
         object-position: center;
     }
 
     .placeholder-box {
-        width: 100%;
-        height: 100%;
-        background-color: #f0f0f0;
-        border: 2px dashed #ccc;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        border-color:#ccc;
+        border-style: dashed;
         color: #ccc;
         font-size: 14px;
-        text-align: center;
+    }
+
+    .show-more-images-overlay {
+        position: relative;
+        z-index: 1;
+    }
+
+    .black-overlay {
+        background-color: rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+    }
+
+    .show-more-images-btn {
+        font-size: 19px;
+    }
+
+    .show-more-images-btn:hover {
+        text-decoration: underline;
     }
 
     .rating {
@@ -480,8 +893,98 @@
         background-color: var(--background);
     }
 
-    .accordion-item {
+    .custom-accordion-box {
         border: none !important;
         background-color: #eaeaea;
+    }
+
+    .show-more-images-container {
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1050;
+        left: 0;
+    }
+
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
+        padding: 0 4rem;
+        margin: 0 auto;
+    }
+
+    .close-show-more-images-container {
+        position: absolute;
+        top: 25px;
+        right: 40px;
+        font-size: 1.8rem;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .reviewer {
+        font-size: 17px;
+    }
+
+    .review-comment {
+        font-size: 16px;
+    }
+
+    .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1001;
+    }
+
+    .popup {
+        position: relative;
+        width: 50%;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .custom-btn {
+        width: fit-content;
+        padding: 0.75rem 2rem;
+        color: white;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
+    
+    .confirm:hover {
+        color: white;
+        background-color: var(--highlight-dark-50);
+    }
+
+    .cancel {
+        color: white;
+        background-color: red;
+    }
+
+    .cancel:hover {
+        color: white;
+        background-color: darkred;
     }
 </style>
