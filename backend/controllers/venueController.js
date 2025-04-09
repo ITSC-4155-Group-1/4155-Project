@@ -90,7 +90,11 @@ exports.createVenue = (req, res, next) => {
     venue.images = req.files.map(file => `/images/${file.originalname}`)
     venue.save()
     .then((venue) =>{
-        res.status(200).json({"success": "Venue created successfully"})
+        res.status(200).json({
+            success: "Venue created successfully",
+            venue: venue  // Include the full created venue object (including _id)
+        });
+        
     })
     .catch((err) => {
         if(err.name == "ValidationError"){
