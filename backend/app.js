@@ -7,17 +7,22 @@ const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
 const cors = require ('cors')
+const path = require('path')
 
 const port = 3000
 const app = express()
 const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
+// Serve static files from the Vue build directory
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+
 // Database connect
 mongoose.connect(url)
 .then(() =>{
-    app.listen(port, () => {
-        console.log("Server is running!")
-    })
+  app.listen(port, () => {
+    console.log("Server is running!")
+  })
 })
 .catch((err) => {
     console.log(err.message)
@@ -25,7 +30,7 @@ mongoose.connect(url)
 
 // Session creation and routing
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:3000",
     credentials: true
 }))
 app.use(morgan('tiny'))
@@ -51,8 +56,13 @@ app.use(
   })
 );
 
+// Handle SPA routing - return the index.html for any route not matched by the server
+app.get('/', (req, res) => {
+  console.log("route found")
+});
 app.use('/test', (req, res) => {
-    res.send("success")
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    // res.send("success")
 })
 
 app.use('/user', userRoutes)
