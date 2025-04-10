@@ -8,7 +8,6 @@
     import { showSuccessToast } from '../utils/toast';
 
     const venueList = ref([]);
-    const noVenuesFound = ref('');
     const showModal = ref(false);
     const activeSection = ref('personal-info');
     const updatePasswordDiv = ref(false);
@@ -22,14 +21,29 @@
     const newPfp = ref(null);
     const newPfpPreview = ref(null);
     const changePfpModal = ref(false);
+    const yourVenues = ref([]); // current venues hosted by the user
+    const yourFavoritedVenues = ref([]); // current venues favorited by the user
+    const yourBookings = ref([]); // current bookings made by the user
+    const oldHostedVenues = ref([]); // previously hosted venues
+    const oldBookings = ref([]); // previously made bookings
 
     const getAllVenues = async () => {
         try {
             const response = await venueStore.fetchAllVenues();
             if (response.success) {
                 venueList.value = response.venues;
-            } else {
-                noVenuesFound.value = 'No venues found';
+                yourVenues.value = venueList.value.filter(venue => {
+                    const endDate = new Date(venue.availability[1]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // midnight
+                    return venue.host === user?.id && endDate >= today;
+                });
+                oldHostedVenues.value = venueList.value.filter(venue => {
+                    const endDate = new Date(venue.availability[1]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return venue.host === user?.id && endDate < today;
+                });
             }
         } catch (e) {
             console.error('Error fetching venues:', e);
@@ -38,7 +52,30 @@
 
     onMounted(async () => {
         await getAllVenues();
-    })
+
+        // favorites
+        let tempFavoriteVenues = await venueStore.getFavoritedVenues() || [];
+        yourFavoritedVenues.value = tempFavoriteVenues.map(favorite => favorite.venue);
+
+        // bookings
+        let tempAllBookings = await venueStore.getAllBookings() || [];
+
+        // current bookings
+        yourBookings.value = tempAllBookings.map(booking => booking.venueId).filter(venue => {
+            const endDate = new Date(venue.availability[1]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return endDate >= today;
+        });
+
+        // old bookings
+        oldBookings.value = tempAllBookings.map(booking => booking.venueId).filter(venue => {
+            const endDate = new Date(venue.availability[1]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return endDate < today;
+        });
+    });
 
     onMounted(() => {
         const successMessage = localStorage.getItem('successMessage');
@@ -143,19 +180,23 @@
     <div>
         <div class="settings-container">
             <div class="sidebar">
-                <h2 class="sidebar-title">Settings</h2>
-                <ul class="sidebar-menu">
-                    <li :class="{ active: activeSection === 'personal-info' }" @click="setActiveSection('personal-info')">
-                        <i class="icon">👤</i> Personal Info
-                    </li>
-                    <li :class="{ active: activeSection === 'history' }" @click="setActiveSection('history')">
-                        <i class="icon">📜</i> History
-                    </li>
-                    <li :class="{ active: activeSection === 'favorites' }" @click="setActiveSection('favorites')">
-                        <i class="icon">⭐</i> Favorites
-                    </li>
-                </ul>
-                <a class="logout" @click="userStore.logout()">Logout</a>
+                <div>
+                    <h2 class="sidebar-title">Settings</h2>
+                    <ul class="sidebar-menu">
+                        <li :class="{ active: activeSection === 'personal-info' }" @click="setActiveSection('personal-info')">
+                            <span class="icon">👤</span> Personal Info
+                        </li>
+                        <li :class="{ active: activeSection === 'history' }" @click="setActiveSection('history')">
+                            <span class="icon">📜</span> History
+                        </li>
+                        <li :class="{ active: activeSection === 'favorites' }" @click="setActiveSection('favorites')">
+                            <span class="icon">⭐</span> Favorites
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <a class="logout" @click="userStore.logout()">Logout</a>
+                </div>
             </div>
 
             <div class="main-content">
@@ -177,43 +218,21 @@
                     <div class="email-password">
                         <p><strong>Email:</strong> {{ user?.email }}</p>
                         <p>
-                            <strong>Password:</strong> ************ 
+                            <strong>Password:</strong> ************
                             <i class="edit-icon" @click="toggleUpdatePasswordDiv">✏️</i>
                         </p>
                         <div v-if="updatePasswordDiv" class="w-35">
                             <form @submit.prevent="updatePassword">
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">New Password</label>
-                                    <input
-                                        type="password"
-                                        class="form-control"
-                                        id="newPassword"
-                                        aria-describedby="newPassword"
-                                        required
-                                        v-model="newPassword"
-                                        minlength="8"
-                                        maxlength="30"
-                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
-                                        title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
-                                    >
+                                    <input type="password" class="form-control" id="newPassword" aria-describedby="newPassword" required v-model="newPassword" minlength="8" maxlength="30" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}" title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number.">
                                     <div class="form-text">
                                         Must contain at least 8 characters, including uppercase and lowercase letters, and numbers.
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="repeatPassword" class="form-label">Re-type Password</label>
-                                    <input
-                                        type="password"
-                                        class="form-control"
-                                        id="repeatPassword"
-                                        required
-                                        v-model="rePassword"
-                                        minlength="8"
-                                        maxlength="30"
-                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}"
-                                        title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number."
-                                        @input="validatePasswords"
-                                    >
+                                    <input type="password" class="form-control" id="repeatPassword" required v-model="rePassword" minlength="8" maxlength="30" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,30}" title="Must contain at least 8 characters, including uppercase and lowercase letters, and a number." @input="validatePasswords">
                                     <p v-if="passwordError" class="text-danger mt-1">{{ passwordError }}</p>
                                 </div>
                                 <div class="d-flex gap-2">
@@ -223,24 +242,37 @@
                             </form>
                         </div>
                     </div>
-                    
-                    <div class="venues" v-if="activeSection === 'personal-info'">
-                        <h3>Your Venues</h3>
-                        <div class="venue-list">
-                            <div class="row">
-                                <div 
-                                    v-for="(venue, index) in venueList.filter(venue => 
-                                    venue.host === user?.id)" 
-                                    :key="index + '_' + venue.venueName" 
-                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
-                                >
-                                    <VenueCard :venue="venue" />
+
+                        <div class="venues" v-if="activeSection === 'personal-info'">
+                            <h3>Active Venues</h3>
+                            <div class="venue-list" v-if="yourVenues.length > 0">
+                                <div class="row">
+                                    <div v-for="(venue, index) in yourVenues" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
+                                        <VenueCard :venue="venue" />
+                                    </div>
                                 </div>
                             </div>
+                            <div v-else>
+                                <p class="p-0 m-0">No venues found.
+                                    Host a venue <router-link to="/venues/new" class="text-decoration-none pink">here</router-link>.
+                                </p>
+                            </div>
                         </div>
-                    </div>
+    
+                        <div class="venues" v-if="activeSection === 'personal-info'">
+                            <h3>Current Bookings</h3>
+                            <div class="venue-list" v-if="yourBookings.length > 0">
+                                <div class="row">
+                                    <div v-for="(venue, index) in yourBookings" :key="index" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
+                                        <VenueCard :venue="venue" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <p class="p-0 m-0">No current or upcoming bookings found.</p>
+                            </div>
+                        </div>
 
-                    <!-- there'll be a Your Bookings section here (basically copy pasta from the section above) -->
 
                     <div v-if="showModal" class="modal-overlay">
                         <div class="modal-popup">
@@ -265,18 +297,31 @@
                 </div>
 
                 <div v-if="activeSection === 'history'">
-                    <h2>History</h2>
                     <div class="venues" v-if="activeSection === 'history'">
-                        <div class="venue-list">
+                        <h2>Hosted Venues</h2>
+                        <div class="venue-list" v-if="oldHostedVenues.length > 0">
                             <div class="row">
-                                <div 
-                                    v-for="(venue, index) in venueList" 
-                                    :key="index + '_' + venue.venue_name" 
-                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
-                                >
+                                <div v-for="(venue, index) in oldHostedVenues" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
                                     <VenueCard :venue="venue" />
                                 </div>
                             </div>
+                        </div>
+                        <div v-else>
+                            <p class="p-0 m-0">No venues found.</p>
+                        </div>
+                    </div>
+
+                    <div class="venues" v-if="activeSection === 'history'">
+                        <h2>Expired Bookings</h2>
+                        <div class="venue-list" v-if="oldBookings.length > 0">
+                            <div class="row">
+                                <div v-for="(venue, index) in oldBookings" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
+                                    <VenueCard :venue="venue" /> <!-- gonna change to bookings component -->
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <p class="p-0 m-0">No expired bookings found.</p>
                         </div>
                     </div>
                 </div>
@@ -284,16 +329,15 @@
                 <div v-if="activeSection === 'favorites'">
                     <h2>Favorites</h2>
                     <div class="venues" v-if="activeSection === 'favorites'">
-                        <div class="venue-list">
+                        <div class="venue-list" v-if="yourFavoritedVenues.length > 0">
                             <div class="row">
-                                <div 
-                                    v-for="(venue, index) in venueList" 
-                                    :key="index + '_' + venue.venue_name" 
-                                    class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4"
-                                >
+                                <div v-for="(venue, index) in yourFavoritedVenues" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
                                     <VenueCard :venue="venue" />
                                 </div>
                             </div>
+                        </div>
+                        <div v-else>
+                            <p class="p-0 m-0">No favorites found.</p>
                         </div>
                     </div>
                 </div>
@@ -307,38 +351,16 @@
                         <div>
                             <h3>Update your Profile Picture</h3>
                             <div class="d-flex flex-column gap-1">
-                                <div
-                                    class="w-50 mx-auto d-flex justify-content-center my-2"
-                                >
-                                    <img 
-                                        class="newPfpImgSize"
-                                        :src="newPfpPreview || user?.pfp"
-                                        alt="preview pfp"
-                                    >
+                                <div class="w-50 mx-auto d-flex justify-content-center my-2">
+                                    <img class="newPfpImgSize" :src="newPfpPreview || user?.pfp" alt="preview pfp">
                                 </div>
-                                <input
-                                    type="file"
-                                    class="form-control"
-                                    id="pfp"
-                                    name="pfp"
-                                    accept="image/png, image/jpg, image/jpeg"
-                                    required
-                                    @change="changePfp"
-                                >
+                                <input type="file" class="form-control" id="pfp" name="pfp" accept="image/png, image/jpg, image/jpeg" required @change="changePfp">
                             </div>
                             <div class="d-flex gap-2">
-                                <button
-                                    type="submit"
-                                    class="w-50 mt-3 rounded custom-btn confirm"
-                                    @click="updatePfp"
-                                >
+                                <button type="submit" class="w-50 mt-3 rounded custom-btn confirm" @click="updatePfp">
                                     Save
                                 </button>
-                                <button
-                                    type="submit"
-                                    class="w-50 mt-3 rounded custom-btn cancel"
-                                    @click="toggleChangePfpModal"
-                                >
+                                <button type="submit" class="w-50 mt-3 rounded custom-btn cancel" @click="toggleChangePfpModal">
                                     Cancel
                                 </button>
                             </div>
@@ -354,7 +376,7 @@
 <style scoped>
     .settings-container {
         display: flex;
-        padding: 10px;
+        height: 80vh; /* i think this looks better than having min-height */
     }
 
     .sidebar {
@@ -362,7 +384,7 @@
         padding: 20px;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
+        justify-content: space-between;
     }
 
     .main-content {
@@ -387,8 +409,6 @@
 
     .sidebar-menu li {
         padding: 10px 15px;
-        display: flex;
-        align-items: center;
         cursor: pointer;
         transition: background 0.3s;
     }
@@ -402,20 +422,17 @@
         background: #e7f0ff;
     }
 
-    .icon {
-        margin-right: 10px;
-    }
-
     .logout {
-        display: block;
-        text-align: center; 
+        display: flex;
+        justify-content: center;
         color: var(--accent);
-        text-decoration: none;
-        margin-top: auto; 
-        padding: 10px;
         font-size: 1.3rem;
         text-decoration: underline;
         cursor: pointer;
+    }
+
+    .pink {
+        color: var(--accent);
     }
 
     .profile-card {
