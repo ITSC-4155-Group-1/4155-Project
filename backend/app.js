@@ -9,24 +9,35 @@ const bookingRoutes = require('./routes/bookingRoutes')
 const favoritesRoutes = require('./routes/favoritesRoutes');
 //const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
-const path = require('path')
 
 const port = 3000
 const app = express()
 const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb.net/Gatherly_Data"
 
+// Database connect checking environment variable so tests can run
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(url)
+    .then(() => {
+      app.listen(port, () => {
+        console.log("Server is running!");
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+}
 
 // exporting for testing
 module.exports = app;
 // Session creation and routing
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:5173",
     credentials: true
 }))
 app.use(morgan('tiny'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 app.use(
   session({
     secret: "6yA'1%iO%sCn(|1q0<Ex1bf654",
@@ -46,30 +57,16 @@ app.use(
   })
 );
 
-// Handle SPA routing - return the index.html for any route not matched by the server
-app.get('/', (req, res) => {
-  console.log("route found")
-});
 app.use('/test', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-    // res.send("success")
+    res.send("success")
 })
 
 app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
 app.use('/favorites', favoritesRoutes);
-
 //app.use('/messages', messageRoutes);
-mongoose.connect(url)
-.then(() =>{
-  app.listen(port, () => {
-    console.log("Server is running!")
-  })
-})
-.catch((err) => {
-    console.log(err.message)
-})
+
 // Basic error handling
 app.use((req, res, next) => {
     let err = new Error("Unable to locate route")
