@@ -25,6 +25,11 @@
     
     const isHost = computed(() => venue.value.host === user?.id);
     const isSettingsPage = computed(() => route.path === '/settings');
+    const isVenueOld = computed(() => {
+        const today = new Date();
+        const venueEndDate = new Date(venue.value.availability[1]);
+        return venueEndDate < today;
+    });
 
     onMounted(async () => {
         const isFavorited = await venueStore.isVenueFavorited(venue.value._id);
@@ -143,7 +148,10 @@
                 </div>
             </div>
         </router-link>
-        <span class="icons position-absolute bottom-0 end-0 m-3" v-if="!isHost && user">
+        <span
+            class="icons position-absolute bottom-0 end-0 m-3"
+            v-if="!isHost && user && !isVenueOld"
+        >
             <svg
                 @click="toggleIsFilled()"
                 :fill="isFilled ? '#FF4081' : 'none'"
@@ -174,7 +182,7 @@
         <span 
             class="action-icons position-absolute bottom-0 m-3 move-left"
             @click="goToEditVenue"
-            v-if="isHost && isSettingsPage"
+            v-if="isHost && isSettingsPage && !isVenueOld"
         >
             ✏️
         </span>
