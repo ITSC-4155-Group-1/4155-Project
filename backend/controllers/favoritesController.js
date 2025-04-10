@@ -4,12 +4,12 @@ const Favorites = require('../model/favoritesModel');
 exports.getFavorites = async (req, res) => {
     try {
         const userId = req.session.user;
-        if (!userId) {
-            return res.status(401).json({ error: 'User not authenticated' });
-        }
 
-        const cartItems = await Favorites.find({ user: userId }).populate('venue');
-        res.status(200).json(cartItems);
+        const favoritedVenues = await Favorites.find({ user: userId }).populate('venue');
+        if (!favoritedVenues || favoritedVenues.length === 0) {
+            return res.status(200).json({ message: 'No favorites found' });
+        }
+        res.status(200).json({ favoritedVenues });
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve shopping cart' });
     }

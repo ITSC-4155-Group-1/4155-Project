@@ -15,11 +15,12 @@ exports.viewVenueBookings = (req, res, next) =>{
 
 // View all bookings made as a user
 exports.viewMyBookings = (req, res, next) => {
-    let id = req.session.id
+    let id = req.session.user
     bookingModel.find({buyerId: id})
+    .populate('venueId')
     .then((bookings) =>{
         if(bookings){
-            return bookings
+            res.status(200).json({ success: true, bookings });
         }
     })
     .catch(err => next(err))
