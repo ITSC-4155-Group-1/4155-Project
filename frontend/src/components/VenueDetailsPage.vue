@@ -31,6 +31,7 @@
     const hostFirstName = ref('');
     const hostId = ref(null);
     const deleteVenueModal = ref(false);
+    const isVenueOld = ref(false);
 
     onMounted(async () => {
         const venueId = route.params.id;
@@ -49,7 +50,8 @@
         // getting the bookings for the venues as well
         const bookings = await venueStore.getBookingsForVenueById(venueId);
         if (bookings && bookings.length > 0) {
-            let blockedDates = []
+            let blockedDates = [];
+
             bookings.forEach((booking) => {
                 const startDate = new Date(booking.bookingStartDate);
                 const endDate = new Date(booking.bookingEndDate);
@@ -61,6 +63,7 @@
                 }
                 blockedDates.push(...dateArray);
             });
+
             disabledDates.value = [...blockedDates];
         }
 
@@ -71,7 +74,6 @@
         } else {
             isFilled.value = false;
         }
-        console.log(isFavorited)
     })
 
     onMounted(() => {
@@ -109,12 +111,11 @@
     };
 
     watch(() => venue.value.availability, (newAvailability) => {
+        const today = new Date();
         if (newAvailability && newAvailability.length > 0) {
             const offsetStartDate = new Date(venue.value.availability[0])
             const venueStartDate = new Date(offsetStartDate);
             venueStartDate.setDate(offsetStartDate.getDate() + 1);
-            
-            const today = new Date();
 
             if (venueStartDate > today) {
                 minDate.value = venueStartDate;
@@ -123,6 +124,7 @@
             }
         }
         maxDate.value = new Date(venue.value.availability[1]);
+        isVenueOld.value = maxDate.value < today;
     });
 
     watch(() => venue.value.venueName, () => {
@@ -414,7 +416,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="goToEditVenue"
-                    v-if="hostId === user?.id && user"
+                    v-if="hostId === user?.id && user && !isVenueOld"
                 >
                     ✏️ Edit
                 </span>
@@ -531,7 +533,7 @@
             <div
                 class="w-65 my-2"
                 :class="user?.id !== venue.host ? 'smaller-container' : ''"
-            >
+            > <!-- fix small-container stuff (its not expanding) -->
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
@@ -657,7 +659,7 @@
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
                 v-if="user?.id !== hostId"
             >
-                <form @submit.prevent="submitBooking">
+                <form @submit.prevent="submitBooking" v-if="!isVenueOld">
                     <div class="mb-4">
                         <label for="dateRange" class="form-label fw-medium fs-5">Select Dates:</label>
                         <VueDatePicker
@@ -737,6 +739,10 @@
                         Start Booking
                     </button>
                 </form>
+                <div v-else>
+                    <h5>This venue is no longer available for booking.</h5>
+                    <p>Please contact the owner of the venue if you believe this is a mistake.</p>
+                </div>
             </div>
         </div>
     </div>

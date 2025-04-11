@@ -37,13 +37,11 @@
                 yourVenues.value = venueList.value.filter(venue => {
                     const endDate = new Date(venue.availability[1]);
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0); // midnight
                     return venue.host === user?.id && endDate >= today;
                 });
                 oldHostedVenues.value = venueList.value.filter(venue => {
                     const endDate = new Date(venue.availability[1]);
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0);
                     return venue.host === user?.id && endDate < today;
                 });
             }
