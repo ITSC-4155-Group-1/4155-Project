@@ -1,6 +1,7 @@
 <script setup>
     import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
+    import Booking from "./Booking.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userStore';
     import { showErrorToast } from '../utils/toast';
@@ -25,7 +26,8 @@
     const yourFavoritedVenues = ref([]); // current venues favorited by the user
     const yourBookings = ref([]); // current bookings made by the user
     const oldHostedVenues = ref([]); // previously hosted venues
-    const oldBookings = ref([]); // previously made bookings
+    const venuesOfOldBookings = ref([]); // venues of expired bookings 
+    const oldBookings = ref([]); // expired bookings
 
     const getAllVenues = async () => {
         try {
@@ -68,9 +70,17 @@
             return endDate >= today;
         });
 
-        // old bookings
-        oldBookings.value = tempAllBookings.map(booking => booking.venueId).filter(venue => {
-            const endDate = new Date(venue.availability[1]);
+        // venues of old bookings
+        venuesOfOldBookings.value = tempAllBookings.filter(booking => {
+            const endDate = new Date(booking.bookingEndDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return endDate < today;
+        }).map(bookingVenue => bookingVenue.venueId);
+
+        // expired bookings
+        oldBookings.value = tempAllBookings.filter(booking => {
+            const endDate = new Date(booking.bookingEndDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return endDate < today;
@@ -315,8 +325,8 @@
                         <h2>Expired Bookings</h2>
                         <div class="venue-list" v-if="oldBookings.length > 0">
                             <div class="row">
-                                <div v-for="(venue, index) in oldBookings" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
-                                    <VenueCard :venue="venue" /> <!-- gonna change to bookings component -->
+                                <div v-for="(booking, index) in oldBookings" :key="index + '_' + booking.venueId" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
+                                    <Booking :booking="venue.venueId" /> <!-- gonna change to bookings component -->
                                 </div>
                             </div>
                         </div>
