@@ -5,6 +5,7 @@
     import he from 'he';
     import axios from 'axios';
     import { showSuccessToast, showErrorToast } from '../utils/toast.js';
+    import { useRouter } from 'vue-router';
 
     const props = defineProps({
         booking: Object,
@@ -13,6 +14,8 @@
 
     const { booking, isOld } = toRefs(props);
     const venue = computed(() => booking.value.venueId);
+    const cancelBookingModal = ref(false);
+    const router = useRouter();
 
     const usAbbreviations = {
         "AL": "Alabama",
@@ -82,6 +85,10 @@
         return he.decode(`${venue.value.address}, ${venue.value.city}, ${usStateToAbbreviation(venue.value.state)} ${venue.value.zipCode}`);
     })
 
+    const toggleCancelBookingModal = () => {
+        cancelBookingModal.value = !cancelBookingModal.value;
+    }
+
     const cancelBooking = async () => {
         const bookingId = booking.value._id;
         try {
@@ -149,14 +156,29 @@
                 <p><b>Attendees:</b>: {{ booking.numAttendees }}</p>
             </div>
             <div class="d-flex justify-content-end">
-                <button
-                    v-if="!isOld"
-                    class="border-0 red"
-                    @click="cancelBooking"
-                >Cancel Booking</button>
+                <button v-if="!isOld" class="border-0 red" @click="toggleCancelBookingModal">Cancel Booking</button>
                 <button v-else class="border-0 pink" @click="rateTheVenue">
                     Rate the Venue
                 </button>
+            </div>
+        </div>
+    </div>
+    <div v-if="cancelBookingModal" class="overlay">
+        <div class="popup bg-light">
+            <button class="close-btn" @click="toggleCancelBookingModal">
+                &times;
+            </button>
+
+            <div>
+                <h3>Do you wish to continue?</h3>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn w-50 mt-3 custom-btn confirm" @click="cancelBooking">
+                        Delete Venue
+                    </button>
+                    <button type="submit" class="btn w-50 mt-3 custom-btn cancel" @click="toggleCancelBookingModal">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -202,5 +224,63 @@
 
     .red:hover, .pink:hover {
         text-decoration: underline;
+    }
+
+    .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .popup {
+        position: relative;
+        width: 50%;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .custom-btn {
+        width: fit-content;
+        padding: 0.75rem 2rem;
+        color: white;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .confirm {
+        color: white;
+        background-color: var(--highlight);
+    }
+
+    .confirm:hover {
+        color: white;
+        background-color: var(--highlight-dark-50);
+    }
+
+    .cancel {
+        color: white;
+        background-color: red;
+    }
+
+    .cancel:hover {
+        color: white;
+        background-color: darkred;
     }
 </style>
