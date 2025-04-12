@@ -63,6 +63,7 @@
         yourBookings.value = tempAllBookings.filter(booking => {
             const endDate = new Date(booking.bookingEndDate);
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             return endDate >= today;
         });
 
@@ -70,6 +71,7 @@
         oldBookings.value = tempAllBookings.filter(booking => {
             const endDate = new Date(booking.bookingEndDate);
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             return endDate < today;
         });
     });
