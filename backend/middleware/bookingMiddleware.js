@@ -1,5 +1,6 @@
 const bookingModel = require('../model/bookingModel')
 const venueModel = require('../model/venueModel')
+const mongoose = require('mongoose')
 
 exports.isBookingAvailable = (req, res, next) =>{
     let venueId = req.body.id
@@ -38,21 +39,37 @@ exports.isBookingAvailable = (req, res, next) =>{
 exports.isBooker = (req, res, next) => {
     let buyer = req.session.user
     let { bookingId } = req.body;
-    console.log(bookingId, buyer)
-    bookingModel.findById(bookingId)
-    .then((booking) => {
-        if(booking){
-            if(booking.buyerId.toString() === buyer){
-                next()
+    let venueId  = req.params.id;
+
+    // find the booking by id or find by venueId
+    if (bookingId) {
+        bookingModel.findById(bookingId)
+        .then((booking) => {
+            if (booking) {
+                if (booking.buyerId.toString() === buyer) {
+                    next();
+                } else {
+                    res.status(400).json({ invalid: "You are not the booker." });
+                }
+            } else {
+            res.status(404).json({ invalid: "Booking does not exist" });
             }
-            else {
-                res.status(400).json({invalid: "You are not the booker."})
+        })
+        .catch(err => next(err));
+    } else if (venueId) {
+        bookingModel.findOne({ venueId })
+        .then((booking) => {
+            if (booking) {
+                if (booking.buyerId.toString() === buyer) {
+                    next();
+                } else {
+                    res.status(400).json({ invalid: "You are not the booker." });
+                }
+            } else {
+            res.status(404).json({ invalid: "Booking does not exist" });
             }
-        }
-        else{
-            res.status(404).json({invalid: "Booking does not exist"})
-        }        
-    })
-    .catch(err => next(err))
+        })
+        .catch(err => next(err));
+    }
   }
   

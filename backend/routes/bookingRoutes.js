@@ -12,8 +12,10 @@ exp_router.delete('/', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bo
 
 //View existing bookings other users have made for my venue
 // don't need the isHost (this can be filtered out in the frontend)
-// don't need the isLoggedIn validator because the frontend needs access to the bookings always
+// don't need the isLoggedIn validator because the frontend needs access to the bookings always to disable dates in the calendar
 exp_router.get('/:id', bookingController.viewVenueBookings)
+
+exp_router.get('/review/:id', validator.alreadyLoggedIn, bookingMiddleware.isBooker, bookingController.viewBookingById)
 
 //View all existing bookings I have made. No validator to check if user is correct as controller checks session cookie
 exp_router.get('/', validator.alreadyLoggedIn, bookingController.viewMyBookings)

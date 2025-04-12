@@ -26,20 +26,27 @@ exports.viewMyBookings = (req, res, next) => {
     .catch(err => next(err))
 }
 
-// // View specific booking
-// exports.viewVenueBooking = (req, res, next) => {
-//     let id = req.body.id
-//     bookingModel.findById(id)
-//     .then((booking) =>{
-//         if(booking){
-//             return booking
-//         }
-//         else{
-//             next(new Error('Booking does not exist').status(404))
-//         }
-//     })
-//     .catch(err => next(err))
-// }
+// View specific booking
+exports.viewBookingById = (req, res, next) => {
+    let venueId  = req.params.id;
+    bookingModel.findOne({ venueId })
+    .populate({
+        path: 'venueId',
+        populate: {
+            path: 'host',
+            model: 'User'
+        }
+    })
+    .then((booking) =>{
+        if(booking){
+            return res.status(200).json({ success: true, booking });
+        }
+        else{
+            return res.status(404).json({invalid: "Booking does not exist"})
+        }
+    })
+    .catch(err => next(err))
+}
 
 exports.createBooking = (req, res, next) => {
     let venueId = req.body.id
