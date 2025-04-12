@@ -260,8 +260,8 @@
                         <h3>Current Bookings</h3>
                         <div v-if="yourBookings.length > 0">
                             <div>
-                                <div v-for="(booking, index) in yourBookings" :key="booking._id" class="d-flex w-75">
-                                    <Booking :booking="booking" />
+                                <div v-for="(booking, index) in yourBookings" :key="booking._id" class="d-flex">
+                                    <Booking :booking="booking" :isOld="false" />
                                 </div>
                             </div>
                         </div>
@@ -313,7 +313,7 @@
                         <div v-if="oldBookings.length > 0">
                             <div>
                                 <div v-for="(booking, index) in oldBookings" :key="booking._id" class="d-flex">
-                                    <Booking :booking="booking" />
+                                    <Booking :booking="booking" :isOld="true" />
                                 </div>
                             </div>
                         </div>
@@ -391,7 +391,6 @@
         overflow-y: auto; 
         display: flex;
         flex-direction: column; 
-        height: auto; 
     }
 
     .sidebar-title {

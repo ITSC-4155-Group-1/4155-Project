@@ -5,10 +5,11 @@
     import he from 'he';
 
     const props = defineProps({
-        booking: Object
+        booking: Object,
+        isOld: Boolean,
     });
 
-    const { booking } = toRefs(props);
+    const { booking, isOld } = toRefs(props);
     const venue = computed(() => booking.value.venueId);
 
     const usAbbreviations = {
@@ -79,6 +80,11 @@
         return he.decode(`${venue.value.address}, ${venue.value.city}, ${usStateToAbbreviation(venue.value.state)} ${venue.value.zipCode}`);
     })
 
+    const cancelBooking = () => {
+        // Logic to cancel the booking
+        console.log(`Booking with ID ${booking.value._id} has been cancelled.`);
+    }
+
     const formattedBookingStartDate = computed(() => {
         return new Intl.DateTimeFormat('en-US', {
             month: 'short',
@@ -108,7 +114,7 @@
 </script>
 
 <template>
-    <div class="d-flex gap-3 mb-3 py-3">
+    <div class="d-flex gap-3 mb-3 py-3 booking-container">
         <div class="image-container">
             <Carousel v-bind="carouselConfig">
                 <Slide v-for="image in venue.images" :key="image">
@@ -121,21 +127,36 @@
             </Carousel>
         </div>
         <div class="d-flex flex-column justify-content-between">
-            <div class="d-flex flex-column gap-1">
-                <h4 class="text-truncate">{{ venue.venueName }}</h4>
-                <p class="text-truncate"><b>Address: </b>{{ address }}</p>
+            <div class="d-flex flex-column gap-1 booking-details">
+                <h4>{{ venue.venueName }}</h4>
+                <p><b>Address: </b>{{ address }}</p>
                 <p><b>Booking Start Date:</b> {{ formattedBookingStartDate }}</p>
                 <p><b>Booking End Date:</b> {{ formattedBookingEndDate }}</p>
                 <p><b>Attendees:</b>: {{ booking.numAttendees }}</p>
             </div>
-            <div class="d-flex justify-content-end mt-2">
-                <button class="border-0 red" @click="cancelBooking">Cancel Booking</button>
+            <div class="d-flex justify-content-end">
+                <button
+                    v-if="!isOld"
+                    class="border-0 red"
+                    @click="cancelBooking"
+                >Cancel Booking</button>
+                <button v-else class="border-0 pink" @click="rateTheVenue">
+                    Rate the Venue
+                </button>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
+    .booking-container {
+        width: 85vw;
+    }
+
+    .booking-details p {
+        width: 45ch;
+    }
+
     .image-container {
         width: 60%;
         height: 400px;
@@ -153,11 +174,19 @@
         --vc-nav-border-radius: 100%;
     }
 
+    h4 {
+        color: var(--primary);
+    }
+
     .red {
         color: red;
     }
 
-    .red:hover {
+    .pink {
+        color: var(--accent);
+    }
+
+    .red:hover, .pink:hover {
         text-decoration: underline;
     }
 </style>
