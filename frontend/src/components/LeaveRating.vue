@@ -5,6 +5,8 @@
     import { showSuccessToast, showErrorToast } from '../utils/toast';
     import axios from 'axios';
     import he from 'he';
+    import { Carousel, Slide, Navigation } from 'vue3-carousel'
+    import 'vue3-carousel/carousel.css'
 
     const booking = ref(null);
     const venue = ref({});
@@ -143,14 +145,28 @@
             showErrorToast('Failed to submit review. Please try again.');
         }
     };
+    const carouselConfig = {
+        height: 350,
+        itemsToShow: 1,
+        wrapAround: true,
+    }
 </script>
 
 <template>
     <div class="w-75 mx-auto d-flex flex-column gap-3">
         <h1>Write a Review</h1>
         <div class="d-flex justify-content-center gap-4">
-            <div class="w-50">
-                <img loading="lazy" :src="images[0]" alt="main image of venue" class="image-height w-100 object-fit-cover object-position-center rounded" />
+            <div class="w-50 image-container">
+                <!-- <img loading="lazy" :src="images[0]" alt="main image of venue" class="image-height w-100 object-fit-cover object-position-center rounded" /> -->
+                <Carousel v-bind="carouselConfig">
+                    <Slide v-for="image in images" :key="image">
+                        <img :src="image" alt="Venue Images" loading="lazy">
+                    </Slide>
+
+                    <template #addons>
+                        <Navigation class="mx-1" />
+                    </template>
+                </Carousel>
             </div>
             <div class="w-75">
                 <h2>
@@ -200,8 +216,21 @@
 </template>
 
 <style scoped>
-    .image-height {
+    .image-container {
+        width: 60%;
         height: 350px;
+    }
+
+    .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+
+    .carousel {
+        --vc-nav-background: rgba(255, 255, 255, 0.7);
+        --vc-nav-border-radius: 100%;
     }
 
     h2 {
