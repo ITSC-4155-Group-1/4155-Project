@@ -532,8 +532,8 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.id !== venue.host ? 'smaller-container' : ''"
-            > <!-- fix small-container stuff (its not expanding) -->
+                :class="user?.id === venue.host ? 'smaller-container' : ''"
+            >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
                         <span class="rating fs-5 fw-bolder d-flex align-items-center gap-1">
