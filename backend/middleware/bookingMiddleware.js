@@ -1,5 +1,6 @@
 const bookingModel = require('../model/bookingModel')
 const venueModel = require('../model/venueModel')
+const mongoose = require('mongoose')
 
 exports.isBookingAvailable = (req, res, next) =>{
     let venueId = req.body.id
@@ -29,7 +30,7 @@ exports.isBookingAvailable = (req, res, next) =>{
             }
         }
         else{
-            next(new Error('Venue does not exist').status(404))
+            res.status(404).json({invalid: "Venue does not exist"})
         }
     })
     .catch(err => next(err))
@@ -37,21 +38,38 @@ exports.isBookingAvailable = (req, res, next) =>{
 
 exports.isBooker = (req, res, next) => {
     let buyer = req.session.user
-    let bookingId = req.body.id
-    bookingModel.findById(bookingId)
-    .then((booking) => {
-        if(booking){
-            if(booking.buyerId === buyer){
-                next()
+    let { bookingId } = req.body;
+    let venueId  = req.params.id;
+
+    // find the booking by id or find by venueId
+    if (bookingId) {
+        bookingModel.findById(bookingId)
+        .then((booking) => {
+            if (booking) {
+                if (booking.buyerId.toString() === buyer) {
+                    next();
+                } else {
+                    res.status(400).json({ invalid: "You are not the booker." });
+                }
+            } else {
+            res.status(404).json({ invalid: "Booking does not exist" });
             }
-            else {
-                next(new Error('You are not the one who made this booking').status(400))
+        })
+        .catch(err => next(err));
+    } else if (venueId) {
+        bookingModel.findOne({ venueId })
+        .then((booking) => {
+            if (booking) {
+                if (booking.buyerId.toString() === buyer) {
+                    next();
+                } else {
+                    res.status(400).json({ invalid: "You are not the booker." });
+                }
+            } else {
+            res.status(404).json({ invalid: "Booking does not exist" });
             }
-        }
-        else{
-            next(new Error('Booking does not exist').status(404))
-        }        
-    })
-    .catch(err => next(err))
+        })
+        .catch(err => next(err));
+    }
   }
   

@@ -1,6 +1,7 @@
 <script setup>
     import { ref, computed, onMounted } from 'vue';
     import VenueCard from "./VenueCard.vue";
+    import Booking from "./Booking.vue";
     import { parseUser } from "../utils/userUtils"
     import { useUserStore } from '../store/userStore';
     import { showErrorToast } from '../utils/toast';
@@ -24,8 +25,8 @@
     const yourVenues = ref([]); // current venues hosted by the user
     const yourFavoritedVenues = ref([]); // current venues favorited by the user
     const yourBookings = ref([]); // current bookings made by the user
-    const oldHostedVenues = ref([]); // previously hosted venues
-    const oldBookings = ref([]); // previously made bookings
+    const oldHostedVenues = ref([]); // previously hosted venues 
+    const oldBookings = ref([]); // expired bookings
 
     const getAllVenues = async () => {
         try {
@@ -35,13 +36,11 @@
                 yourVenues.value = venueList.value.filter(venue => {
                     const endDate = new Date(venue.availability[1]);
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0); // midnight
                     return venue.host === user?.id && endDate >= today;
                 });
                 oldHostedVenues.value = venueList.value.filter(venue => {
                     const endDate = new Date(venue.availability[1]);
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0);
                     return venue.host === user?.id && endDate < today;
                 });
             }
@@ -61,16 +60,16 @@
         let tempAllBookings = await venueStore.getAllBookings() || [];
 
         // current bookings
-        yourBookings.value = tempAllBookings.map(booking => booking.venueId).filter(venue => {
-            const endDate = new Date(venue.availability[1]);
+        yourBookings.value = tempAllBookings.filter(booking => {
+            const endDate = new Date(booking.bookingEndDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return endDate >= today;
         });
 
-        // old bookings
-        oldBookings.value = tempAllBookings.map(booking => booking.venueId).filter(venue => {
-            const endDate = new Date(venue.availability[1]);
+        // expired bookings
+        oldBookings.value = tempAllBookings.filter(booking => {
+            const endDate = new Date(booking.bookingEndDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return endDate < today;
@@ -243,35 +242,35 @@
                         </div>
                     </div>
 
-                        <div class="venues" v-if="activeSection === 'personal-info'">
-                            <h3>Active Venues</h3>
-                            <div class="venue-list" v-if="yourVenues.length > 0">
-                                <div class="row">
-                                    <div v-for="(venue, index) in yourVenues" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
-                                        <VenueCard :venue="venue" />
-                                    </div>
+                    <div class="venues" v-if="activeSection === 'personal-info'">
+                        <h3>Active Venues</h3>
+                        <div class="venue-list" v-if="yourVenues.length > 0">
+                            <div class="row">
+                                <div v-for="(venue, index) in yourVenues" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
+                                    <VenueCard :venue="venue" />
                                 </div>
                             </div>
-                            <div v-else>
-                                <p class="p-0 m-0">No venues found.
-                                    Host a venue <router-link to="/venues/new" class="text-decoration-none pink">here</router-link>.
-                                </p>
-                            </div>
                         </div>
-    
-                        <div class="venues" v-if="activeSection === 'personal-info'">
-                            <h3>Current Bookings</h3>
-                            <div class="venue-list" v-if="yourBookings.length > 0">
-                                <div class="row">
-                                    <div v-for="(venue, index) in yourBookings" :key="index" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
-                                        <VenueCard :venue="venue" />
-                                    </div>
+                        <div v-else>
+                            <p class="p-0 m-0">No venues found.
+                                Host a venue <router-link to="/venues/new" class="text-decoration-none pink">here</router-link>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="venues" v-if="activeSection === 'personal-info'">
+                        <h3>Current Bookings</h3>
+                        <div v-if="yourBookings.length > 0">
+                            <div>
+                                <div v-for="(booking, index) in yourBookings" :key="booking._id" class="d-flex">
+                                    <Booking :booking="booking" :isOld="false" />
                                 </div>
                             </div>
-                            <div v-else>
-                                <p class="p-0 m-0">No current or upcoming bookings found.</p>
-                            </div>
                         </div>
+                        <div v-else>
+                            <p class="p-0 m-0">No current or upcoming bookings found.</p>
+                        </div>
+                    </div>
 
 
                     <div v-if="showModal" class="modal-overlay">
@@ -313,10 +312,10 @@
 
                     <div class="venues" v-if="activeSection === 'history'">
                         <h2>Expired Bookings</h2>
-                        <div class="venue-list" v-if="oldBookings.length > 0">
-                            <div class="row">
-                                <div v-for="(venue, index) in oldBookings" :key="index + '_' + venue.venueName" class="col-12 col-sm-2 col-md-6 col-lg-4 mb-4">
-                                    <VenueCard :venue="venue" /> <!-- gonna change to bookings component -->
+                        <div v-if="oldBookings.length > 0">
+                            <div>
+                                <div v-for="(booking, index) in oldBookings" :key="booking._id" class="d-flex">
+                                    <Booking :booking="booking" :isOld="true" />
                                 </div>
                             </div>
                         </div>
@@ -394,7 +393,6 @@
         overflow-y: auto; 
         display: flex;
         flex-direction: column; 
-        height: auto; 
     }
 
     .sidebar-title {
@@ -515,11 +513,6 @@
     .venues {
         margin-top: 20px;
     }
-
-    /* .venue-list {
-        display: flex;
-        gap: 10px;
-    } */
 
     .venue {
         width: 100%;
