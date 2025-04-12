@@ -1,8 +1,10 @@
 <script setup>
-    import { ref, toRefs, computed, watch } from 'vue';
+    import { ref, toRefs, computed, watch, nextTick } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
     import he from 'he';
+    import axios from 'axios';
+    import { showSuccessToast, showErrorToast } from '../utils/toast.js';
 
     const props = defineProps({
         booking: Object,
@@ -80,9 +82,21 @@
         return he.decode(`${venue.value.address}, ${venue.value.city}, ${usStateToAbbreviation(venue.value.state)} ${venue.value.zipCode}`);
     })
 
-    const cancelBooking = () => {
-        // Logic to cancel the booking
-        console.log(`Booking with ID ${booking.value._id} has been cancelled.`);
+    const cancelBooking = async () => {
+        const bookingId = booking.value._id;
+        try {
+            const response = await axios.delete(`http://localhost:3000/booking/`, {
+                withCredentials: true,
+                data: { bookingId },
+            });
+
+            if (response.status === 200) {
+                location.reload();
+                localStorage.setItem('successMessage', "Booking cancelled successfully");
+            }
+        } catch (error) {
+            showErrorToast('Error canceling booking. Please try again later.');
+        }
     }
 
     const formattedBookingStartDate = computed(() => {

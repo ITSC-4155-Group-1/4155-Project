@@ -61,7 +61,8 @@ exports.createBooking = (req, res, next) => {
     })
 }
 exports.deleteBooking = (req, res, next) =>{
-    let bookingId = req.body.id
+    let { bookingId } = req.body;
+    console.log(bookingId)
     bookingModel.findByIdAndDelete(bookingId)
     .then((booking) => {
         if(booking){

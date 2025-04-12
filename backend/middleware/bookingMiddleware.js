@@ -29,7 +29,7 @@ exports.isBookingAvailable = (req, res, next) =>{
             }
         }
         else{
-            next(new Error('Venue does not exist').status(404))
+            res.status(404).json({invalid: "Venue does not exist"})
         }
     })
     .catch(err => next(err))
@@ -37,19 +37,20 @@ exports.isBookingAvailable = (req, res, next) =>{
 
 exports.isBooker = (req, res, next) => {
     let buyer = req.session.user
-    let bookingId = req.body.id
+    let { bookingId } = req.body;
+    console.log(bookingId, buyer)
     bookingModel.findById(bookingId)
     .then((booking) => {
         if(booking){
-            if(booking.buyerId === buyer){
+            if(booking.buyerId.toString() === buyer){
                 next()
             }
             else {
-                next(new Error('You are not the one who made this booking').status(400))
+                res.status(400).json({invalid: "You are not the booker."})
             }
         }
         else{
-            next(new Error('Booking does not exist').status(404))
+            res.status(404).json({invalid: "Booking does not exist"})
         }        
     })
     .catch(err => next(err))
