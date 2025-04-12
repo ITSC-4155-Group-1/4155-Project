@@ -106,6 +106,11 @@
         }
     }
 
+    const rateTheVenue = (event) => {
+        event.stopPropagation();
+        router.push(`/review/${venue.value._id}`);
+    }
+
     const formattedBookingStartDate = computed(() => {
         return new Intl.DateTimeFormat('en-US', {
             month: 'short',
