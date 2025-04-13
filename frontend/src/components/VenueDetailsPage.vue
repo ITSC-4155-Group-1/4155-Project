@@ -532,7 +532,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.id === venue.host ? 'smaller-container' : ''"
+                :class="user?.id === venue.host || !user ? 'smaller-container' : ''"
             >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
@@ -657,7 +657,7 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.id !== hostId"
+                v-if="user?.id !== hostId && user"
             >
                 <form @submit.prevent="submitBooking" v-if="!isVenueOld">
                     <div class="mb-4">
