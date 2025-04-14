@@ -98,7 +98,6 @@
     });
 
     watch(() => venue.value, (newVenue) => {
-        console.log(newVenue[0].availability);
         if (newVenue[0].availability && newVenue[0].availability.length > 0) {
             form.value.availability = [
                 new Date(newVenue[0].availability[0]),

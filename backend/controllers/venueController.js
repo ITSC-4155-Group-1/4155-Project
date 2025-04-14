@@ -71,7 +71,6 @@ exports.updateVenue = (req, res, next) => {
     let venue = req.body
     venue.images = req.files.map(file => `/images/${file.filename}`)
     let venueId = req.params.id
-    console.log(venue);
     venueModel.findByIdAndUpdate(venueId, venue, {runValidators: true, new: true})
     .then((venue) =>{
         if(venue){

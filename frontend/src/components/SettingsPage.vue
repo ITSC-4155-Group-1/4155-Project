@@ -144,7 +144,6 @@
         if (!validatePasswords()) return;
 
         const response = await userStore.updateUserPassword(newPassword.value);
-        console.log(response)
         if (response.success) {
             updatePasswordDiv.value = false;
         }

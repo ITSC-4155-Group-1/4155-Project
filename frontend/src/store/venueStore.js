@@ -104,7 +104,6 @@ export const useVenueStore = defineStore('venue', () => {
             if(response.data.success){
                 return true;
             } else if(response.data.invalid){
-                console.log(response.data.invalid)
                 return false;
             }
         } catch (error) {
@@ -160,7 +159,6 @@ export const useVenueStore = defineStore('venue', () => {
             if(response.data.success){
                 return true;
             } else if(response.data.invalid){
-                console.log(response.data.invalid)
                 return false;
             }
         } catch (error) {
