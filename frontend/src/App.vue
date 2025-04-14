@@ -32,6 +32,14 @@
               userStore.clearSuccessMessage();
             }, 5000)
         }
+
+        const routeErrorMessage = localStorage.getItem('routeError');
+        if (routeErrorMessage) {
+          showErrorToast(routeErrorMessage);
+          setTimeout(() => {
+            localStorage.removeItem('routeError');
+          }, 5000);
+        }
     });
 </script>
 
