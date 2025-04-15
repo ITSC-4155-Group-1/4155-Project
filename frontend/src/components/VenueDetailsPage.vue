@@ -8,6 +8,7 @@
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
     import he from 'he';
+    import axios from 'axios';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -17,6 +18,7 @@
     const route = useRoute();
     const venue = ref({});
     const venueReviews = ref([]);
+    const venueRating = ref(0);
     const dateRange = ref(null);
     const attendees = ref('');
     const cleaningFee = 200;
@@ -33,13 +35,28 @@
     const deleteVenueModal = ref(false);
     const isVenueOld = ref(false);
 
+    const getReviewsById = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/review/${id}`, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                venueReviews.value = response.data.reviews;
+            }
+        } catch (error) {
+            showErrorToast('Unable to retrieve reviews for this venue.')
+            console.log(error);
+        }
+    }
+
     onMounted(async () => {
         const venueId = route.params.id;
         const [venueData, host] = await venueStore.getVenueById(venueId);
         
         if (venueData) {
             venue.value = venueData;
-            // venueReviews.value = venueData.reviews; venues don't have reviews yet
+            await getReviewsById(venueId);
         }
 
         if (host) {
@@ -211,13 +228,13 @@
         collapsibleSections.value.push(newAddress);
     })
 
-    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
-    // const venueRating = computed(() => {
-    //     const totalReviews = venueReviews.value.length;
-    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
-
-    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
-    // })
+    // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    watch(() => venueReviews.value, () => {
+        const totalReviews = venueReviews.value.length;
+        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.numStars, 0);
+        
+        venueRating.value = totalReviews > 0 ? totalStars / totalReviews : 0;
+    });
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
@@ -618,7 +635,7 @@
                     </h5>
                     <div
                         class="review-container" v-for="review in venueReviews"
-                        :key="review.comment + '_' + review.user_id"
+                        :key="review.review + '_' + review.user_id"
                     >
                         <div class="d-flex align-items-center mb-2">
                             <div class="d-flex align-items-center justify-content-between w-100">
@@ -629,7 +646,7 @@
                                         class="rounded-circle object-fit-cover"
                                         width="35"
                                     >
-                                    <span class="reviewer">{{ review.user_id }}</span>
+                                    <span class="reviewer">{{ review.reviewerId.firstName }}</span>
                                 </div>
                                 <div>
                                     <span class="rating fs-5 fw-bolder">
@@ -642,13 +659,13 @@
                                             <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                                                 fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
                                         </svg>
-                                        {{ review.rating.toFixed(1) }}
+                                        {{ review.numStars.toFixed(1) }}
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-4">
-                            <p class="review-comment">{{ review.comment }}</p>
+                            <p class="review-comment">{{ review.review }}</p>
                         </div>
                     </div>
                 </div>

@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes')
 const venueRoutes = require('./routes/venueRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
 const favoritesRoutes = require('./routes/favoritesRoutes');
+const reviewRoutes = require('./routes/reviewRoutes')
 //const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
 
@@ -65,6 +66,7 @@ app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
 app.use('/favorites', favoritesRoutes);
+app.use('/review', reviewRoutes);
 //app.use('/messages', messageRoutes);
 
 // Basic error handling

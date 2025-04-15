@@ -1,11 +1,12 @@
 <script setup>
-    import { ref, toRefs, computed, watch, nextTick } from 'vue';
+    import { ref, toRefs, computed, watch, nextTick, onMounted } from 'vue';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
     import he from 'he';
     import axios from 'axios';
-    import { showSuccessToast, showErrorToast } from '../utils/toast.js';
-    import { useRouter } from 'vue-router';
+    import { showErrorToast } from '../utils/toast.js';
+    import { useRouter, useRoute } from 'vue-router';
+    import { parseUser } from '../utils/userUtils.js';
 
     const props = defineProps({
         booking: Object,
@@ -16,6 +17,39 @@
     const venue = computed(() => booking.value.venueId);
     const cancelBookingModal = ref(false);
     const router = useRouter();
+    const route = useRoute();
+    const venueReviews = ref([]);
+    const hasReviewed = ref(false);
+    const user = parseUser();
+
+    const getReviewsById = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/review/${id}`, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                venueReviews.value = response.data.reviews;
+            }
+        } catch (error) {
+            showErrorToast('Unable to retrieve reviews for this venue.')
+            console.log(error);
+        }
+    }
+
+    onMounted(async () => {
+        const venueId = venue.value._id;
+        await getReviewsById(venueId);
+    })
+
+    //AI-Contribution
+    watch(() => venueReviews.value, (newReviews) => {
+        newReviews.forEach(review => {
+            if(review.reviewerId._id === user?.id) {
+                hasReviewed.value = true;
+            }
+        })
+    })
 
     const usAbbreviations = {
         "AL": "Alabama",
@@ -162,7 +196,7 @@
             </div>
             <div class="d-flex justify-content-end">
                 <button v-if="!isOld" class="border-0 red" @click="toggleCancelBookingModal">Cancel Booking</button>
-                <button v-else class="border-0 pink" @click="rateTheVenue">
+                <button v-else-if="isOld && !hasReviewed" class="border-0 pink" @click="rateTheVenue">
                     Rate the Venue
                 </button>
             </div>
