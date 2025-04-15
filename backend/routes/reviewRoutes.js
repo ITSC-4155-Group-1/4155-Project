@@ -6,11 +6,11 @@ const inputValidator = require('../middleware/validation')
 const bookingMiddleware = require('../middleware/bookingMiddleware')
 const exp_router = express.Router()
 
-exp_router.post('/', validator.alreadyLoggedIn, reviewController.createreview)
+exp_router.post('/', validator.alreadyLoggedIn, reviewController.createReview)
 
 //Set review to read
-exp_router.put('/', validator.alreadyLoggedIn, reviewController.setToRead)
+//exp_router.put('/', validator.alreadyLoggedIn, reviewController.setToRead)
 
 //View all existing reviews
-exp_router.get('/', validator.alreadyLoggedIn, reviewController.getReviewsForVenue)
+exp_router.get('/:id', validator.alreadyLoggedIn, reviewController.getReviewsForVenue)
 module.exports = exp_router

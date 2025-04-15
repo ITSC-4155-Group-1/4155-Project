@@ -7,6 +7,7 @@
     import he from 'he';
     import { Carousel, Slide, Navigation } from 'vue3-carousel'
     import 'vue3-carousel/carousel.css'
+    import { parseUser } from '../utils/userUtils'
 
     const booking = ref(null);
     const venue = ref({});
@@ -22,6 +23,7 @@
     const address = ref('');
     const formattedBookingStartDate = ref('');
     const formattedBookingEndDate = ref('');
+    const user = parseUser();
 
     const getBooking = async () => {
         const venueId = route.params.id;
@@ -136,12 +138,22 @@
     // TODO: David, your code is gonna go in here, everything else is set up already
     const submitReview = async () => {
         try {
-            await router.push('/');
+            const payload = {
+                id: venue.value._id, 
+                reviewerId: user?._id,
+                review: review.value.description,
+                numStars: review.value.rating,
+            };
 
-            console.log(review.value)
+            await axios.post('http://localhost:3000/review/', payload, {
+                withCredentials: true,
+            });
 
             showSuccessToast('Review submitted successfully.');
+
+            await router.push('/');
         } catch (err) {
+            console.error('Review submission error:', err);
             showErrorToast('Failed to submit review. Please try again.');
         }
     };
