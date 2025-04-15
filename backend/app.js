@@ -35,7 +35,6 @@ const url = "mongodb+srv://gatherlyAdmin:Es7eW3Wno1MA17rb@gatherly.oorgz.mongodb
 
 const server = http.createServer(app)
 const io = socketIo(server);
-messageListener(io)
 
 
 // exporting for testing
@@ -76,7 +75,8 @@ app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
 app.use('/favorites', favoritesRoutes);
-//app.use('/messages', messageRoutes);
+app.use('/messages', messageRoutes);
+messageController.createRoom(io)
 
 app.get('/', (req, res) =>{
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))

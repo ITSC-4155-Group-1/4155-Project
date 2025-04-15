@@ -12,7 +12,21 @@ exports.getUsersToMessage = (req, res, next) =>{
   })
   .catch(err => next(err))
 }
-
+exports.createGroup = (req, res, next) =>{
+  userModel.findById(req.body.id)
+  .then((user) => {
+    if(!user){
+      return res.status(400).json({message: 'User not found'})
+    }
+    let message = new message({senderId: req.session.user, recieverId: user._id, message: "Hello"})
+    // 
+    message.save()
+    .then((message) =>{
+      res.status(200).json({message: "Group created"})
+    })
+    .catch(err => next(err))
+  })
+}
 exports.createRoom = (io) =>{
   let roomId = ''
   let currUser = ''
