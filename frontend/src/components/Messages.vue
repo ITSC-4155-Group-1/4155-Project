@@ -1,10 +1,46 @@
 <script setup>
-    import { ref, computed, reactive, watch, onMounted } from 'vue';
+    import { ref, computed, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
     import { parseUser } from "../utils/userUtils"
     import { messages } from "../../../mockdata"
+    import { io } from "socket.io-client"
+    import { useRoute, useRouter } from 'vue-router'
 
     const allMessages = ref([...messages]) // stores all the messages (default and newly sent ones)
     const messagesData = ref([...messages]);
+    const socket = ref(null);
+    const route = useRoute();
+    const router = useRouter();
+
+    //id of current user and receiver 
+    onMounted(() => {
+        socket.value = io("http://localhost:5173");
+        const { username, room } = route.query || {};
+            // if(!username || !room ){
+            //     router.push('/');
+            // }
+        socket.value.emit("joinRoom", {
+            currUser: user?._id,   
+            reciever: messagingWho.value
+        });
+        socket.value.on("messageToClient", (data) => {
+            const receivedMsg = {
+                from: data.senderName, 
+                to: data.receiverName,
+                message: data.message,
+                timestamp: new Date(),
+                opened: false,
+            };
+            allMessages.value = [...allMessages.value, receivedMsg];
+            messagesData.value = [...allMessages.value];
+        });
+    });
+
+    onBeforeUnmount(() => {
+        console.log('{DISCONNECT_BLOCK}');
+        socket.value?.off("messageToClient");
+        socket.value?.disconnect();
+    })
+
 
     // should default to the most recent person you messaged
     const messagingWho = ref(messages[0]?.from);

@@ -35,10 +35,14 @@
     "bootstrap": "^5.3.3",
     "he": "^1.2.0",
     "pinia": "^3.0.1",
+    "socket.io-client": "^4.8.1",
     "vue": "^3.0.0",
     "vue-cookie-next": "^1.3.0",
     "vue-router": "^4.5.0",
     "vue3-carousel": "^0.15.0",
     "vue3-toastify": "^0.2.8"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
   }
 }

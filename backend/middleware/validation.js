@@ -21,12 +21,16 @@ exports.venueValidation = [
     body('zipCode', 'Zip Code name is required').isInt({ min: 1 }),
     body('capacity', 'Capacity must be at least 1').isInt({min: 1}),
     body('price',).isInt({min: 1, max: 100000000}),
-    body('availability').isArray().custom((dates) =>{
-        dates.forEach((date) => {
-            if(!Date.parse(date)){
-                throw new Error("Dates are not valid")
-            }
-        })
+    body('availability_start_date').custom((date) =>{
+        if(!Date.parse(date)){
+            throw new Error("Start date is not valid")
+        }
+        return true
+    }),
+    body('availability_end_date').custom((date) =>{
+        if(!Date.parse(date)){
+            throw new Error("End date is not valid")
+        }
         return true
     })
 
