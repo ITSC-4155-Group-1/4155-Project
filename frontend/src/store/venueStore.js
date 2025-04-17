@@ -58,6 +58,20 @@ export const useVenueStore = defineStore('venue', () => {
         }
     };
 
+    const getAllBookings = async () => {
+        try {
+            const response = await axios.get(`http://localhost:3000/booking/`, {
+                withCredentials: true,
+            });
+            if (response.status === 200) {
+                return response.data.bookings;
+            }
+        } catch (e) {
+            showErrorToast('Error fetching bookings. Please try again later.');
+            console.error('Error fetching bookings:', e);
+        }
+    }
+
     const createVenue = async (data) => {
         const dates = [];
         data.availability.forEach(date=>{
@@ -90,7 +104,6 @@ export const useVenueStore = defineStore('venue', () => {
             if(response.data.success){
                 return true;
             } else if(response.data.invalid){
-                console.log(response.data.invalid)
                 return false;
             }
         } catch (error) {
@@ -146,7 +159,6 @@ export const useVenueStore = defineStore('venue', () => {
             if(response.data.success){
                 return true;
             } else if(response.data.invalid){
-                console.log(response.data.invalid)
                 return false;
             }
         } catch (error) {
@@ -228,6 +240,20 @@ export const useVenueStore = defineStore('venue', () => {
         }
     }
 
+    const getFavoritedVenues = async () => {
+        try {
+            const response = await axios.get(`http://localhost:3000/favorites/`, {
+                withCredentials: true,
+            });
+
+            if (response.status === 200) {
+                return response.data.favoritedVenues;
+            }
+        } catch (error) {
+            showErrorToast('Error fetching favorited venues. Please try again later.');
+        }
+    }
+
     return {
         successMessage,
         setSuccessMessage,
@@ -236,11 +262,13 @@ export const useVenueStore = defineStore('venue', () => {
         fetchAllVenues,
         getVenueById,
         getBookingsForVenueById,
+        getAllBookings,
         createVenue,
         deleteVenue,
         editVenue,
         favoriteAVenue,
         unfavoriteAVenue,
-        isVenueFavorited
+        isVenueFavorited,
+        getFavoritedVenues,
     }
 });

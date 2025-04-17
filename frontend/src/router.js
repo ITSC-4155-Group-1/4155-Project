@@ -88,11 +88,22 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/review',
+        path: '/review/:id',
         name: 'review-venue',
         component: LeaveRating,
+        beforeEnter: async (to) => {
+            if (venueStore.allVenues.length === 0) {
+                await venueStore.fetchAllVenues();
+            }
+
+            const id = to.params.id; // objectId of the venue
+            const exists = venueStore.allVenues.some((venue) => venue._id === id)
+            if (!exists) {
+                return { path: '/venue-not-found' }
+            }
+        },
         meta: { requiresAuth: true }
-    }, // TODO: path will be '/review:/id later, and will need to add the error handling for this as well, will pretty much be copy and paste
+    },
     {
         path: '/:pathMatch(.*)*',
         name: 'error-page',
@@ -110,10 +121,9 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !user) {
-        showErrorToast("You must be logged in to access the features of this app.");
+        next(sessionStorage.getItem('lastRoute'))
+        sessionStorage.setItem('pendingToast', 'authError');
         return;
-    } else {
-        next();
     }
 
     if (venueStore.allVenues.length === 0) {
@@ -131,5 +141,13 @@ router.isReady().then(() => {
         router.push('/');
     }
 });
+
+router.afterEach(() => {
+    const pendingToast = sessionStorage.getItem('pendingToast');
+    if (pendingToast === 'authError') {
+        showErrorToast('You must be logged in to access the features of this app.');
+        sessionStorage.removeItem('pendingToast');
+    }
+})
 
 export default router;

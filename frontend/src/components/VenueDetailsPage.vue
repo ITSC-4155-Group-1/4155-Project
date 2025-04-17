@@ -8,6 +8,7 @@
     import { parseUser } from '../utils/userUtils.js'
     import { useVenueStore } from '../store/venueStore';
     import he from 'he';
+    import axios from 'axios';
 
     const router = useRouter();
     const cartStore = useCartStore();
@@ -17,6 +18,7 @@
     const route = useRoute();
     const venue = ref({});
     const venueReviews = ref([]);
+    const venueRating = ref(0);
     const dateRange = ref(null);
     const attendees = ref('');
     const cleaningFee = 200;
@@ -31,6 +33,22 @@
     const hostFirstName = ref('');
     const hostId = ref(null);
     const deleteVenueModal = ref(false);
+    const isVenueOld = ref(false);
+
+    const getReviewsById = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/review/${id}`, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                venueReviews.value = response.data.reviews;
+            }
+        } catch (error) {
+            showErrorToast('Unable to retrieve reviews for this venue.')
+            console.log(error);
+        }
+    }
 
     onMounted(async () => {
         const venueId = route.params.id;
@@ -38,7 +56,7 @@
         
         if (venueData) {
             venue.value = venueData;
-            // venueReviews.value = venueData.reviews; venues don't have reviews yet
+            await getReviewsById(venueId);
         }
 
         if (host) {
@@ -49,7 +67,8 @@
         // getting the bookings for the venues as well
         const bookings = await venueStore.getBookingsForVenueById(venueId);
         if (bookings && bookings.length > 0) {
-            let blockedDates = []
+            let blockedDates = [];
+
             bookings.forEach((booking) => {
                 const startDate = new Date(booking.bookingStartDate);
                 const endDate = new Date(booking.bookingEndDate);
@@ -61,6 +80,7 @@
                 }
                 blockedDates.push(...dateArray);
             });
+
             disabledDates.value = [...blockedDates];
         }
 
@@ -71,7 +91,6 @@
         } else {
             isFilled.value = false;
         }
-        console.log(isFavorited)
     })
 
     onMounted(() => {
@@ -109,12 +128,11 @@
     };
 
     watch(() => venue.value.availability, (newAvailability) => {
+        const today = new Date();
         if (newAvailability && newAvailability.length > 0) {
             const offsetStartDate = new Date(venue.value.availability[0])
             const venueStartDate = new Date(offsetStartDate);
             venueStartDate.setDate(offsetStartDate.getDate() + 1);
-            
-            const today = new Date();
 
             if (venueStartDate > today) {
                 minDate.value = venueStartDate;
@@ -123,6 +141,7 @@
             }
         }
         maxDate.value = new Date(venue.value.availability[1]);
+        isVenueOld.value = maxDate.value < today;
     });
 
     watch(() => venue.value.venueName, () => {
@@ -209,13 +228,13 @@
         collapsibleSections.value.push(newAddress);
     })
 
-    // // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
-    // const venueRating = computed(() => {
-    //     const totalReviews = venueReviews.value.length;
-    //     const totalStars = venueReviews.value.reduce((acc, review) => acc + review.rating, 0);
-
-    //     return totalReviews > 0 ? totalStars / totalReviews : 0;
-    // })
+    // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
+    watch(() => venueReviews.value, () => {
+        const totalReviews = venueReviews.value.length;
+        const totalStars = venueReviews.value.reduce((acc, review) => acc + review.numStars, 0);
+        
+        venueRating.value = totalReviews > 0 ? totalStars / totalReviews : 0;
+    });
 
     const submitBooking = () => {
         if (!dateRange.value || dateRange.value.length !== 2  || !attendees.value) {
@@ -414,7 +433,7 @@
                 <span 
                     class="fw-bold d-flex justify-content-center align-items-center gap-1 share-save-icons"
                     @click="goToEditVenue"
-                    v-if="hostId === user?.id && user"
+                    v-if="hostId === user?.id && user && !isVenueOld"
                 >
                     ✏️ Edit
                 </span>
@@ -530,7 +549,7 @@
         <div class="d-flex justify-space-around gap-5">
             <div
                 class="w-65 my-2"
-                :class="user?.id !== venue.host ? 'smaller-container' : ''"
+                :class="user?.id === venue.host || !user ? 'smaller-container' : ''"
             >
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div v-if="venueRating">
@@ -616,7 +635,7 @@
                     </h5>
                     <div
                         class="review-container" v-for="review in venueReviews"
-                        :key="review.comment + '_' + review.user_id"
+                        :key="review.review + '_' + review.user_id"
                     >
                         <div class="d-flex align-items-center mb-2">
                             <div class="d-flex align-items-center justify-content-between w-100">
@@ -627,7 +646,7 @@
                                         class="rounded-circle object-fit-cover"
                                         width="35"
                                     >
-                                    <span class="reviewer">{{ review.user_id }}</span>
+                                    <span class="reviewer">{{ review.reviewerId.firstName }}</span>
                                 </div>
                                 <div>
                                     <span class="rating fs-5 fw-bolder">
@@ -640,13 +659,13 @@
                                             <polygon points="7,1 8.54,5 13,5 9.23,7.95 10.77,12 7,9.5 3.23,12 4.77,7.95 1,5 5.46,5"
                                                 fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
                                         </svg>
-                                        {{ review.rating.toFixed(1) }}
+                                        {{ review.numStars.toFixed(1) }}
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-4">
-                            <p class="review-comment">{{ review.comment }}</p>
+                            <p class="review-comment">{{ review.review }}</p>
                         </div>
                     </div>
                 </div>
@@ -655,9 +674,9 @@
             <!-- Booking Form Container -->
             <div
                 class="w-35 my-2 border border-2 border-dark p-4 rounded booking-modal bg-light"
-                v-if="user?.id !== hostId"
+                v-if="user?.id !== hostId && user"
             >
-                <form @submit.prevent="submitBooking">
+                <form @submit.prevent="submitBooking" v-if="!isVenueOld">
                     <div class="mb-4">
                         <label for="dateRange" class="form-label fw-medium fs-5">Select Dates:</label>
                         <VueDatePicker
@@ -737,6 +756,10 @@
                         Start Booking
                     </button>
                 </form>
+                <div v-else>
+                    <h5>This venue is no longer available for booking.</h5>
+                    <p>Please contact the owner of the venue if you believe this is a mistake.</p>
+                </div>
             </div>
         </div>
     </div>

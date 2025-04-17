@@ -88,7 +88,7 @@
         state: '',
         city: '',
         address: '',
-        zipCode: 12345, // TODO: hardcoding cause I don't have an address in the mock data
+        zipCode: '',
         venueName: '',
         description: '',
         price: 0,
@@ -98,7 +98,6 @@
     });
 
     watch(() => venue.value, (newVenue) => {
-        console.log(newVenue[0].availability);
         if (newVenue[0].availability && newVenue[0].availability.length > 0) {
             form.value.availability = [
                 new Date(newVenue[0].availability[0]),
@@ -108,7 +107,7 @@
         form.value.state = he.decode(newVenue[0].state);
         form.value.city = he.decode(newVenue[0].city);
         form.value.address = he.decode(newVenue[0].address);
-        // form.value.zipCode = newVenue[0].zipCode; // TODO: once the db is cleaned and every venue has a zip code, then we can uncomment this and fix line 90 as well
+        form.value.zipCode = newVenue[0].zipCode;
         form.value.venueName = he.decode(newVenue[0].venueName);
         form.value.description = he.decode(newVenue[0].description);
         form.value.price = newVenue[0].price;

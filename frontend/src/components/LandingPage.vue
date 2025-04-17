@@ -12,8 +12,16 @@
         try {
             const response = await venueStore.fetchAllVenues();
             if (response.success) {
-                mutableVenueList.value = response.venues;
-                allVenues.value = response.venues;
+                mutableVenueList.value = response.venues.filter(venue => {
+                    const today = new Date();
+                    const availabilityDates = venue.availability.map(date => new Date(date));
+                    return availabilityDates.some(date => date >= today);
+                });
+                allVenues.value = response.venues.filter(venue => {
+                    const today = new Date();
+                    const availabilityDates = venue.availability.map(date => new Date(date));
+                    return availabilityDates.some(date => date >= today);
+                });
             }
         } catch (e) {
             console.error('Error fetching venues:', e);

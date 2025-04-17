@@ -40,7 +40,6 @@ exports.bookingValidation = [
 
 exports.displayValidation = (req, res, next) => {
     let validationErrors = validationResult(req)
-    console.log(validationErrors)
     if(!validationErrors.isEmpty()){
         res.status(400).json({'invalid': validationErrors.array().map(err => err.msg)})
     }
