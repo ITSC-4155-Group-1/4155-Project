@@ -8,4 +8,4 @@ const reviewSchema = new Schema({
     numStars: {type: Number, required: [true, 'Venue name is required']}
 })
 
-module.exports = mongoose.model("Message", reviewSchema)
+module.exports = mongoose.model("Review", reviewSchema)

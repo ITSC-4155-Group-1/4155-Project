@@ -61,12 +61,7 @@ app.use('/user', userRoutes)
 app.use('/venue', venueRoutes)
 app.use('/booking', bookingRoutes)
 app.use('/favorites', favoritesRoutes);
-app.use('/messages', messageRoutes);
-messageController.createRoom(io)
-
-app.get('/', (req, res) =>{
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
-})
+//app.use('/messages', messageRoutes);
 
 // Basic error handling
 app.use((req, res, next) => {
