@@ -228,7 +228,6 @@
         collapsibleSections.value.push(newAddress);
     })
 
-    // TODO: since no venue has any reviews, i'm going to statically make it whatever it is at the moment
     watch(() => venueReviews.value, () => {
         const totalReviews = venueReviews.value.length;
         const totalStars = venueReviews.value.reduce((acc, review) => acc + review.numStars, 0);

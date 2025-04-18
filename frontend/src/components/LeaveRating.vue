@@ -135,7 +135,6 @@
         hoverRating.value = star;
     };
 
-    // TODO: David, your code is gonna go in here, everything else is set up already
     const submitReview = async () => {
         try {
             const payload = {

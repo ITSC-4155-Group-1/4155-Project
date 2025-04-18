@@ -17,8 +17,6 @@
         <div class="content">
             <h2> 404 Error </h2> 
             <p>Oops! The page you are looking for does not exist.</p> 
-            <!-- TODO: -->
-            <!-- Dino Game Here. I am going to smash my damn desk ;-; -->
             <button
                 type="submit"
                 class="btn custom-btn confirm mb-2"
