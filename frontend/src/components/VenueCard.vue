@@ -134,7 +134,11 @@
         <router-link :to="`/venues/${venue._id}`" class="text-decoration-none">
             <div class="mt-3 d-flex flex-column">
                 <h5 class="card-title">{{ venueLocation }}</h5>
-                <p class="card-text">Unknown Miles Away</p>  <!-- Hardcoded distance, will replace with Google API -->
+
+                            <!------AI Contribution----->
+                <p class="host-label mt-1" v-if="isHost">Hosted by You</p>
+
+                <p class="card-text">Unknown Miles Away</p>
                 <div class="d-flex justify-content-between">
                     <p class="card-text">${{ venue.price }} per day</p>
                 </div>
@@ -210,6 +214,13 @@
 </template>
 
 <style scoped>
+    .host-label {
+        font-size: 13px;
+        color: var(--secondary);
+        font-style: italic;
+        opacity: 0.85;
+    }
+
     .hover-effect {
         transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
