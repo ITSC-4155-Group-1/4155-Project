@@ -81,3 +81,5 @@ yarn test
 # OR
 pnpm run test
 ```
+The application is also running on an Amazon EC2 Instance. To access the application, use the link below:
+http://ec2-3-144-96-188.us-east-2.compute.amazonaws.com:3000/
