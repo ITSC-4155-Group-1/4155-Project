@@ -164,6 +164,7 @@
     watch(() => venue.value.venueName, () => {
         const newTitle = he.decode(venue.value.venueName);
         venue.value.venueName = newTitle;
+        console.log(venue.value.venueName)
     })
 
     const carouselConfig = {
@@ -212,7 +213,7 @@
                 <h3>Do you wish to continue?</h3>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn w-50 mt-3 custom-btn confirm" @click="cancelBooking">
-                        Delete Venue
+                        Confirm
                     </button>
                     <button type="submit" class="btn w-50 mt-3 custom-btn cancel" @click="toggleCancelBookingModal">
                         Cancel

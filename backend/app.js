@@ -9,10 +9,10 @@ const bookingRoutes = require('./routes/bookingRoutes')
 const favoritesRoutes = require('./routes/favoritesRoutes');
 const http = require('http')
 const socketIo = require('socket.io')
-const messageRoutes = require('./routes/messageRoutes');
+// const messageRoutes = require('./routes/messageRoutes');
 const cors = require ('cors')
-const messageController = require('./controllers/messageController')
-const messageListener = require('./controllers/messageListener')
+// const messageController = require('./controllers/messageController')
+// const messageListener = require('./controllers/messageListener')
 const path = require('path')
 
 const port = 3000
