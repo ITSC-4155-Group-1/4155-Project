@@ -65,7 +65,7 @@ yarn install
 pnpm install
 ```
 
-## Running the Front-end in Development Mode
+## Running the Back-end in Development Mode
 
 Run this command:
 
