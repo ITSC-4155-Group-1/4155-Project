@@ -29,9 +29,9 @@ If you are not in the `frontend` directory, navigate there using:
 cd frontend/
 ```
 
-## Installing Dependencies
+## Installing Front-end Dependencies
 
-Run one of the following commands to install the project dependencies:
+Run one of the following commands to install the front-end project dependencies:
 
 ```bash
 npm install
@@ -41,7 +41,7 @@ yarn install
 pnpm install
 ```
 
-## Running in Development Mode
+## Running the Front-end in Development Mode
 
 Run one of the following commands to build the project:
 
@@ -53,13 +53,34 @@ yarn dev
 pnpm dev
 ```
 
-## Running Tests
+## Installing Back-end Dependencies
 
-Navigate to the `backend` directory within the project. 
+Run one of the following commands to install the back-end project dependencies:
 
 ```bash
-cd ..
-cd frontend/
+npm install
+# OR
+yarn install
+# OR
+pnpm install
+```
+
+## Running the Front-end in Development Mode
+
+Run this command:
+
+```bash
+nodemon app
+```
+
+**<ins>Make sure you are running the front-end and the back-end at the same time by opening two terminals</ins>**
+
+## Running Tests
+
+Navigate to the `backend` directory within the project if you're not already there. 
+
+```bash
+cd backend/
 ```
 
 Your path will look like this `<path_to_project>/backend`. Install the dependencies here as well:
